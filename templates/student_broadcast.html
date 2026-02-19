@@ -1,0 +1,31 @@
+<h2>Broadcast Messages</h2>
+
+<hr>
+
+{% if messages %}
+    <div style="max-width:600px;">
+
+        {% for msg in messages %}
+            <div style="
+                border:1px solid #ccc;
+                padding:10px;
+                margin-bottom:10px;
+                background-color:#f2f2f2;
+                border-radius:8px;
+            ">
+                <p>{{ msg.message }}</p>
+                <small style="color:gray;">
+                    {{ msg.created_at }}
+                </small>
+            </div>
+        {% endfor %}
+
+    </div>
+{% else %}
+    <p>No broadcast messages yet.</p>
+{% endif %}
+
+<br>
+<a href="{% url 'student_dashboard' %}">
+    <button type="button">Back to Dashboard</button>
+</a>

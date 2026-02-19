@@ -1,0 +1,20 @@
+<h2>Attendance</h2>
+
+<h4>Food Selected</h4>
+<p>Breakfast: {{ record.breakfast }}</p>
+<p>Lunch: {{ record.lunch }}</p>
+<p>Dinner: {{ record.dinner }}</p>
+
+<hr>
+
+<form method="post">
+    {% csrf_token %}
+
+    <input type="radio" name="status" value="present" required>
+    <label>Present</label><br>
+
+    <input type="radio" name="status" value="absent">
+    <label>Absent</label><br><br>
+
+    <button type="submit">Submit Attendance</button>
+</form>

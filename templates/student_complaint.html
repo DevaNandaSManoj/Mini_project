@@ -1,0 +1,17 @@
+<h2>Complaints / Suggestions</h2>
+
+<hr>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Write your complaint or suggestion:</label><br><br>
+    <textarea name="message" rows="5" cols="50" required></textarea><br><br>
+
+    <button type="submit">Submit</button>
+</form>
+
+<br>
+<a href="{% url 'student_dashboard' %}">
+    <button type="button">Back to Dashboard</button>
+</a>

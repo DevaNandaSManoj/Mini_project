@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from .models import Complaint, Student
 from .models import Broadcast
+from django.contrib import messages
+ 
 
 def login_view(request):
     if request.method == "POST":
@@ -114,10 +116,12 @@ def student_dashboard(request):
             to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
 
             if from_date < today:
-                leave_error = "Leave start date cannot be in the past."
+                messages.error(request, "Leave start date cannot be in the past.")
+                return redirect('/student/?tab=leave')
 
             elif to_date < from_date:
-                leave_error = "Leave end date cannot be before start date."
+                messages.error(request, "Leave end date cannot be before start date.")
+                return redirect('/student/?tab=leave')
 
             else:
                 overlap = LeaveRequest.objects.filter(
@@ -128,7 +132,9 @@ def student_dashboard(request):
                 ).exists()
 
                 if overlap:
-                    leave_error = "You already have a pending or approved leave during this period."
+                    messages.error(request, "You already have a pending or approved leave during this period.")
+                    return redirect('/student/?tab=leave')
+                    
                 else:
                     LeaveRequest.objects.create(
                         student=student,
@@ -141,14 +147,29 @@ def student_dashboard(request):
 
     # ================= CANCEL =================
     if request.method == "POST" and request.POST.get("action") == "cancel_leave":
+        from food.models import StudentDailyRecord
+
         leave_id = request.POST.get("leave_id")
         leave = LeaveRequest.objects.filter(id=leave_id, student=student).first()
-        if leave and leave.status in ["pending", "approved"]:
-            leave.delete()
-        return redirect('/student/?tab=leave')
 
-    # ================= SHORTEN =================
+        if leave and leave.status in ["pending", "approved"]:
+
+            # Delete related daily food records (Optimized way)
+            StudentDailyRecord.objects.filter(
+                student=student,
+                date__range=[leave.from_date, leave.to_date]
+            ).delete()
+
+            # Delete leave request
+            leave.delete()
+
+        return redirect('/student/?tab=leave')
+ 
+    # ================= SHORTEN / EXTEND =================
     if request.method == "POST" and request.POST.get("action") == "shorten_leave":
+        from food.models import StudentDailyRecord
+        from datetime import timedelta, datetime
+
         leave_id = request.POST.get("leave_id")
         new_to_date = request.POST.get("new_to_date")
 
@@ -156,7 +177,33 @@ def student_dashboard(request):
 
         if leave and leave.status == "approved" and new_to_date:
             new_to_date = datetime.strptime(new_to_date, "%Y-%m-%d").date()
+
             if new_to_date >= leave.from_date:
+
+                old_to_date = leave.to_date
+
+                # 🔹 SHORTEN (Delete extra blocked days)
+                if new_to_date < old_to_date:
+                    StudentDailyRecord.objects.filter(
+                        student=student,
+                        date__range=[new_to_date + timedelta(days=1), old_to_date]
+                    ).delete()
+
+                # 🔹 EXTEND (Add new blocked days)
+                elif new_to_date > old_to_date:
+                    current_date = old_to_date + timedelta(days=1)
+
+                    while current_date <= new_to_date:
+                        StudentDailyRecord.objects.create(
+                            student=student,
+                            date=current_date,
+                            breakfast=False,
+                            lunch=False,
+                            dinner=False,
+                            present=False
+                        )
+                        current_date += timedelta(days=1)
+
                 leave.to_date = new_to_date
                 leave.save()
 

@@ -211,11 +211,13 @@
     <div class="card">
 
         <h3>Leave Desk</h3>
-        {% if leave_error %}
-            <p style="color:red; font-weight:600;">
-                {{ leave_error }}
-            </p>
-        {% endif %}
+         {% if messages %}
+             {% for message in messages %}
+                 <p style="color:red; font-weight:600;">
+                     {{ message }}
+                 </p>
+             {% endfor %}
+         {% endif %}
 
 
         <form method="post">

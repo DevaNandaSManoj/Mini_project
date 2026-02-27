@@ -1,0 +1,213 @@
+{% extends "student/base_student.html" %}
+{% block page_title %}Leave History{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* STAT GRID */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.08;
+    top: -40px;
+    right: -40px;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.stat-label {
+    color: var(--text2);
+}
+
+/* TAB NAV */
+.tab-nav {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.tab-btn.active {
+    background: var(--accent);
+    color: white;
+}
+
+/* LEAVE CARD */
+.leave-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+}
+
+.leave-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.success { background: #16a34a; color: white; }
+.danger { background: #dc2626; color: white; }
+.warning { background: #f59e0b; color: black; }
+
+/* EMPTY STATE */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text2);
+}
+
+@media (max-width: 900px) {
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+
+<!-- STAT CARDS -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value">{{ approved_count }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Rejected</div>
+        <div class="stat-value">{{ rejected_count }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value">{{ pending_count }}</div>
+    </div>
+</div>
+
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('approved', this)">
+        Approved ({{ approved_count }})
+    </button>
+    <button class="tab-btn" onclick="switchTab('rejected', this)">
+        Rejected ({{ rejected_count }})
+    </button>
+    <button class="tab-btn" onclick="switchTab('pending', this)">
+        Pending ({{ pending_count }})
+    </button>
+</div>
+
+
+<!-- APPROVED -->
+<div id="tab-approved">
+    {% if approved %}
+        {% for leave in approved %}
+            <div class="leave-card">
+                <div class="leave-top">
+                    <span>{{ leave.start_date }} → {{ leave.end_date }}</span>
+                    <span class="badge success">Approved</span>
+                </div>
+                <div>Reason: {{ leave.reason }}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No approved leaves</div>
+    {% endif %}
+</div>
+
+<!-- REJECTED -->
+<div id="tab-rejected" style="display:none;">
+    {% if rejected %}
+        {% for leave in rejected %}
+            <div class="leave-card">
+                <div class="leave-top">
+                    <span>{{ leave.start_date }} → {{ leave.end_date }}</span>
+                    <span class="badge danger">Rejected</span>
+                </div>
+                <div>Reason: {{ leave.reason }}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No rejected leaves</div>
+    {% endif %}
+</div>
+
+<!-- PENDING -->
+<div id="tab-pending" style="display:none;">
+    {% if pending %}
+        {% for leave in pending %}
+            <div class="leave-card">
+                <div class="leave-top">
+                    <span>{{ leave.start_date }} → {{ leave.end_date }}</span>
+                    <span class="badge warning">Pending</span>
+                </div>
+                <div>Reason: {{ leave.reason }}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No pending leaves</div>
+    {% endif %}
+</div>
+
+
+<script>
+function switchTab(tab, btn) {
+    document.getElementById("tab-approved").style.display = "none";
+    document.getElementById("tab-rejected").style.display = "none";
+    document.getElementById("tab-pending").style.display = "none";
+
+    document.getElementById("tab-" + tab).style.display = "block";
+
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+}
+</script>
+
+{% endblock %}

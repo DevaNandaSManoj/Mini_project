@@ -1,0 +1,53 @@
+{% extends "student/base_student.html" %}
+
+{% block page_title %}
+Broadcast Analytics
+{% endblock %}
+
+{% block content %}
+
+<h2 style="margin-bottom:30px;">Broadcast Analytics</h2>
+
+{% if broadcast_data %}
+    {% for item in broadcast_data %}
+        <div style="background:var(--surface2); padding:25px; border-radius:12px; margin-bottom:30px;">
+
+            <h3 style="margin-bottom:10px;">
+                {{ item.broadcast.message }}
+            </h3>
+
+            <small style="color:var(--text2);">
+                Sent on {{ item.broadcast.created_at }}
+            </small>
+
+            <hr style="margin:20px 0; border-color:var(--border);">
+
+            <p><strong>Total Students:</strong> {{ item.total_students }}</p>
+            <p><strong>Read Count:</strong> {{ item.read_count }}</p>
+
+            {% if item.total_students > 0 %}
+                <p>
+                    <strong>Read Percentage:</strong>
+                    {{ item.read_percentage }}%
+                </p>
+            {% endif %}
+
+            <h4 style="margin-top:20px;">Students Who Read:</h4>
+
+            {% if item.read_students %}
+                <ul>
+                    {% for student in item.read_students %}
+                        <li>{{ student.user.username }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color:var(--text2);">No students have read this yet.</p>
+            {% endif %}
+
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No broadcasts available.</p>
+{% endif %}
+
+{% endblock %}

@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required
 from .models import Complaint, Student
 from .models import Broadcast
 from django.contrib import messages
+from django.utils import timezone
+from datetime import timedelta
+
  
 
 def login_view(request):
@@ -229,7 +232,57 @@ def student_dashboard(request):
         student=student
     ).order_by('-from_date')
 
-    return render(request, 'student_dashboard.html', {
+    # ================= DASHBOARD STATS =================
+
+    from food.models import StudentDailyRecord
+    from leave.models import LeaveRequest
+
+    # Attendance %
+    total_days = StudentDailyRecord.objects.filter(student=student).count()
+    present_days = StudentDailyRecord.objects.filter(
+        student=student,
+        present=True
+    ).count()
+
+    attendance_percentage = 0
+    if total_days > 0:
+        attendance_percentage = round((present_days / total_days) * 100, 1)
+
+    # Tomorrow meals count
+    tomorrow_record = StudentDailyRecord.objects.filter(
+        student=student,
+        date=tomorrow
+    ).first()
+
+    meals_selected = 0
+    if tomorrow_record:
+        meals_selected = sum([
+            tomorrow_record.breakfast or False,
+            tomorrow_record.lunch or False,
+            tomorrow_record.dinner or False
+        ])
+
+    # Leave count
+    leave_count = LeaveRequest.objects.filter(student=student).count()
+
+    # ================= BROADCAST (24 HOUR ACTIVE) =================
+
+
+    now = timezone.now()
+    last_24_hours = now - timedelta(hours=24)
+
+    active_broadcasts = Broadcast.objects.filter(
+        created_at__gte=last_24_hours
+    ).order_by('-created_at')
+     
+
+    # Auto mark active broadcasts as read
+    for broadcast in active_broadcasts:
+        broadcast.read_by.add(student)
+
+    active_broadcast_count = active_broadcasts.count()
+
+    return render(request, 'student/dashboard.html', {
         'student': student,
         'menu': menu,
         'food_record': food_record,
@@ -242,6 +295,11 @@ def student_dashboard(request):
         'tomorrow': tomorrow,
         'leave_requests': leave_requests,
         'leave_error': leave_error,
+        'attendance_percentage': attendance_percentage,
+        'meals_selected': meals_selected,
+        'leave_count': leave_count,
+        'active_broadcasts': active_broadcasts,
+        'active_broadcast_count': active_broadcast_count,
     })
 
 
@@ -286,30 +344,49 @@ def student_complaint(request):
                 student=student,
                 message=message
             )
-            return redirect('student_dashboard')
+            return redirect('student_complaint')
 
-    return render(request, 'student_complaint.html')
+    complaints = Complaint.objects.filter(student=student).order_by('-created_at')
+
+    return render(request, 'student/complaint.html', {
+        'complaints': complaints
+    })
 
 @login_required
 def student_broadcast(request):
-    if request.user.role != 'student':
-        return redirect('login')
+    broadcasts = Broadcast.objects.all().order_by('-created_at')
 
-    messages = Broadcast.objects.all().order_by('-created_at')
-
-    return render(request, 'student_broadcast.html', {
-        'messages': messages
+    return render(request, 'student/broadcast.html', {
+        'broadcasts': broadcasts
     })
-    
+ 
 @login_required
 def warden_broadcast(request):
-    if request.user.role != 'warden':
-        return redirect('login')
+    from .models import Broadcast, BroadcastRead, Student
 
-    if request.method == "POST":
-        message = request.POST.get('message')
-        if message:
-            Broadcast.objects.create(message=message)
-            return redirect('warden_dashboard')
+    broadcasts = Broadcast.objects.all().order_by('-created_at')
+    total_students = Student.objects.count()
 
-    return render(request, 'warden_broadcast.html')
+    broadcast_data = []
+
+    for broadcast in broadcasts:
+        reads = BroadcastRead.objects.filter(broadcast=broadcast)
+        read_students = [read.student for read in reads]
+
+        read_count = reads.count()
+
+        read_percentage = 0
+        if total_students > 0:
+            read_percentage = round((read_count / total_students) * 100, 1)
+
+        broadcast_data.append({
+            'broadcast': broadcast,
+            'total_students': total_students,
+            'read_count': read_count,
+            'read_percentage': read_percentage,
+            'read_students': read_students,
+        })
+
+    return render(request, 'warden/broadcast.html', {
+        'broadcast_data': broadcast_data
+    })

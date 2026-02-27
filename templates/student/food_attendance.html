@@ -1,0 +1,711 @@
+{% extends "student/base_student.html" %}
+
+{% block content %}
+
+<style>
+
+/* ================= HEADER ================= */
+
+.page-header{
+    margin-bottom:28px;
+}
+
+.breadcrumb{
+    font-size:12px;
+    display:flex;
+    gap:6px;
+    margin-bottom:8px;
+}
+
+.breadcrumb .parent{ color:var(--accent); }
+.breadcrumb .sep{ color:var(--text2); }
+.breadcrumb .active{ font-weight:500; }
+
+.page-title{
+    font-family:'Inter',sans-serif;
+    font-size:32px;
+    font-weight:800;
+    margin-bottom:6px;
+}
+
+.page-sub{
+    font-size:14px;
+    color:var(--text2);
+}
+
+/* ================= MENU CARDS ================= */
+
+.menu-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:18px;
+    margin-bottom:28px;
+}
+
+.menu-card{
+    border-radius:16px;
+    padding:22px;
+    position:relative;
+    overflow:hidden;
+    transition:all 0.25s ease;
+
+    /* SAME AS STUDENT DETAILS CARD */
+    background:linear-gradient(135deg, 
+        rgba(56,189,248,0.05), 
+        rgba(129,140,248,0.05)
+    );
+
+    border:1px solid rgba(56,189,248,0.15);
+}
+.menu-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 32px rgba(24, 43, 70, 0.45);
+}
+
+.menu-card::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    top:-55px;
+    right:-55px;
+    opacity:0.7;
+}
+
+/* Breakfast - Green */
+.menu-card.breakfast::after{
+    background:rgba(52,211,153,0.22);
+}
+
+/* Lunch - Blue */
+.menu-card.lunch::after{
+    background:rgba(56,189,248,0.22);
+}
+
+/* Dinner - Purple */
+.menu-card.dinner::after{
+    background:rgba(139,92,246,0.22);
+}
+
+.menu-title{
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.menu-time{
+    font-size:12px;
+    color:var(--text2);
+    margin-bottom:12px;
+}
+
+.menu-items{
+    font-size:14px;
+}
+
+/* ================= SELECTION ================= */
+
+/* ================= SELECTION OUTER BOX ================= */
+
+.selection-box{
+    background:linear-gradient(135deg, 
+        rgba(56,189,248,0.05), 
+        rgba(129,140,248,0.05)
+    );
+    border:1px solid rgba(56,189,248,0.18);
+    border-radius:20px;
+    padding:28px;
+    margin-bottom:40px;
+    position:relative;
+    overflow:hidden;
+}
+
+/* subtle corner glow */
+.selection-box::after{
+    content:"";
+    position:absolute;
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    background:rgba(56,189,248,0.06);
+    top:-60px;
+    right:-60px;
+}
+
+.selection-wrapper{
+    margin-top:10px;
+    margin-bottom:40px;
+}
+
+.selection-title{
+    font-weight:700;
+    margin-bottom:16px;
+}
+
+.selection-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:18px;
+    margin-bottom:22px;
+}
+
+.selection-card{
+    padding:20px;
+    border-radius:16px;
+    transition:all 0.25s ease;
+
+    background:linear-gradient(135deg, 
+        rgba(56,189,248,0.05), 
+        rgba(129,140,248,0.05)
+    );
+
+    border:1px solid rgba(56,189,248,0.15);
+}
+
+.selection-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 32px rgba(24, 43, 70, 0.45);
+}
+
+.selection-card h4{
+    margin-bottom:6px;
+}
+
+.selection-card small{
+    color:var(--text2);
+    font-size:12px;
+    display:block;
+    margin-bottom:14px;
+}
+
+.radio-group{
+    display:flex;
+    gap:18px;
+    font-size:14px;
+}
+
+/* OUTER BOX LIKE CLAUDE */
+
+.selection-box{
+    background:linear-gradient(135deg, 
+        rgba(56,189,248,0.05), 
+        rgba(129,140,248,0.05)
+    );
+    border:1px solid rgba(56,189,248,0.18);
+    border-radius:20px;
+    padding:28px;
+    margin-bottom:40px;
+    position:relative;
+    overflow:hidden;
+}
+
+.selection-box::after{
+    content:"";
+    position:absolute;
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    background:rgba(56,189,248,0.06);
+    top:-60px;
+    right:-60px;
+}
+
+/* ================= BUTTON ================= */
+
+.primary-btn{
+    background:linear-gradient(135deg,#34d399,#10b981);
+    border:none;
+    padding:10px 20px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    color:white;
+    transition:all 0.2s ease;
+}
+
+.primary-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(16,185,129,0.4);
+}
+/* ================= PREMIUM ATTENDANCE CARD ================= */
+
+.attendance-card{
+    padding:28px;
+    border-radius:20px;
+    margin-bottom:32px;
+    position:relative;
+    overflow:hidden;
+
+    background:linear-gradient(135deg, 
+        rgba(56,189,248,0.05), 
+        rgba(129,140,248,0.05)
+    );
+
+    border:1px solid rgba(56,189,248,0.18);
+    transition:all 0.25s ease;
+}
+
+.attendance-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 30px rgba(0,0,0,0.35);
+}
+
+.attendance-card::after{
+    content:"";
+    position:absolute;
+    width:170px;
+    height:170px;
+    border-radius:50%;
+    background:rgba(56,189,248,0.08);
+    top:-60px;
+    right:-60px;
+    opacity:0.7;
+}
+
+.attendance-card h3{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:20px;
+}
+
+/* ================= STATUS BOX ================= */
+
+.attendance-status-box{
+    margin-top:15px;
+    padding:14px 18px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:600;
+    font-size:15px;
+    width:fit-content;
+    animation:fadeSlideIn 0.5s ease forwards;
+}
+
+/* Present */
+.attendance-status-box.present{
+    background:rgba(52,211,153,0.12);
+    color:#34d399;
+    border:1px solid rgba(52,211,153,0.4);
+}
+
+/* Absent */
+.attendance-status-box.absent{
+    background:rgba(248,113,113,0.12);
+    color:#f87171;
+    border:1px solid rgba(248,113,113,0.4);
+}
+
+/* Leave */
+.attendance-status-box.leave{
+    background:rgba(251,191,36,0.12);
+    color:#fbbf24;
+    border:1px solid rgba(251,191,36,0.45);
+}
+
+/* Locked */
+.attendance-status-box.locked{
+    background:rgba(148,163,184,0.08);
+    color:var(--text2);
+    border:1px solid rgba(148,163,184,0.25);
+}
+
+/* Icon */
+.status-icon{
+    font-size:16px;
+    animation:pulseIcon 1.4s ease infinite;
+}
+
+/* ================= RADIO OPTIONS ================= */
+
+.attendance-options{
+    display:flex;
+    gap:18px;
+    margin:15px 0 20px 0;
+}
+
+.attendance-options input[type="radio"]{
+    display:none;
+}
+
+.option{
+    padding:10px 22px;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.25s ease;
+    border:1px solid rgba(56,189,248,0.25);
+    background:rgba(255,255,255,0.02);
+}
+
+.present-option{ color:#34d399; }
+.absent-option{ color:#f87171; }
+
+#present:checked + .present-option{
+    background:rgba(52,211,153,0.15);
+    border:1px solid rgba(52,211,153,0.6);
+    box-shadow:0 0 12px rgba(52,211,153,0.5);
+    transform:scale(1.05);
+}
+
+#absent:checked + .absent-option{
+    background:rgba(248,113,113,0.15);
+    border:1px solid rgba(248,113,113,0.6);
+    box-shadow:0 0 12px rgba(248,113,113,0.5);
+    transform:scale(1.05);
+}
+
+/* ================= BUTTON ================= */
+
+.attendance-btn{
+    background:linear-gradient(135deg,#38bdf8,#6366f1);
+    border:none;
+    padding:10px 22px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    color:white;
+    transition:all 0.2s ease;
+}
+
+.attendance-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(99,102,241,0.4);
+}
+
+/* Animations */
+
+@keyframes fadeSlideIn{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+}
+
+@keyframes pulseIcon{
+    0%{ transform:scale(1); }
+    50%{ transform:scale(1.15); }
+    100%{ transform:scale(1); }
+}
+
+/* ================= TIMER ================= */
+
+.timer-card{
+    margin-top:28px;
+    padding:30px 32px;
+    border-radius:18px;
+    background:linear-gradient(135deg, rgba(56,189,248,0.05), rgba(129,140,248,0.05));
+    border:1px solid rgba(56,189,248,0.15);
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+}
+
+.timer-card::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    background:rgba(56,189,248,0.06);
+    top:-50px;
+    right:-50px;
+}
+
+.timer-title{
+    font-size:13px;
+    letter-spacing:1.6px;
+    text-transform:uppercase;
+    color:var(--text2);
+    font-weight:600;
+    margin-bottom:22px;
+}
+
+.timer-display{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:18px;
+}
+
+.timer-block{
+    background:var(--surface);
+    padding:16px 26px;
+    border-radius:14px;
+    min-width:95px;
+    border:1px solid rgba(56,189,248,0.25);
+}
+
+.timer-num{
+    font-size:30px;
+    font-weight:800;
+    color:#38bdf8;
+}
+
+.timer-unit{
+    margin-top:4px;
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--text2);
+}
+
+.timer-sep{
+    font-size:24px;
+    font-weight:600;
+    color:var(--text2);
+}
+
+</style>
+
+<!-- ================= HEADER ================= -->
+
+<div class="page-header">
+    <div class="breadcrumb">
+        <span class="parent">Student</span>
+        <span class="sep">›</span>
+        <span class="active">Menu & Selection</span>
+    </div>
+
+    <div class="page-title">Tomorrow's Menu</div>
+    <div class="page-sub">📅 {{ tomorrow }} </div>
+</div>
+
+
+<!-- ================= MENU CARDS ================= -->
+
+<div class="menu-grid">
+
+    <div class="menu-card breakfast">
+        <div class="menu-title">🌅 Breakfast</div>
+        <div class="menu-time">7:00 – 9:00 AM</div>
+        <div class="menu-items">{{ menu.breakfast }}</div>
+    </div>
+
+    <div class="menu-card lunch">
+        <div class="menu-title">☀️ Lunch</div>
+        <div class="menu-time">12:30 – 2:30 PM</div>
+        <div class="menu-items">{{ menu.lunch }}</div>
+    </div>
+
+    <div class="menu-card dinner">
+        <div class="menu-title">🌙 Dinner</div>
+        <div class="menu-time">7:30 – 9:30 PM</div>
+        <div class="menu-items">{{ menu.dinner }}</div>
+    </div>
+
+</div>
+
+
+<!-- ================= FOOD SELECTION ================= -->
+
+{% if not leave_blocked %}
+<div class="selection-wrapper selection-box">
+
+    <div class="selection-title">✅ Select Your Meals</div>
+
+    <form method="post" action="{% url 'student_food_attendance' %}">
+        {% csrf_token %}
+
+        <div class="selection-grid">
+
+            <!-- Breakfast -->
+            <div class="selection-card">
+                <h4>🌅Breakfast</h4>
+                <small>7:00 – 9:00 AM</small>
+
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="breakfast" value="yes"
+                        {% if food_record.breakfast == True %}checked{% endif %}>
+                        Opt-in
+                    </label>
+
+                    <label>
+                        <input type="radio" name="breakfast" value="no"
+                        {% if food_record.breakfast == False %}checked{% endif %}>
+                        Opt-out
+                    </label>
+                </div>
+            </div>
+
+            <!-- Lunch -->
+            <div class="selection-card">
+                <h4>☀️Lunch</h4>
+                <small>12:30 – 2:30 PM</small>
+
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="lunch" value="yes"
+                        {% if food_record.lunch == True %}checked{% endif %}>
+                        Opt-in
+                    </label>
+
+                    <label>
+                        <input type="radio" name="lunch" value="no"
+                        {% if food_record.lunch == False %}checked{% endif %}>
+                        Opt-out
+                    </label>
+                </div>
+            </div>
+
+            <!-- Dinner -->
+            <div class="selection-card">
+                <h4>🌙Dinner</h4>
+                <small>7:30 – 9:30 PM</small>
+
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="dinner" value="yes"
+                        {% if food_record.dinner == True %}checked{% endif %}>
+                        Opt-in
+                    </label>
+
+                    <label>
+                        <input type="radio" name="dinner" value="no"
+                        {% if food_record.dinner == False %}checked{% endif %}>
+                        Opt-out
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <button type="submit" class="primary-btn"> ✔Save My Selection</button>
+
+    </form>
+
+</div>
+{% endif %}
+
+
+<!-- ================= ATTENDANCE ================= -->
+
+<div class="attendance-card">
+
+    <h3>🗓️ Today's Attendance ({{ today }})</h3>
+
+    {% if leave_today %}
+
+        <div class="attendance-status-box leave">
+            <span class="status-icon">⚠</span>
+            <span>
+                You are on approved leave today.
+            </span>
+        </div>
+
+    {% elif attendance_record.present is not None %}
+
+        <div class="attendance-status-box 
+            {% if attendance_record.present %}
+                present
+            {% else %}
+                absent
+            {% endif %}
+        ">
+            <span class="status-icon">
+                {% if attendance_record.present %}
+                    ✔
+                {% else %}
+                    ✖
+                {% endif %}
+            </span>
+
+            <span>
+                Attendance Marked:
+                {% if attendance_record.present %}
+                    Present
+                {% else %}
+                    Absent
+                {% endif %}
+            </span>
+        </div>
+
+    {% elif not food_submitted and not leave_blocked %}
+
+        <div class="attendance-status-box locked">
+            <span class="status-icon">🔒</span>
+            <span>
+                Submit tomorrow's food to unlock attendance.
+            </span>
+        </div>
+
+    {% else %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="attendance-options">
+
+                <input type="radio" id="present" name="status" value="present" required>
+                <label for="present" class="option present-option">
+                    ✔ Present
+                </label>
+
+                <input type="radio" id="absent" name="status" value="absent">
+                <label for="absent" class="option absent-option">
+                    ✖ Absent
+                </label>
+
+            </div>
+
+            <button type="submit" class="attendance-btn">
+                Mark Attendance
+            </button>
+
+        </form>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ================= TIMER ================= -->
+
+<div class="timer-card">
+
+    <div class="timer-title">
+        ⏱ YOUR MEAL SELECTION ENDS IN
+    </div>
+
+    <div class="timer-display">
+
+        <div class="timer-block">
+            <div class="timer-num" id="hours">06</div>
+            <div class="timer-unit">HOURS</div>
+        </div>
+
+        <div class="timer-sep">:</div>
+
+        <div class="timer-block">
+            <div class="timer-num" id="minutes">29</div>
+            <div class="timer-unit">MINS</div>
+        </div>
+
+        <div class="timer-sep">:</div>
+
+        <div class="timer-block">
+            <div class="timer-num" id="seconds">48</div>
+            <div class="timer-unit">SECS</div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+let totalSeconds = 24 * 60 * 60;
+
+setInterval(() => {
+    let hrs = Math.floor(totalSeconds / 3600);
+    let mins = Math.floor((totalSeconds % 3600) / 60);
+    let secs = totalSeconds % 60;
+
+    document.getElementById("hours").innerText = String(hrs).padStart(2,'0');
+    document.getElementById("minutes").innerText = String(mins).padStart(2,'0');
+    document.getElementById("seconds").innerText = String(secs).padStart(2,'0');
+
+    if (totalSeconds > 0) totalSeconds--;
+},1000);
+</script>
+
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "student/base_student.html" %}
+{% block page_title %}Meal History{% endblock %}
+
+{% block content %}
+
+<style>
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    color: var(--text2);
+    font-weight: 600;
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-green {
+    background: rgba(16,185,129,0.15);
+    color: #10b981;
+}
+
+.badge-red {
+    background: rgba(239,68,68,0.15);
+    color: #ef4444;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text2);
+}
+
+</style>
+
+
+<h1 style="margin-bottom:8px;">Meal History</h1>
+<p style="color:var(--text2); margin-bottom:30px;">
+Your food selection history for the past 10 days.
+</p>
+
+
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Breakfast</th>
+                    <th>Lunch</th>
+                    <th>Dinner</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% if records %}
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+
+                        <td>
+                            {% if record.breakfast %}
+                                <span class="badge badge-green">✓ Selected</span>
+                            {% else %}
+                                <span class="badge badge-red">✗ Skipped</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if record.lunch %}
+                                <span class="badge badge-green">✓ Selected</span>
+                            {% else %}
+                                <span class="badge badge-red">✗ Skipped</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if record.dinner %}
+                                <span class="badge badge-green">✓ Selected</span>
+                            {% else %}
+                                <span class="badge badge-red">✗ Skipped</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                No food history available.
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

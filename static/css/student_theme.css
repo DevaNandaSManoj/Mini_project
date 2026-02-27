@@ -1,0 +1,31 @@
+/* ================= ROOT VARIABLES ================= */
+:root{
+  --bg:#070e1c;
+  --surface:#0f172a;
+  --surface2:#162133;
+  --border:rgba(99,179,237,0.15);
+  --accent:#38bdf8;
+  --accent2:#818cf8;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+}
+
+/* ================= LIGHT MODE ================= */
+body.light{
+  --bg:#eef2f7;
+  --surface:#ffffff;
+  --surface2:#f3f6fb;
+  --border:rgba(0,0,0,0.08);
+  --text:#1e293b;
+  --text2:#64748b;
+}
+
+/* ================= BASE ================= */
+body{
+  margin:0;
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:0.3s ease;
+  position:relative;
+}

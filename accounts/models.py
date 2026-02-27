@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -31,9 +32,23 @@ class Complaint(models.Model):
 
     def __str__(self):
         return f"{self.student.user.username} - {self.created_at}"
+        
 class Broadcast(models.Model):
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_broadcasts"
+    )
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    read_by = models.ManyToManyField(Student, blank=True)
 
     def __str__(self):
-        return f"Broadcast - {self.created_at}"
+        return f"{self.sender.username} - {self.created_at}"
+
+    def read_count(self):
+        return self.read_by.count()
+
+    def unread_count(self):
+        total_students = Student.objects.count()
+        return total_students - self.read_by.count()

@@ -1,0 +1,474 @@
+{% extends "student/base_student.html" %}
+
+{% block content %}
+
+<style>
+
+/* ================= GREETING UPGRADE ================= */
+
+.dashboard-greeting{
+    margin-bottom:32px;
+}
+
+.dashboard-greeting h1{
+    font-family:'Inter',sans-serif;
+    font-size:34px;
+    font-weight:800;
+    letter-spacing:-0.5px;
+    margin-bottom:8px;
+}
+
+/* Gradient only for text part */
+.greet-text{
+    background:linear-gradient(90deg,#ffffff 0%, #cbd5e1 100%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.dashboard-greeting p{
+    font-size:15px;
+    color:rgba(148,163,184,0.85);
+    font-weight:500;
+}
+
+/* ================= PROFILE CARD UPGRADE ================= */
+
+.profile-card{
+    display:flex;
+    align-items:center;
+    gap:20px;          /* reduced from 28 */
+    padding:24px;      /* reduced from 32 */
+    margin-bottom:24px;
+    background:linear-gradient(135deg, rgba(56,189,248,0.05), rgba(129,140,248,0.05));
+    border:1px solid rgba(56,189,248,0.15);
+}
+
+
+.profile-avatar-large{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;   /* reduced from 40 */
+    font-weight:700;
+    color:white;
+
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 60%),
+        linear-gradient(135deg, #59c3ff 0%, #6b8cff 100%);
+
+    box-shadow:
+        0 0 34px rgba(56,189,248,0.38),
+        0 0 68px rgba(56,189,248,0.20),
+        0 12px 30px rgba(0,0,0,0.32);
+}
+
+.profile-details h2{
+    font-family:'Inter',sans-serif;
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:14px;
+}
+
+.profile-tags{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+}
+
+/* Base pill style */
+.profile-tag{
+    padding:7px 18px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:transparent;
+    border:1.5px solid;
+    transition:all 0.2s ease;
+}
+
+/* 🔵 ROOM (Blue) */
+.room-tag{
+    color:#38bdf8;
+    border-color:rgba(56,189,248,0.6);
+    box-shadow: 0 0 12px rgba(56,189,248,0.15);
+}
+
+.room-tag i{
+    color:#38bdf8;
+}
+
+/* 🟢 BLOCK (Green) */
+.block-tag{
+    color:#34d399;
+    border-color:rgba(52,211,153,0.6);
+    box-shadow: 0 0 12px rgba(52,211,153,0.15);
+}
+
+.block-tag i{
+    color:#34d399;
+}
+
+/* ================= STATS UPGRADE ================= */
+
+.stat-card{
+    position:relative;
+    overflow:hidden;
+    padding:28px;
+    backdrop-filter: blur(6px);
+    border:1px solid rgba(56,189,248,0.22);
+    transition:all 0.25s ease;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.05));
+}
+
+/* Claude corner glow */
+.stat-card::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    top:-55px;
+    right:-55px;
+    opacity:0.7;
+}
+
+/* Hover depth */
+.stat-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 32px rgba(24, 43, 70, 0.45);
+}
+
+/* ICON BOX */
+.stat-icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    margin-bottom:18px;
+}
+
+/* GREEN */
+.green-bg{
+    background:rgba(52,211,153,0.18);
+    color:#34d399;
+}
+.stat-card.green::after{
+    background:rgba(52,211,153,0.22);
+}
+
+/* BLUE */
+.blue-bg{
+    background:rgba(56,189,248,0.18);
+    color:#38bdf8;
+}
+.stat-card.blue::after{
+    background:rgba(56,189,248,0.22);
+}
+
+/* YELLOW */
+.yellow-bg{
+    background:rgba(251,191,36,0.18);
+    color:#fbbf24;
+}
+.stat-card.yellow::after{
+    background:rgba(251,191,36,0.22);
+}
+
+/* PURPLE */
+.purple-bg{
+    background:rgba(139,92,246,0.18);
+    color:#8b5cf6;
+}
+.stat-card.purple::after{
+    background:rgba(139,92,246,0.22);
+}
+
+/* VALUE */
+.stat-value{
+    font-size:36px;
+    font-weight:900;
+    letter-spacing:-0.5px;
+    margin-top:6px;
+}
+
+/* LABEL */
+.stat-label{
+    font-size:15px;
+    color:var(--text2);
+    margin-top:6px;
+}
+
+.broadcast-card{
+    margin-bottom:32px;
+}
+
+/* ================= REFINED TIMER ================= */
+
+.timer-card{
+    margin-top:28px;
+    padding:30px 32px;
+    border-radius:18px;
+    background:linear-gradient(135deg, rgba(56,189,248,0.05), rgba(129,140,248,0.05));
+    border:1px solid rgba(56,189,248,0.15);
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+}
+
+/* subtle corner glow */
+.timer-card::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    background:rgba(56,189,248,0.06);
+    top:-50px;
+    right:-50px;
+}
+
+/* TITLE */
+.timer-title{
+    font-size:13px;
+    letter-spacing:1.6px;
+    text-transform:uppercase;
+    color:var(--text2);
+    font-weight:600;
+    margin-bottom:22px;
+}
+
+/* CENTER DISPLAY */
+.timer-display{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:18px;
+}
+
+/* SMALLER BOX */
+.timer-block{
+    background:var(--surface);
+    padding:16px 26px;
+    border-radius:14px;
+    min-width:95px;
+    border:1px solid rgba(56,189,248,0.25);
+    box-shadow:0 6px 18px rgba(0,0,0,0.25);
+    transition:all 0.2s ease;
+}
+
+.timer-block:hover{
+    transform:translateY(-2px);
+}
+
+/* NUMBER */
+.timer-num{
+    font-size:32px;        /* reduced from 42 */
+    font-weight:800;
+    color:#38bdf8;
+}
+
+/* UNIT */
+.timer-unit{
+    margin-top:4px;
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--text2);
+}
+
+/* COLON */
+.timer-sep{
+    font-size:24px;
+    font-weight:600;
+    color:var(--text2);
+}
+</style>
+
+
+
+<!-- BREADCRUMB -->
+<div class="dashboard-breadcrumb">
+    <span class="crumb-parent">Student</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-active">Dashboard</span>
+</div>
+
+<!-- GREETING -->
+<div class="dashboard-greeting">
+    <h1 id="greeting"></h1>
+    <p>{{ today }}</p>
+</div>
+
+
+<!-- PROFILE CARD -->
+<div class="card profile-card">
+
+    <div class="profile-avatar-large">
+        {{ student.user.first_name|default:student.user.username|first|upper }}
+    </div>
+
+    <div class="profile-details">
+        <h2>{{ student.user.get_full_name|default:student.user.username }}</h2>
+
+        <div class="profile-tags">
+            <div class="profile-tag room-tag">
+                <i class="fa-solid fa-door-open"></i>
+                Room {{ student.room_no }}
+            </div>
+
+            <div class="profile-tag block-tag">
+                <i class="fa-solid fa-building"></i>
+                Block {{ student.hostel_block }}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<!-- STATS -->
+<div class="stats-grid">
+
+    <div class="card stat-card green">
+        <div class="stat-icon green-bg">
+            <i class="fa fa-calendar-check"></i>
+        </div>
+        <div class="stat-value">{{ attendance_percentage }}%</div>
+        <div class="stat-label">Attendance Rate</div>
+    </div>
+
+    <div class="card stat-card blue">
+        <div class="stat-icon blue-bg">
+            <i class="fa fa-utensils"></i>
+        </div>
+        <div class="stat-value">{{ meals_selected }}</div>
+        <div class="stat-label">Meals Selected Today</div>
+    </div>
+
+    <div class="card stat-card yellow">
+        <div class="stat-icon yellow-bg">
+            <i class="fa fa-bullhorn"></i>
+        </div>
+        <div class="stat-value">{{ active_broadcast_count }}</div>
+        <div class="stat-label">Active Broadcasts</div>
+    </div>
+
+    <div class="card stat-card purple">
+        <div class="stat-icon purple-bg">
+            <i class="fa fa-plane"></i>
+        </div>
+        <div class="stat-value">{{ leave_count }}</div>
+        <div class="stat-label">Leave Requests</div>
+    </div>
+
+</div>
+
+
+<!-- ================= BROADCAST ================= -->
+<div class="card broadcast-card">
+     
+
+    {% if active_broadcasts %}
+        {% for broadcast in active_broadcasts %}
+            <div class="broadcast-item">
+
+                <div class="broadcast-header">
+                    <div class="broadcast-label">
+                        <span class="glow-dot"></span>
+                        <i class="fa-solid fa-bullhorn"></i>
+
+                        {% if broadcast.sender.role == "warden" %}
+                            WARDEN NOTICE
+                        {% elif broadcast.sender.role == "admin" %}
+                            ADMIN NOTICE
+                        {% endif %}
+                    </div>
+
+                    <div class="broadcast-sender">
+                        {{ broadcast.sender.user.username }}
+                    </div>
+                </div>
+
+                <div class="broadcast-message">
+                    {{ broadcast.message }}
+                </div>
+
+                <div class="broadcast-time">
+                    Sent on {{ broadcast.created_at }}
+                </div>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-broadcast">No active broadcast messages.</p>
+    {% endif %}
+</div>
+
+
+<!-- ================= PREMIUM TIMER ================= -->
+<div class="card timer-card">
+
+    <div class="timer-title">
+        ⏱ YOUR MEAL SELECTION ENDS IN
+    </div>
+
+    <div class="timer-display">
+
+        <div class="timer-block">
+            <div class="timer-num" id="hours">06</div>
+            <div class="timer-unit">HOURS</div>
+        </div>
+
+        <div class="timer-sep">:</div>
+
+        <div class="timer-block">
+            <div class="timer-num" id="minutes">29</div>
+            <div class="timer-unit">MINS</div>
+        </div>
+
+        <div class="timer-sep">:</div>
+
+        <div class="timer-block">
+            <div class="timer-num" id="seconds">48</div>
+            <div class="timer-unit">SECS</div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+const hour = new Date().getHours();
+let greetingText = "Good Evening";
+if (hour < 12) greetingText = "Good Morning";
+else if (hour < 17) greetingText = "Good Afternoon";
+
+document.getElementById("greeting").innerHTML =
+    `<span class="greet-text">${greetingText}, {{ student.user.username }}!</span> 👋`;
+
+let totalSeconds = 24 * 60 * 60;
+
+setInterval(() => {
+    let hrs = Math.floor(totalSeconds / 3600);
+    let mins = Math.floor((totalSeconds % 3600) / 60);
+    let secs = totalSeconds % 60;
+
+    document.getElementById("hours").innerText = String(hrs).padStart(2,'0');
+    document.getElementById("minutes").innerText = String(mins).padStart(2,'0');
+    document.getElementById("seconds").innerText = String(secs).padStart(2,'0');
+
+    if (totalSeconds > 0) totalSeconds--;
+},1000);
+</script>
+
+{% endblock %}

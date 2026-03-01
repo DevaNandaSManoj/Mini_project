@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'food',
     'leave',
     'reports',
+    'warden',
 ]
 AUTH_USER_MODEL = 'accounts.User'
 

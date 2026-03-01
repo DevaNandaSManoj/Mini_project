@@ -115,11 +115,7 @@ def student_dashboard(request):
 
 
 
-@login_required
-def warden_dashboard(request):
-    if request.user.role != 'warden':
-        return redirect('login')
-    return render(request, 'warden_dashboard.html')
+ 
 
 
 @login_required
@@ -166,31 +162,4 @@ def student_broadcast(request):
         'broadcasts': broadcasts
     })
  
-@login_required
-def warden_broadcast(request):
-     
-
-    broadcasts = Broadcast.objects.all().prefetch_related('read_by').order_by('-created_at')
-    total_students = Student.objects.count()
-
-    broadcast_data = []
-
-    for broadcast in broadcasts:
-        read_students = broadcast.read_by.all()
-        read_count = broadcast.read_count()
-
-        read_percentage = 0
-        if total_students > 0:
-            read_percentage = round((read_count / total_students) * 100, 1)
-
-        broadcast_data.append({
-            'broadcast': broadcast,
-            'total_students': total_students,
-            'read_count': read_count,
-            'read_percentage': read_percentage,
-            'read_students': read_students,
-        })
-
-    return render(request, 'warden/broadcast.html', {
-        'broadcast_data': broadcast_data
-    })
+ 

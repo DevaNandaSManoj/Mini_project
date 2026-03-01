@@ -129,57 +129,7 @@ def apply_leave(request):
     return render(request, 'student/leave.html', {
         'leave': existing_leave
     })
-
-
-@login_required
-def warden_leave_requests(request):
-    pending_requests = LeaveRequest.objects.filter(status='pending')
-
-    return render(request, 'warden_leave_requests.html', {
-        'leave_requests': pending_requests
-    })
-
-@login_required
-def approve_leave(request, leave_id):
-    from food.models import StudentDailyRecord
-    from datetime import timedelta
-
-    leave = LeaveRequest.objects.get(id=leave_id)
-
-    leave.status = 'approved'
-    leave.save()
-
-    # 🔹 Auto update food & attendance for all leave dates
-    current_date = leave.from_date
-
-    while current_date <= leave.to_date:
-        record, _ = StudentDailyRecord.objects.get_or_create(
-            student=leave.student,
-            date=current_date
-        )
-
-        # Override any existing food selection
-        record.breakfast = False
-        record.lunch = False
-        record.dinner = False
-
-        # Mark attendance absent
-        record.present = False
-
-        record.save()
-
-        current_date += timedelta(days=1)
-
-    return redirect('warden_leave_requests')
-
-
-
-@login_required
-def reject_leave(request, leave_id):
-    leave = LeaveRequest.objects.get(id=leave_id)
-    leave.status = 'rejected'
-    leave.save()
-    return redirect('warden_leave_requests')
+ 
 
 @login_required
 def modify_leave(request, leave_id):

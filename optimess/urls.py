@@ -25,5 +25,6 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('', include('food.urls')),
     path('', include('leave.urls')),
+    path('warden/', include('warden.urls')),
  
 ]

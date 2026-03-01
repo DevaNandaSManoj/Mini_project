@@ -1,53 +1,74 @@
-{% extends "student/base_student.html" %}
-
-{% block page_title %}
-Broadcast Analytics
-{% endblock %}
-
+{% extends "warden/base_warden.html" %}
 {% block content %}
 
-<h2 style="margin-bottom:30px;">Broadcast Analytics</h2>
+<div class="dashboard-breadcrumb">
+    <span class="crumb-parent">Warden</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-active">Broadcasts</span>
+</div>
 
-{% if broadcast_data %}
-    {% for item in broadcast_data %}
-        <div style="background:var(--surface2); padding:25px; border-radius:12px; margin-bottom:30px;">
+<div class="dashboard-greeting">
+    <h1>Broadcast Messages</h1>
+    <p>Send announcements to all students in your block.</p>
+</div>
 
-            <h3 style="margin-bottom:10px;">
+<div class="broadcast-container">
+
+    <!-- LEFT PANEL -->
+    <div class="broadcast-panel">
+        <div class="panel-header">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span>Send New Broadcast</span>
+        </div>
+
+        <form method="POST" class="broadcast-form">
+            {% csrf_token %}
+            <textarea name="message"
+                placeholder="Type your message here... (e.g., Gate timings, events, urgent notices)"
+                required></textarea>
+
+            <button type="submit" class="send-gradient-btn">
+                <i class="fa fa-paper-plane"></i>
+                Send to All Students
+            </button>
+        </form>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="broadcast-panel">
+        <div class="panel-header">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Sent Messages(latest)</span>
+        </div>
+
+        {% for item in broadcast_data %}
+        <div class="message-block">
+
+            <div class="message-meta">
+                <span class="message-time">
+                    {{ item.broadcast.created_at|date:"h:i A" }}
+                </span>
+
+                <span class="read-count">
+                    {{ item.read_count }}/{{ item.total_students }} Read
+                </span>
+            </div>
+
+            <div class="message-text">
                 {{ item.broadcast.message }}
-            </h3>
+            </div>
 
-            <small style="color:var(--text2);">
-                Sent on {{ item.broadcast.created_at }}
-            </small>
-
-            <hr style="margin:20px 0; border-color:var(--border);">
-
-            <p><strong>Total Students:</strong> {{ item.total_students }}</p>
-            <p><strong>Read Count:</strong> {{ item.read_count }}</p>
-
-            {% if item.total_students > 0 %}
-                <p>
-                    <strong>Read Percentage:</strong>
-                    {{ item.read_percentage }}%
-                </p>
-            {% endif %}
-
-            <h4 style="margin-top:20px;">Students Who Read:</h4>
-
-            {% if item.read_students %}
-                <ul>
-                    {% for student in item.read_students %}
-                        <li>{{ student.user.username }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p style="color:var(--text2);">No students have read this yet.</p>
-            {% endif %}
+            <div class="message-date">
+                {{ item.broadcast.created_at|date:"d M Y" }}
+            </div>
 
         </div>
-    {% endfor %}
-{% else %}
-    <p>No broadcasts available.</p>
-{% endif %}
+        {% empty %}
+            <p class="no-data">No broadcasts sent within last 24 hours.</p>
+        {% endfor %}
+
+    </div>
+
+</div>
 
 {% endblock %}

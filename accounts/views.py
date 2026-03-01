@@ -88,13 +88,14 @@ def student_dashboard(request):
     last_24_hours = now - timedelta(hours=24)
 
     active_broadcasts = Broadcast.objects.filter(
+        target_role="student",
         created_at__gte=last_24_hours
     ).order_by('-created_at')
      
 
     # Auto mark active broadcasts as read
     for broadcast in active_broadcasts:
-        broadcast.read_by.add(student)
+        broadcast.read_by.add(request.user)
 
     active_broadcast_count = active_broadcasts.count()
 

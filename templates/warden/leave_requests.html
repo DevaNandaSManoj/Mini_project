@@ -1,30 +1,121 @@
-<h2>Pending Leave Requests</h2>
+{% extends "warden/base_warden.html" %}
+{% block content %}
 
-{% if leave_requests %}
-    <table border="1" cellpadding="10">
-        <tr>
-             <th>Student</th>
-             <th>From Date</th>
-             <th>To Date</th>
-             <th>Reason</th>
-             <th>Action</th>
-        </tr>
+<div class="dashboard-breadcrumb">
+    <span class="crumb-parent">Warden</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-active">Leave Applications</span>
+</div>
 
+<div class="dashboard-greeting">
+    <h1>Leave Applications</h1>
+    <p>Review and approve student leave requests.</p>
+</div>
 
-        {% for leave in leave_requests %}
-        <tr>
-            <td>{{ leave.student.user.username }}</td>
-            <td>{{ leave.from_date }}</td>
-            <td>{{ leave.to_date }}</td>
-            <td>{{ leave.reason }}</td>
-            <td>
-                <a href="{% url 'approve_leave' leave.id %}">Approve</a> |
-                <a href="{% url 'reject_leave' leave.id %}">Reject</a>
-            </td>
-        </tr>
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('pending', this)">
+        Pending ({{ pending_count }})
+    </button>
+    <button class="tab-btn" onclick="switchTab('processed', this)">
+        Processed
+    </button>
+</div>
 
+<!-- ================= PENDING ================= -->
+
+<div id="pending" class="tab-content active">
+
+    {% if pending_requests %}
+        {% for leave in pending_requests %}
+        <div class="leave-card">
+
+            <div class="leave-header">
+                <div class="leave-student">
+                    <i class="fa-solid fa-user"></i>
+                    {{ leave.student.user.get_full_name|default:leave.student.user.username }}
+                    — Room {{ leave.student.room_no }}
+                </div>
+                <span class="badge pending">PENDING</span>
+            </div>
+
+            <div class="leave-dates">
+                <i class="fa-solid fa-calendar"></i>
+                {{ leave.from_date }} → {{ leave.to_date }}
+            </div>
+
+            <div class="leave-reason">
+                {{ leave.reason }}
+            </div>
+
+            <div class="leave-actions">
+                <a href="{% url 'approve_leave' leave.id %}" class="approve-btn">
+                    Approve
+                </a>
+                <a href="{% url 'reject_leave' leave.id %}" class="reject-btn">
+                    Reject
+                </a>
+            </div>
+
+        </div>
         {% endfor %}
-    </table>
-{% else %}
-    <p>No pending leave requests.</p>
-{% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <p>No pending applications</p>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- ================= PROCESSED ================= -->
+
+<div id="processed" class="tab-content">
+
+    {% for leave in processed_requests %}
+        <div class="leave-card">
+
+            <div class="leave-header">
+                <div class="leave-student">
+                    <i class="fa-solid fa-user"></i>
+                    {{ leave.student.user.get_full_name|default:leave.student.user.username }}
+                    — Room {{ leave.student.room_no }}
+                </div>
+
+                {% if leave.status == "approved" %}
+                    <span class="badge approved">APPROVED</span>
+                {% else %}
+                    <span class="badge rejected">REJECTED</span>
+                {% endif %}
+            </div>
+
+            <div class="leave-dates">
+                <i class="fa-solid fa-calendar"></i>
+                {{ leave.from_date }} → {{ leave.to_date }}
+            </div>
+
+            <div class="leave-reason">
+                {{ leave.reason }}
+            </div>
+
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <p>No processed applications</p>
+        </div>
+    {% endfor %}
+
+</div>
+
+<script>
+function switchTab(tabId, btn){
+    document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+
+    document.getElementById(tabId).classList.add("active");
+    btn.classList.add("active");
+}
+</script>
+
+{% endblock %}

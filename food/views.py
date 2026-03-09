@@ -1,8 +1,10 @@
-from datetime import date, timedelta
+from datetime import date, timedelta ,time
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from accounts.models import Student
 from .models import DailyMenu, StudentDailyRecord
+from leave.models import LeaveRequest
 
 def get_client_ip(request):                   #currently not used
     return request.META.get('REMOTE_ADDR')   
@@ -12,14 +14,18 @@ def verify_college_network(ip):                 #currently not used
 
 @login_required
 def student_food_attendance(request):
+
     student = Student.objects.get(user=request.user)
+
+    now = timezone.localtime()
+    student_deadline = time(20, 0)  # 8 PM
+    warden_deadline = time(22, 0)   # 10 PM
+
+    student_locked = now.time() > student_deadline
 
     today = date.today()
     tomorrow = today + timedelta(days=1)
 
-    from leave.models import LeaveRequest
-
-    # Leave checks
     leave_blocked = LeaveRequest.objects.filter(
         student=student,
         status='approved',
@@ -34,7 +40,6 @@ def student_food_attendance(request):
         to_date__gte=today
     ).exists()
 
-    # Menu
     menu, _ = DailyMenu.objects.get_or_create(
         date=tomorrow,
         defaults={
@@ -56,19 +61,37 @@ def student_food_attendance(request):
 
     # FOOD SUBMIT
     if request.method == "POST" and 'breakfast' in request.POST:
+
+        if student_locked:
+            return redirect('student_food_attendance')
+
         if not leave_blocked:
+
             food_record.breakfast = request.POST.get('breakfast') == 'yes'
             food_record.lunch = request.POST.get('lunch') == 'yes'
             food_record.dinner = request.POST.get('dinner') == 'yes'
+            food_record.marked_by = "student"
             food_record.save()
 
         return redirect('student_food_attendance')
 
     # ATTENDANCE SUBMIT
     if request.method == "POST" and 'status' in request.POST:
-        if attendance_record.present is None:
-            attendance_record.present = request.POST.get('status') == 'present'
-            attendance_record.save()
+
+        if student_locked:
+            return redirect('student_food_attendance')
+
+        # attendance allowed only if food submitted
+        if (
+            food_record.breakfast is not None and
+            food_record.lunch is not None and
+            food_record.dinner is not None
+        ):
+
+            if attendance_record.present is None:
+                attendance_record.present = request.POST.get('status') == 'present'
+                attendance_record.marked_by = "student"
+                attendance_record.save()
 
         return redirect('student_food_attendance')
 
@@ -86,6 +109,7 @@ def student_food_attendance(request):
         'leave_blocked': leave_blocked,
         'leave_today': leave_today,
         'food_submitted': food_submitted,
+        'student_locked': student_locked,
         'today': today,
         'tomorrow': tomorrow,
     })

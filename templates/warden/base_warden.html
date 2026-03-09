@@ -312,6 +312,30 @@
                     <i class="fa-solid fa-file-signature"></i>
                     <span>Leave Applications</span>
                 </a>
+
+                <a href="{% url 'warden_attendance' %}"
+                   class="{% if request.resolver_match.url_name == 'warden_attendance' %}active{% endif %}">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Student Attendance</span>
+                </a>
+
+                <a href="{% url 'warden_mess' %}"
+                   class="{% if request.resolver_match.url_name == 'warden_mess' %}active{% endif %}">
+                    <i class="fa-solid fa-utensils"></i>
+                    <span>Mark Mess for Student</span>
+                </a>
+
+                <a href="{% url 'warden_complaints' %}"
+                   class="{% if request.resolver_match.url_name == 'warden_complaints' %}active{% endif %}">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Complaints</span>
+
+                    {% if complaint_unseen_count > 0 %}
+                        <span style="background:red; color:white; padding:2px 8px; border-radius:50%; font-size:11px;">
+                            {{ complaint_unseen_count }}
+                        </span>
+                    {% endif %}
+                </a>
  
 
         </div>

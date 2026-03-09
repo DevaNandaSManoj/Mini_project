@@ -1,0 +1,227 @@
+{% extends "warden/base_warden.html" %}
+{% block content %}
+
+<div class="dashboard-greeting">
+    <h1>Attendance Management</h1>
+    <p>Track daily attendance and review history.</p>
+</div>
+
+<!-- ================= SUMMARY ================= -->
+<div class="stats-grid">
+
+    <div class="card">
+        <div class="stat-value">{{ present_count }}</div>
+        <div class="stat-label">Present Today</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-value">{{ absent_count }}</div>
+        <div class="stat-label">Absent Today</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-value">{{ unmarked_count }}</div>
+        <div class="stat-label">Unmarked</div>
+    </div>
+
+</div>
+
+<!-- ================= MARK ATTENDANCE ================= -->
+<div class="broadcast-panel">
+
+    <div class="panel-header">
+        <i class="fa-solid fa-user-check"></i>
+        Mark Attendance ({{ today }})
+    </div>
+
+    <form method="POST" class="broadcast-form" style="display:flex; gap:14px; flex-wrap:wrap;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="mark">
+
+        <select name="student_id" required
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text); min-width:200px;">
+            <option value="">Select Student</option>
+            {% for student in students %}
+                <option value="{{ student.id }}">
+                    {{ student.user.get_full_name|default:student.user.username }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="status" required
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+            <option value="">Status</option>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+        </select>
+
+        <button type="submit" class="send-gradient-btn">
+            <i class="fa-solid fa-check"></i>
+            Submit
+        </button>
+    </form>
+
+</div>
+
+<!-- ================= TODAY RECORDS ================= -->
+<div class="broadcast-panel" style="margin-top:24px;">
+
+    <div class="panel-header">
+        <i class="fa-solid fa-calendar-day"></i>
+        Today's Attendance
+    </div>
+
+    {% if today_records %}
+        {% for record in today_records %}
+        <div class="message-block">
+
+            <div class="message-meta">
+                <div class="leave-student">
+                    {{ record.student.user.get_full_name|default:record.student.user.username }}
+                </div>
+
+                {% if record.present %}
+                    <span class="badge approved">Present</span>
+                {% else %}
+                    <span class="badge rejected">Absent</span>
+                {% endif %}
+            </div>
+
+            <div class="message-date">
+                Marked By:
+                {% if record.marked_by == "student" %}
+                    Student
+                {% elif record.marked_by == "warden" %}
+                    Warden
+                {% elif record.marked_by == "auto" %}
+                    Auto (On Leave)
+                {% else %}
+                    -
+                {% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon"><i class="fa-regular fa-calendar"></i></div>
+            No attendance marked yet.
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- ================= DAILY SEARCH ================= -->
+<div class="broadcast-panel" style="margin-top:24px;">
+
+    <div class="panel-header">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        Search by Student & Date
+    </div>
+
+    <form method="GET" style="display:flex; gap:14px; flex-wrap:wrap;">
+        <input type="text" name="student_name" placeholder="Student Name"
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+
+        <input type="date" name="search_date"
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+
+        <button type="submit" class="send-gradient-btn">
+            Search
+        </button>
+    </form>
+
+    {% if search_result %}
+        <div style="margin-top:16px;">
+            {% for record in search_result %}
+            <div class="message-block">
+                <div class="message-meta">
+                    <div>{{ record.student.user.username }}</div>
+                    <div class="message-time">{{ record.date }}</div>
+                </div>
+                <div class="message-text">
+                    {% if record.present %}
+                        Present
+                    {% else %}
+                        Absent
+                    {% endif %}
+                </div>
+                <div class="message-date">
+                    Marked by: {{ record.marked_by }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</div>
+<!-- ================= MONTHLY CALENDAR ================= -->
+<div class="broadcast-panel" style="margin-top:24px;">
+
+    <div class="panel-header">
+        <i class="fa-solid fa-calendar"></i>
+        Monthly Attendance (Calendar View)
+    </div>
+
+    <form method="GET" style="display:flex; gap:14px; flex-wrap:wrap;">
+        <input type="number" name="month" placeholder="Month (1-12)" min="1" max="12"
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+
+        <input type="number" name="year" placeholder="Year"
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+
+        <input type="text" name="student_name" placeholder="Student Name"
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+
+        <button type="submit" class="send-gradient-btn">
+            View Calendar
+        </button>
+    </form>
+
+    {% if monthly_calendar and selected_student %}
+        <h4 style="margin-top:18px;">
+            {{ selected_student.user.get_full_name|default:selected_student.user.username }}
+        </h4>
+
+        <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; margin-top:15px;">
+
+            {% for day in monthly_calendar %}
+                <div style="padding:14px; border-radius:12px;
+                    {% if day.record %}
+                        {% if day.record.present %}
+                            background:rgba(52,211,153,0.2);
+                        {% elif day.record.marked_by == 'auto' %}
+                            background:rgba(168,85,247,0.2);
+                        {% else %}
+                            background:rgba(248,113,113,0.2);
+                        {% endif %}
+                    {% else %}
+                        background:var(--surface2);
+                    {% endif %}
+                ">
+
+                    <strong>{{ day.day }}</strong>
+
+                    <div style="font-size:12px; margin-top:6px;">
+                        {% if day.record %}
+                            {% if day.record.present %}
+                                Present
+                            {% elif day.record.marked_by == "auto" %}
+                                Leave
+                            {% else %}
+                                Absent
+                            {% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+
+                </div>
+            {% endfor %}
+
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

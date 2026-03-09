@@ -1,0 +1,123 @@
+{% extends "warden/base_warden.html" %}
+{% block content %}
+
+<div class="dashboard-greeting">
+    <h1>Student Complaints</h1>
+    <p>Manage and resolve hostel block complaints.</p>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+
+    <div class="card">
+        <div class="stat-value">{{ total_count }}</div>
+        <div class="stat-label">Total</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-value">{{ pending_count }}</div>
+        <div class="stat-label">Pending</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-value">{{ resolved_count }}</div>
+        <div class="stat-label">Resolved</div>
+    </div>
+
+</div>
+
+<!-- FILTER TABS -->
+<div class="tab-nav">
+
+    <a href="{% url 'warden_complaints' %}"
+       class="tab-btn {% if not active_filter %}active{% endif %}">
+        All
+    </a>
+
+    <a href="?status=pending"
+       class="tab-btn {% if active_filter == 'pending' %}active{% endif %}">
+        Pending
+    </a>
+
+    <a href="?status=resolved"
+       class="tab-btn {% if active_filter == 'resolved' %}active{% endif %}">
+        Resolved
+    </a>
+
+</div>
+
+<!-- OPTIONAL DROPDOWN FILTER -->
+<div style="margin-bottom:20px;">
+    <form method="GET">
+        <select name="status"
+                onchange="this.form.submit()"
+                style="padding:8px 14px;
+                       background:var(--surface2);
+                       color:var(--text);
+                       border:none;
+                       border-radius:8px;">
+
+            <option value="">Filter by Status</option>
+            <option value="pending" {% if active_filter == "pending" %}selected{% endif %}>
+                Pending
+            </option>
+            <option value="resolved" {% if active_filter == "resolved" %}selected{% endif %}>
+                Resolved
+            </option>
+        </select>
+    </form>
+</div>
+
+<!-- COMPLAINT LIST -->
+<div style="display:flex; flex-direction:column; gap:18px;">
+
+    {% for complaint in complaints %}
+
+        <div class="card" style="padding:20px;">
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+
+                <div style="font-weight:600;">
+                    {{ complaint.student.user.get_full_name|default:complaint.student.user.username }}
+                </div>
+
+                {% if complaint.status == "pending" %}
+                    <span class="badge pending">PENDING</span>
+                {% else %}
+                    <span class="badge approved">RESOLVED</span>
+                {% endif %}
+
+            </div>
+
+            <div style="margin-bottom:12px;">
+                {{ complaint.message }}
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+
+                <div style="font-size:12px; color:var(--text2);">
+                    {{ complaint.created_at|date:"M d, Y • h:i A" }}
+                </div>
+
+                {% if complaint.status == "pending" %}
+                    <a href="{% url 'resolve_complaint' complaint.id %}"
+                       class="approve-btn">
+                        Mark Resolved
+                    </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <div class="card" style="text-align:center; padding:40px;">
+            No complaints found.
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

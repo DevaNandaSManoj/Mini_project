@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-5i$!dmj^ognb0go1dq0c*j1mxfk4fjp4t*%!_j)i+=-y*t&dg7
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ["https://mini-project-jj62.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["https://mini-project-ji62.onrender.com"]
 
 # Application definition
 

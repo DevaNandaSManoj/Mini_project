@@ -1,0 +1,31 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+
+<h1>Admin Dashboard</h1>
+
+<div class="stats-grid">
+
+<div class="card">
+<div class="stat-value">{{ total_students }}</div>
+<div class="stat-label">Total Students</div>
+</div>
+
+<div class="card">
+<div class="stat-value">{{ total_wardens }}</div>
+<div class="stat-label">Wardens</div>
+</div>
+
+<div class="card">
+<div class="stat-value">{{ total_mess }}</div>
+<div class="stat-label">Mess Managers</div>
+</div>
+
+<div class="card">
+<div class="stat-value">{{ pending_leaves }}</div>
+<div class="stat-label">Pending Leaves</div>
+</div>
+
+</div>
+
+{% endblock %}

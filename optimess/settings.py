@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'leave',
     'reports',
     'warden',
+    'adminapp',
 ]
 AUTH_USER_MODEL = 'accounts.User'
 

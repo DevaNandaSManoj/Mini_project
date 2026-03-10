@@ -1,0 +1,205 @@
+/* ===== GLOBAL ===== */
+
+:root{
+    --bg:#070e1c;
+    --surface:#0f172a;
+    --surface2:#162133;
+    --border:rgba(99,179,237,0.15);
+    --accent:#38bdf8;
+    --accent2:#818cf8;
+    --accent3:#34d399;
+    --text:#e2e8f0;
+    --text2:#94a3b8;
+    --radius:16px;
+}
+
+/* LIGHT MODE */
+
+body.light{
+    --bg:#eef2f7;
+    --surface:#ffffff;
+    --surface2:#f3f6fb;
+    --border:rgba(0,0,0,0.08);
+    --text:#1e293b;
+    --text2:#64748b;
+}
+
+body{
+    margin:0;
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+/* ===== LAYOUT ===== */
+
+.layout{
+    display:flex;
+    min-height:100vh;
+}
+
+/* ===== SIDEBAR ===== */
+
+.sidebar{
+    width:240px;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    padding:18px 14px;
+    display:flex;
+    flex-direction:column;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:14px;
+}
+
+.logo-box{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+}
+
+.logo-text{
+    font-family:'Syne',sans-serif;
+    font-size:20px;
+    font-weight:800;
+    background:linear-gradient(90deg,#b9ebf2,var(--accent));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* ===== PROFILE ===== */
+
+.profile{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 0 14px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:14px;
+}
+
+.avatar{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent3));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* ===== MENU ===== */
+
+.menu a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    margin-bottom:6px;
+    font-size:13px;
+    color:var(--text2);
+    text-decoration:none;
+    transition:0.2s;
+}
+
+.menu a:hover{
+    background:var(--surface2);
+    color:var(--text);
+}
+
+.menu a.active{
+    background:rgba(56,189,248,0.12);
+    border:1px solid rgba(56,189,248,0.25);
+    color:var(--accent);
+}
+
+/* ===== MAIN ===== */
+
+.main{
+    flex:1;
+    padding:22px 38px 38px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:10px;
+}
+
+.theme-toggle{
+    padding:6px 16px;
+    border-radius:30px;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    font-size:13px;
+    cursor:pointer;
+}
+
+/* ===== DASHBOARD ===== */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:18px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:var(--surface2);
+    border-radius:var(--radius);
+    padding:22px;
+}
+
+.stat-value{
+    font-size:26px;
+    font-weight:700;
+}
+
+.stat-label{
+    font-size:13px;
+    color:var(--text2);
+}
+
+/* ===== BUTTONS ===== */
+
+.quick-actions{
+    display:flex;
+    gap:12px;
+}
+
+.action-btn{
+    padding:12px 20px;
+    border-radius:10px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    color:white;
+}
+
+.btn-blue{
+    background:#3b82f6;
+}
+
+.btn-orange{
+    background:#f59e0b;
+}
+
+.btn-green{
+    background:#10b981;
+}
+
+.btn-purple{
+    background:#6366f1;
+}

@@ -43,3 +43,8 @@ class StudentDailyRecord(models.Model):
     def __str__(self):
         return f"{self.student.user.username} - {self.date}"
 
+class SystemLog(models.Model):
+    last_run = models.DateField()
+
+    def __str__(self):
+        return f"Last automation run: {self.last_run}"

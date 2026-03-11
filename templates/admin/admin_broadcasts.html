@@ -1,0 +1,59 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="section">
+  <div class="page-header">
+    <div class="breadcrumb"><span>Admin</span> › Broadcasts</div>
+    <h1>Broadcast Messages</h1>
+    <p>Send announcements to students, wardens, or mess managers.</p>
+  </div>
+
+  <div class="grid-2">
+    <!-- Send Broadcast form -->
+    <div class="card">
+      <div class="card-title">📢 Send New Broadcast</div>
+      
+      <form method="POST" action="{% url 'broadcasts' %}" class="broadcast-compose mt-16">
+        {% csrf_token %}
+        <div class="form-group">
+           <label style="font-size:0.8rem;color:var(--text2);font-weight:600;display:block;margin-bottom:6px">Target Audience</label>
+           <select name="target_role" class="inp" required style="margin-bottom:12px">
+             <option value="student">All Students</option>
+             <option value="warden">All Wardens</option>
+             <option value="mess">All Mess Managers</option>
+           </select>
+        </div>
+
+        <textarea name="message" id="broadcastText" placeholder="Type your message here... (e.g., Gate timings, events, urgent notices)" required></textarea>
+        
+        <button type="submit" class="action-btn" style="margin-top:10px;"><i class="fa fa-paper-plane"></i> Send Broadcast</button>
+      </form>
+    </div>
+
+    <!-- History list -->
+    <div class="card">
+      <div class="card-title">📊 Sent Messages</div>
+      <div class="read-list mt-16">
+        {% if broadcasts %}
+          {% for b in broadcasts %}
+          <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:0.75rem;color:var(--text3)">{{ b.created_at|date:"M d, Y h:i A" }} (To: {{ b.target_role|title }})</span>
+              <span class="badge badge-blue">Reads: {{ b.read_count }}</span>
+            </div>
+            <div style="font-size:0.9rem;color:var(--text);margin-bottom:10px">{{ b.message }}</div>
+            <div style="font-size:0.75rem;color:var(--text3)">Sent by: {{ b.sender.first_name|default:b.sender.username }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">📢</div>
+            <div>No broadcasts sent yet</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

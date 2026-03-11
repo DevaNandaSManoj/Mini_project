@@ -1,0 +1,85 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="section">
+  <div class="page-header">
+    <div class="breadcrumb"><span>Admin</span> › Leave Applications</div>
+    <h1>Leave Applications</h1>
+    <p>Review and approve student leave requests.</p>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('leavePending','leaveOthers',this)">Pending ({{ pending_leaves.count }})</button>
+    <button class="tab-btn" onclick="switchTab('leaveOthers','leavePending',this)">Processed ({{ processed_leaves.count }})</button>
+  </div>
+
+  <!-- PENDING TAB -->
+  <div id="leavePending" class="tab-content active">
+    {% if pending_leaves %}
+      {% for l in pending_leaves %}
+      <div class="leave-item pending">
+        <div class="leave-item-header">
+          <span class="leave-student">👤 {{ l.student.user.first_name|default:l.student.user.username }} – Room {{ l.student.room_no }}</span>
+          <span class="badge badge-yellow">PENDING</span>
+        </div>
+        <div class="leave-dates">📅 {{ l.from_date|date:"M d, Y" }} → {{ l.to_date|date:"M d, Y" }} <span style="margin-left:8px; color:var(--text3); font-size:0.85em;">(Applied: {{ l.applied_on|date:"M d, Y" }})</span></div>
+        <div class="leave-reason" style="margin-top:8px">{{ l.reason }}</div>
+        
+        <div class="leave-actions mt-16">
+          <form method="POST" action="{% url 'all_leaves' %}" style="display:inline;">
+             {% csrf_token %}
+             <input type="hidden" name="leave_id" value="{{ l.id }}">
+             <input type="hidden" name="action" value="approve">
+             <button type="submit" class="action-btn success sm"><i class="fa fa-check"></i> Approve</button>
+          </form>
+          <form method="POST" action="{% url 'all_leaves' %}" style="display:inline;">
+             {% csrf_token %}
+             <input type="hidden" name="leave_id" value="{{ l.id }}">
+             <input type="hidden" name="action" value="reject">
+             <button type="submit" class="action-btn danger sm"><i class="fa fa-times"></i> Reject</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <div>No pending leave applications</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- PROCESSED TAB -->
+  <div id="leaveOthers" class="tab-content">
+    {% if processed_leaves %}
+      {% for l in processed_leaves %}
+      <div class="leave-item {% if l.status == 'approved' %}approved{% else %}rejected{% endif %}">
+        <div class="leave-item-header">
+          <span class="leave-student">👤 {{ l.student.user.first_name|default:l.student.user.username }} – Room {{ l.student.room_no }}</span>
+          <span class="badge {% if l.status == 'approved' %}badge-green{% else %}badge-red{% endif %}">{{ l.status|upper }}</span>
+        </div>
+        <div class="leave-dates">📅 {{ l.from_date|date:"M d, Y" }} → {{ l.to_date|date:"M d, Y" }}</div>
+        <div class="leave-reason" style="margin-top:8px">{{ l.reason }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+       <div class="empty-state">
+         <div class="empty-icon">📋</div>
+         <div>No processed leaves yet</div>
+       </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+function switchTab(showId, hideId, btn){
+  document.getElementById(showId).classList.add('active');
+  document.getElementById(hideId).classList.remove('active');
+  
+  // Update button classes
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+{% endblock %}

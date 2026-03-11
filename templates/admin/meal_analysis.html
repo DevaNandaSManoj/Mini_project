@@ -1,7 +1,63 @@
-{% extends "admin/base_admin.html" %}
+{% extends 'admin/base_admin.html' %}
 
 {% block content %}
+<div class="section">
+  <div class="page-header">
+    <div class="breadcrumb"><span>Admin</span> › Meal Analysis</div>
+    <h1>Meal Analysis Overview</h1>
+    <p>Overall metrics and statistics on system-wide meal selections.</p>
+  </div>
 
-<h1>meal_analysis</h1>
+  <div class="grid-3 mt-16">
+    <div class="stat-card" style="--stat-color:rgba(52,211,153,0.15)">
+      <div class="stat-icon" style="color:var(--accent3)"><i class="fa fa-utensils"></i></div>
+      <div class="stat-value">{{ records|length }}</div>
+      <div class="stat-label">Total Meal Records</div>
+    </div>
+    <div class="stat-card" style="--stat-color:rgba(56,189,248,0.15)">
+      <div class="stat-icon" style="color:var(--accent)"><i class="fa fa-coffee"></i></div>
+      <div class="stat-value">Morning</div>
+      <div class="stat-label">Breakfast Selections Logged</div>
+    </div>
+    <div class="stat-card" style="--stat-color:rgba(248,113,113,0.15)">
+      <div class="stat-icon" style="color:var(--accent5)"><i class="fa fa-moon"></i></div>
+      <div class="stat-value">Evening</div>
+      <div class="stat-label">Dinner Selections Logged</div>
+    </div>
+  </div>
 
+  <div class="card mt-16">
+    <div class="card-title">Recent Records Snapshot</div>
+    <div class="table-wrap mt-16">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Student</th>
+            <th>Selections</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records|slice:":10" %}
+          <tr>
+            <td>{{ r.date|date:"M d, Y" }}</td>
+            <td>{{ r.student.user.first_name|default:r.student.user.username }}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                {% if r.breakfast %}<span class="badge badge-blue">🌅 B</span>{% endif %}
+                {% if r.lunch %}<span class="badge badge-green">☀️ L</span>{% endif %}
+                {% if r.dinner %}<span class="badge badge-blue" style="background:rgba(129,140,248,0.15);color:#818cf8">🌙 D</span>{% endif %}
+                {% if not r.breakfast and not r.lunch and not r.dinner %}
+                  <span class="badge badge-red">None Selected</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
 {% endblock %}

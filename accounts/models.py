@@ -20,8 +20,13 @@ class User(AbstractUser):
         
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
     hostel_block = models.CharField(max_length=10)
     room_no = models.CharField(max_length=10)
+
+    phone_number = models.CharField(max_length=15)
+    department = models.CharField(max_length=100)
+
     parent_email = models.EmailField(blank=True, null=True)
 
     def __str__(self):
@@ -92,3 +97,32 @@ class Broadcast(models.Model):
 
     def read_count(self):
         return self.read_by.count()
+
+class Attendance(models.Model):
+    STATUS_CHOICES = (
+        ("present", "Present"),
+        ("absent", "Absent"),
+    )
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="attendances")
+    date = models.DateField()
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="present"
+    )
+    
+    marked_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'date')
+
+    def __str__(self):
+        return f"{self.student.user.username} - {self.date} ({self.status})"

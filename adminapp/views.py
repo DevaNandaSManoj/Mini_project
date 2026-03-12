@@ -286,19 +286,70 @@ def broadcasts(request):
     })
 
 
+from datetime import date
+import calendar
+from django.utils.dateparse import parse_date
+from django.db.models import Count, Q
+
+# ================= ATTENDANCE REPORT =================
 # ================= ATTENDANCE REPORT =================
 def attendance_report(request):
 
-    records = StudentDailyRecord.objects.all()
+    selected_date_str = request.GET.get('date')
+    selected_month_str = request.GET.get('month')
+    sort_order = request.GET.get('sort', 'desc') # default newest first
 
-    return render(request, 'admin/attendance.html', {
-        "records": records
-    })
+    order_by_clause = 'date' if sort_order == 'asc' else '-date'
 
+    records = StudentDailyRecord.objects.select_related(
+        'student__user'
+    ).order_by(order_by_clause)
 
-from datetime import date
-from django.utils.dateparse import parse_date
-from django.db.models import Count, Q
+    display_date = None
+    display_month = None
+
+    # Filter by specific date
+    if selected_date_str:
+        target_date = parse_date(selected_date_str)
+
+        if not target_date:
+            target_date = date.today()
+
+        records = records.filter(date=target_date)
+
+        display_date = target_date.strftime("%B %d, %Y")
+
+    # Filter by month
+    elif selected_month_str:
+        try:
+            year, month = map(int, selected_month_str.split('-'))
+        except ValueError:
+            year = date.today().year
+            month = date.today().month
+
+        records = records.filter(date__year=year, date__month=month)
+
+        display_month = f"{calendar.month_name[month]} - {year}"
+
+    # Default = current month
+    else:
+        today = date.today()
+        records = records.filter(date__year=today.year, date__month=today.month)
+        display_month = f"{calendar.month_name[today.month]} - {today.year}"
+        selected_month_str = f"{today.year}-{today.month:02d}"
+
+    context = {
+        "records": records,
+        "view_mode": "vertical",
+        "display_date": display_date,
+        "display_month": display_month,
+        "selected_date_str": selected_date_str,
+        "current_month_str": selected_month_str,
+        "sort_order": sort_order
+    }
+
+    return render(request, 'admin/attendance.html', context)
+
 
 # ================= FOOD REPORT =================
 def food_report(request):
@@ -457,14 +508,29 @@ def meal_analysis(request):
         'Dinner': d_count
     }
     
+    total_recs = records.count()
+    
     # Find most selected and most skipped
-    sorted_counts = sorted(counts.items(), key=lambda x: x[1])
+    min_count = min(counts.values())
+    max_count = max(counts.values())
     
-    most_skipped_meal = sorted_counts[0][0]
-    most_skipped_count = sorted_counts[0][1]
-    
-    most_selected_meal = sorted_counts[-1][0]
-    most_selected_count = sorted_counts[-1][1]
+    if min_count == max_count:
+        if max_count == 0:
+            most_selected_meal = "No Data"
+            most_skipped_meal = "No Data"
+        else:
+            most_selected_meal = "All Equal"
+            most_skipped_meal = "None (All Equal)"
+    else:
+        max_meals = [k for k, v in counts.items() if v == max_count]
+        most_selected_meal = " & ".join(max_meals)
+        
+        # Most skipped is the one with the min select count
+        min_meals = [k for k, v in counts.items() if v == min_count]
+        most_skipped_meal = " & ".join(min_meals)
+        
+    most_selected_count = max_count
+    most_skipped_count = total_recs - min_count # Total records minus the lowest selection = highest skips
 
     context = {
         "records": records.order_by('-date')[:50], # Just for the table if we keep it, though mock doesn't show it
@@ -474,6 +540,9 @@ def meal_analysis(request):
         "breakfast_count": b_count,
         "lunch_count": l_count,
         "dinner_count": d_count,
+        "breakfast_skip": total_recs - b_count,
+        "lunch_skip": total_recs - l_count,
+        "dinner_skip": total_recs - d_count,
         "most_selected_meal": most_selected_meal,
         "most_selected_count": most_selected_count,
         "most_skipped_meal": most_skipped_meal,

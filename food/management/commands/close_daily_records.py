@@ -1,56 +1,68 @@
 from django.core.management.base import BaseCommand
 from datetime import date, timedelta
-from food.models import StudentDailyRecord
+from food.models import StudentDailyRecord, SystemLog
 
 
 class Command(BaseCommand):
-    help = "Auto close attendance and food records"
+    help = "Auto close attendance and food records for all missed days"
 
     def handle(self, *args, **kwargs):
 
         today = date.today()
-        yesterday = today - timedelta(days=1)
 
-        # 1️⃣ Close yesterday attendance
-        attendance_records = StudentDailyRecord.objects.filter(
-            date=yesterday,
-            present__isnull=True
-        )
+        # get last run date
+        log = SystemLog.objects.first()
 
-        for record in attendance_records:
-            record.present = False
-            record.marked_by = "auto"
-            record.save()
+        if not log:
+            # first run
+            log = SystemLog.objects.create(last_run=today - timedelta(days=1))
 
-        # 2️⃣ Close today food records
-        food_records = StudentDailyRecord.objects.filter(
-            date=today,
-            breakfast__isnull=True
-        ) | StudentDailyRecord.objects.filter(
-            date=today,
-            lunch__isnull=True
-        ) | StudentDailyRecord.objects.filter(
-            date=today,
-            dinner__isnull=True
-        )
+        start_date = log.last_run + timedelta(days=1)
 
-        for record in food_records:
+        current_date = start_date
 
-            changed = False
+        while current_date <= today:
 
-            if record.breakfast is None:
-                record.breakfast = False
-                changed = True
+            yesterday = current_date - timedelta(days=1)
 
-            if record.lunch is None:
-                record.lunch = False
-                changed = True
+            # close attendance
+            attendance_records = StudentDailyRecord.objects.filter(
+                date=yesterday,
+                present__isnull=True
+            )
 
-            if record.dinner is None:
-                record.dinner = False
-                changed = True
-
-            if changed:
+            for record in attendance_records:
+                record.present = False
+                record.marked_by = "auto"
                 record.save()
 
-        self.stdout.write(self.style.SUCCESS("Daily records auto-closed"))
+            # close food
+            food_records = StudentDailyRecord.objects.filter(
+                date=current_date
+            )
+
+            for record in food_records:
+
+                changed = False
+
+                if record.breakfast is None:
+                    record.breakfast = False
+                    changed = True
+
+                if record.lunch is None:
+                    record.lunch = False
+                    changed = True
+
+                if record.dinner is None:
+                    record.dinner = False
+                    changed = True
+
+                if changed:
+                    record.save()
+
+            current_date += timedelta(days=1)
+
+        log.last_run = today
+        log.save()
+
+        self.stdout.write(self.style.SUCCESS("All missed days processed"))

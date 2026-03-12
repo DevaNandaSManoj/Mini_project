@@ -23,9 +23,10 @@ class Student(models.Model):
 
     hostel_block = models.CharField(max_length=10)
     room_no = models.CharField(max_length=10)
-
+    name = models.CharField(max_length=100, blank=True, null=True)
     phone_number = models.CharField(max_length=15)
     department = models.CharField(max_length=100)
+    
 
     parent_email = models.EmailField(blank=True, null=True)
 
@@ -125,4 +126,4 @@ class Attendance(models.Model):
         unique_together = ('student', 'date')
 
     def __str__(self):
-        return f"{self.student.user.username} - {self.date} ({self.status})"
+        return f"{self.student.user.username} - {self.date} ({self.status})"

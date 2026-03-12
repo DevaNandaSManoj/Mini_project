@@ -27,4 +27,5 @@ urlpatterns = [
     path('', include('leave.urls')),
     path('warden/', include('warden.urls')),
     path('adminapp/', include('adminapp.urls')),
+    path('mess_manager/', include('mess_manager.urls')),
 ]

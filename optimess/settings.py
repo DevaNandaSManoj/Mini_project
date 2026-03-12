@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'reports',
     'warden',
     'adminapp',
+    'mess_manager',
 ]
 AUTH_USER_MODEL = 'accounts.User'
 

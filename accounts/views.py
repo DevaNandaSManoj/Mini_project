@@ -119,12 +119,6 @@ def student_dashboard(request):
  
 
 
-@login_required
-def mess_dashboard(request):
-    if request.user.role != 'mess':
-        return redirect('login')
-    return render(request, 'mess_dashboard.html')
-
 
 
 @login_required

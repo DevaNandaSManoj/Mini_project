@@ -3,6 +3,7 @@ from accounts.models import Student, User, Broadcast
 from leave.models import LeaveRequest
 from food.models import StudentDailyRecord
 from django.db import IntegrityError
+from django.contrib import messages
 
 
 # ================= ADMIN DASHBOARD =================
@@ -70,7 +71,8 @@ def manage_students(request):
                 room_no=room,
                 phone_number=phone,
                 department=department,
-                parent_email=parent_email
+                parent_email=parent_email,
+                name=full_name
             )
         except IntegrityError:
             # If the user was just created but the student creation failed, delete the user.
@@ -81,7 +83,7 @@ def manage_students(request):
                 "error": "Failed to add student. A constraint failed (e.g. duplicate username or missing field)."
             })
 
-
+        messages.success(request, "Student added successfully!")
         return redirect('manage_students')
 
 
@@ -109,6 +111,7 @@ def manage_students(request):
         student.phone_number = request.POST.get("phone")
         student.department = request.POST.get("department")
         student.parent_email = request.POST.get("parent_email")
+        student.name = request.POST.get("name")
 
         student.save()
 
@@ -159,6 +162,7 @@ def manage_wardens(request):
                 "error": "Failed to add warden. Username might already be taken."
             })
             
+        messages.success(request, "Warden added successfully!")
         return redirect('manage_wardens')
 
     # -------- DELETE WARDEN --------
@@ -212,6 +216,7 @@ def manage_mess(request):
                 "error": "Failed to add Mess Manager. Username might already be taken."
             })
             
+        messages.success(request, "Mess Manager added successfully!")
         return redirect('manage_mess')
 
     # -------- DELETE MESS MANAGER --------
@@ -410,10 +415,69 @@ def food_report(request):
 
 
 # ================= MEAL ANALYSIS =================
+from datetime import timedelta
+
 def meal_analysis(request):
-
+    selected_date_str = request.GET.get('date')
+    selected_month_str = request.GET.get('month')
+    
     records = StudentDailyRecord.objects.all()
+    
+    # Filter by date or month
+    if selected_date_str:
+        records = records.filter(date=parse_date(selected_date_str))
+        period_text = "Based on selected date"
+    elif selected_month_str:
+        try:
+            year, month = map(int, selected_month_str.split('-'))
+            records = records.filter(date__year=year, date__month=month)
+            period_text = f"Based on {selected_month_str} average"
+        except ValueError:
+            period_text = "Based on all time"
+    else:
+        # Default to last 30 days if no filter
+        thirty_days_ago = date.today() - timedelta(days=30)
+        records = records.filter(date__gte=thirty_days_ago)
+        period_text = "Based on last 30 days average"
+        
+    # Aggregate data
+    student_meal_counts = records.aggregate(
+        b_count=Count('id', filter=Q(breakfast=True)),
+        l_count=Count('id', filter=Q(lunch=True)),
+        d_count=Count('id', filter=Q(dinner=True))
+    )
+    
+    b_count = student_meal_counts['b_count'] or 0
+    l_count = student_meal_counts['l_count'] or 0
+    d_count = student_meal_counts['d_count'] or 0
+    
+    counts = {
+        'Breakfast': b_count,
+        'Lunch': l_count,
+        'Dinner': d_count
+    }
+    
+    # Find most selected and most skipped
+    sorted_counts = sorted(counts.items(), key=lambda x: x[1])
+    
+    most_skipped_meal = sorted_counts[0][0]
+    most_skipped_count = sorted_counts[0][1]
+    
+    most_selected_meal = sorted_counts[-1][0]
+    most_selected_count = sorted_counts[-1][1]
 
-    return render(request, 'admin/meal_analysis.html', {
-        "records": records
-    })
+    context = {
+        "records": records.order_by('-date')[:50], # Just for the table if we keep it, though mock doesn't show it
+        "selected_date_str": selected_date_str or '',
+        "selected_month_str": selected_month_str or '',
+        "period_text": period_text,
+        "breakfast_count": b_count,
+        "lunch_count": l_count,
+        "dinner_count": d_count,
+        "most_selected_meal": most_selected_meal,
+        "most_selected_count": most_selected_count,
+        "most_skipped_meal": most_skipped_meal,
+        "most_skipped_count": most_skipped_count,
+    }
+
+    return render(request, 'admin/meal_analysis.html', context)

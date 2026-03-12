@@ -54,7 +54,7 @@ def dashboard(request):
 
     return render(request, "warden/dashboard.html", {
         "total_students": total_students,
-        "pending_leaves": pending_leaves,
+        "pending_count": pending_leaves,
         "attendance_percent": attendance_percent,
         "present_today": present_today,
         "absent_today": absent_today,
@@ -166,9 +166,12 @@ def warden_broadcast(request):
             "read_count": read_count,
             "total_students": total_students,
         })
+        
+    pending_count = LeaveRequest.objects.filter(status="pending").count()
 
     return render(request, "warden/broadcast.html", {
         "broadcast_data": broadcast_data,
+        "pending_count": pending_count,
     })
 
 # ================= WARDEN ATTENDANCE =================
@@ -217,20 +220,20 @@ def warden_attendance(request):
     unmarked_count = total_students - (present_count + absent_count)
 
     # ================= DAILY SEARCH =================
-    search_name = request.GET.get("student_name")
+    search_student_id = request.GET.get("search_student_id")
     search_date = request.GET.get("search_date")
     search_result = None
 
-    if search_name and search_date:
+    if search_student_id and search_date:
         try:
             search_date_obj = date.fromisoformat(search_date)
 
             search_result = StudentDailyRecord.objects.filter(
-                student__user__username__icontains=search_name,
+                student_id=search_student_id,
                 date=search_date_obj
             ).select_related("student")
 
-        except:
+        except ValueError:
             search_result = None
 
     # ================= MONTHLY CALENDAR =================
@@ -248,12 +251,10 @@ def warden_attendance(request):
 
             days_in_month = calendar.monthrange(year, month)[1]
 
-            student_name = request.GET.get("student_name")
+            calendar_student_id = request.GET.get("calendar_student_id")
 
-            if student_name:
-                selected_student = Student.objects.filter(
-                    user__username__icontains=student_name
-                ).first()
+            if calendar_student_id:
+                selected_student = Student.objects.filter(id=calendar_student_id).first()
 
             if selected_student:
                 records = StudentDailyRecord.objects.filter(
@@ -282,6 +283,9 @@ def warden_attendance(request):
 
     warden = Warden.objects.get(user=request.user)
 
+    # Generate a list of years for the dropdown (from 2000 to 2050)
+    years = list(range(2000, 2051))
+
     return render(request, "warden/warden_attendance.html", {
         "students": students,
         "today_records": today_records,
@@ -290,10 +294,12 @@ def warden_attendance(request):
         "unmarked_count": unmarked_count,
         "today": today,
         "search_result": search_result,
+        "search_student_id": search_student_id,
         "monthly_calendar": monthly_calendar,
         "selected_student": selected_student,
         "active_page": "attendance",
         "pending_count": pending_count,
+        "years": years,
     })
 
 @login_required
@@ -396,6 +402,8 @@ def warden_mess(request):
     breakfast_count = daily_records.filter(breakfast=True).count()
     lunch_count = daily_records.filter(lunch=True).count()
     dinner_count = daily_records.filter(dinner=True).count()
+    
+    pending_count = LeaveRequest.objects.filter(status="pending").count()
 
     return render(request, "warden/warden_mess.html", {
         "leave_locked": leave_locked,
@@ -406,6 +414,7 @@ def warden_mess(request):
         "breakfast_count": breakfast_count,
         "lunch_count": lunch_count,
         "dinner_count": dinner_count,
+        "pending_count": pending_count,
     })
 
 from accounts.models import Complaint
@@ -445,19 +454,22 @@ def warden_complaints(request):
         student__hostel_block=warden.hostel_block
     ).count()
 
-    pending_count = Complaint.objects.filter(
+    pending_complaints_count = Complaint.objects.filter(
         student__hostel_block=warden.hostel_block,
         status="pending"
     ).count()
 
-    resolved_count = total_count - pending_count
+    resolved_count = total_count - pending_complaints_count
+    
+    pending_count = LeaveRequest.objects.filter(status="pending").count()
 
     return render(request, "warden/warden_complaints.html", {
         "complaints": complaints,
         "total_count": total_count,
-        "pending_count": pending_count,
+        "pending_complaints_count": pending_complaints_count,
         "resolved_count": resolved_count,
         "active_filter": status_filter,
+        "pending_count": pending_count,
     })
 @login_required    
 def resolve_complaint(request, complaint_id):

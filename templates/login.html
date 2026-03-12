@@ -43,6 +43,11 @@ body{
 }
 
 /* ================= GRID BACKGROUND ================= */
+@keyframes backgroundPan {
+  from { background-position: 0 0; }
+  to { background-position: 40px 40px; }
+}
+
 body::before{
   content:"";
   position:fixed;
@@ -50,6 +55,8 @@ body::before{
   background-size:40px 40px;
   pointer-events:none;
   z-index:0;
+  animation: backgroundPan 1.5s linear infinite;
+  opacity: 0.6;
 }
 
 /* Dark grid */
@@ -65,6 +72,23 @@ body.light::before{
     linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
 }
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-up {
+  opacity: 0;
+  animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
 
 /* ================= HEADER ================= */
 .header{
@@ -128,140 +152,185 @@ body.light::before{
 .container{
   display:flex;
   justify-content:center;
-  margin-top:40px;
+  margin-top:20px;
   position:relative;
   z-index:1;
+  padding-bottom: 40px;
 }
 
 .card{
-  width:430px;
+  width:460px;
   background:var(--surface);
-  padding:40px;
-  border-radius:20px;
+  padding:48px 40px;
+  border-radius:24px;
   border:1px solid var(--border);
-  backdrop-filter:blur(12px);
-  box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  backdrop-filter:blur(16px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 24px 64px -12px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+/* Subtle ambient glow behind the card */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(129, 140, 248, 0.15));
+  z-index: -1;
+  filter: blur(12px);
+  pointer-events: none;
 }
 
 .card h2{
   font-family:'Syne',sans-serif;
-  font-size:32px;
+  font-size:28px;
   font-weight:700;
-  margin-bottom:6px;
+  margin-bottom:8px;
+  letter-spacing: -0.03em;
 }
 
 .card .sub{
   color:var(--text2);
-  font-size:14px;
-  margin-bottom:25px;
+  font-size:15px;
+  margin-bottom:32px;
+  line-height: 1.5;
 }
 
 /* ================= ROLE SECTION ================= */
 .role-label{
-  font-size:12px;
-  letter-spacing:1px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:1.5px;
   text-transform:uppercase;
   color:var(--text2);
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 
 .role-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-bottom:25px;
+  gap:10px;
+  margin-bottom:32px;
 }
 
 .role-btn{
   background:var(--surface2);
   border:1px solid var(--border);
-  border-radius:14px;
-  padding:18px 10px;
+  border-radius:12px;
+  padding:14px 10px;
   text-align:center;
   cursor:pointer;
-  transition:0.3s;
+  transition:all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text2);
 }
 
 .role-btn i{
   font-size:18px;
   display:block;
-  margin-bottom:8px;
+  margin-bottom:6px;
 }
 
 .role-btn:hover{
   transform:translateY(-2px);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+body.light .role-btn:hover {
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .role-btn.active{
   border-color:var(--accent);
-  box-shadow:0 0 20px rgba(56,189,248,0.4);
+  color: var(--text);
+  background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(129,140,248,0.05));
+  box-shadow:0 0 0 1px var(--accent) inset, 0 4px 12px rgba(56,189,248,0.15);
 }
 
 /* ================= INPUTS ================= */
 .input-group{
-  margin-bottom:18px;
+  margin-bottom:20px;
 }
 
 .input-group label{
   font-size:12px;
-  font-weight:600;
-  letter-spacing:1px;
-  text-transform:uppercase;
-  color:var(--text2);
+  font-weight:700;
+  color:var(--text);
   margin-bottom:8px;
   display:block;
 }
 
 .input-group input{
   width:100%;
-  padding:14px;
-  border-radius:12px;
+  padding:14px 16px;
+  border-radius:10px;
   border:1px solid var(--border);
-  background:var(--surface2);
+  background:var(--bg);
   color:var(--text);
-  font-size:14px;
-  transition:0.3s ease;
+  font-size:15px;
+  transition:all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  box-sizing: border-box;
 }
 
 body.light .input-group input{
-  background:#ffffff;
-  border:1px solid #dbe2ea;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .input-group input:focus{
   outline:none;
-  border:1px solid var(--accent);
-  box-shadow:0 0 0 3px rgba(56,189,248,0.15);
+  border-color:var(--accent);
+  background:var(--surface);
+  box-shadow:0 0 0 4px rgba(56,189,248,0.15), inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
 /* ================= BUTTON ================= */
 .login-btn{
   width:100%;
-  padding:14px;
+  padding:15px;
   border:none;
-  border-radius:14px;
+  border-radius:10px;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   color:white;
-  font-weight:600;
+  font-weight:700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
   cursor:pointer;
-  transition:0.3s;
+  transition:all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow:0 4px 15px rgba(56, 189, 248, 0.2);
 }
 
 .login-btn:hover{
-  transform:translateY(-2px);
+  transform:translateY(-3px);
+  box-shadow:0 8px 25px rgba(56, 189, 248, 0.4);
 }
 
 /* ================= THEME TOGGLE ================= */
 .theme-toggle{
   position:fixed;
-  top:20px;
-  right:20px;
-  padding:8px 16px;
+  top:24px;
+  right:24px;
+  padding:10px 18px;
   border-radius:30px;
   background:var(--surface2);
   border:1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
   cursor:pointer;
   z-index:2;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
 }
 
 .error{
@@ -277,7 +346,7 @@ body.light .input-group input{
 
 <div class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</div>
 
-<div class="header">
+<div class="header animate-up delay-1">
   <div class="logo-box">
     <i class="fa-solid fa-utensils"></i>
   </div>
@@ -285,38 +354,40 @@ body.light .input-group input{
   <p>Smart Hostel & Mess Management System</p>
 </div>
 
-<div class="container">
+<div class="container animate-up delay-2">
 <div class="card">
 
-  <h2>Welcome Back</h2>
-  <div class="sub">Select your role and sign in to continue</div>
+  <div class="animate-up delay-3">
+    <h2>Welcome Back</h2>
+    <div class="sub">Select your role and sign in to continue</div>
 
-  <div class="role-label">I Am A</div>
+    <div class="role-label">I Am A</div>
 
-  {% if error %}
-  <div class="error">{{ error }}</div>
-  {% endif %}
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
 
-  <div class="role-grid">
-    <div class="role-btn active" onclick="selectRole(this,'student')">
-      <i class="fa-solid fa-graduation-cap"></i>
-      Student
-    </div>
-    <div class="role-btn" onclick="selectRole(this,'warden')">
-      <i class="fa-solid fa-building-columns"></i>
-      Warden
-    </div>
-    <div class="role-btn" onclick="selectRole(this,'mess')">
-      <i class="fa-solid fa-bowl-food"></i>
-      Mess Manager
-    </div>
-    <div class="role-btn" onclick="selectRole(this,'admin')">
-      <i class="fa-solid fa-gear"></i>
-      Admin
+    <div class="role-grid">
+      <div class="role-btn active" onclick="selectRole(this,'student')">
+        <i class="fa-solid fa-graduation-cap"></i>
+        Student
+      </div>
+      <div class="role-btn" onclick="selectRole(this,'warden')">
+        <i class="fa-solid fa-building-columns"></i>
+        Warden
+      </div>
+      <div class="role-btn" onclick="selectRole(this,'mess')">
+        <i class="fa-solid fa-bowl-food"></i>
+        Mess Manager
+      </div>
+      <div class="role-btn" onclick="selectRole(this,'admin')">
+        <i class="fa-solid fa-gear"></i>
+        Admin
+      </div>
     </div>
   </div>
 
-  <form method="post">
+  <form method="post" class="animate-up delay-4">
     {% csrf_token %}
     <input type="hidden" name="role" id="role" value="student">
 
@@ -330,7 +401,7 @@ body.light .input-group input{
       <input type="password" name="password" placeholder="Enter your password" required>
     </div>
 
-    <button class="login-btn" id="loginText">
+    <button class="login-btn animate-up delay-5" id="loginText">
       Sign In →
     </button>
   </form>

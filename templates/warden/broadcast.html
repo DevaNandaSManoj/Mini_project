@@ -1,21 +1,39 @@
 {% extends "warden/base_warden.html" %}
 {% block content %}
 
-<div class="dashboard-breadcrumb">
+<style>
+    @keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-up {
+        animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+    }
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+</style>
+
+<div class="dashboard-breadcrumb animate-up" style="animation-delay: 0.1s;">
     <span class="crumb-parent">Warden</span>
     <span class="crumb-sep">›</span>
     <span class="crumb-active">Broadcasts</span>
 </div>
 
-<div class="dashboard-greeting">
-    <h1>Broadcast Messages</h1>
-    <p>Send announcements to all students in your block.</p>
+<div class="dashboard-greeting animate-up" style="animation-delay: 0.2s; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(2ec4b6, 0.05) 100%); padding: 24px; border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.15); margin-bottom: 24px;">
+    <h1 style="color: var(--text); font-size: 28px; font-weight: 700; margin-bottom: 8px;">Broadcast Messages</h1>
+    <p style="color: var(--text2); font-size: 15px; font-weight: 500;">Send announcements to all students in your block.</p>
 </div>
 
 <div class="broadcast-container">
 
     <!-- LEFT PANEL -->
-    <div class="broadcast-panel">
+    <div class="broadcast-panel hover-card animate-up" style="animation-delay: 0.3s; border-radius: 16px;">
         <div class="panel-header">
             <i class="fa-solid fa-bullhorn"></i>
             <span>Send New Broadcast</span>
@@ -35,14 +53,14 @@
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="broadcast-panel">
+    <div class="broadcast-panel hover-card animate-up" style="animation-delay: 0.4s; border-radius: 16px;">
         <div class="panel-header">
             <i class="fa-solid fa-layer-group"></i>
             <span>Sent Messages(latest)</span>
         </div>
 
         {% for item in broadcast_data %}
-        <div class="message-block">
+        <div class="message-block hover-card" style="border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px;">
 
             <div class="message-meta">
                 <span class="message-time">

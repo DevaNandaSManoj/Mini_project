@@ -1,15 +1,33 @@
 {% extends "warden/base_warden.html" %}
 {% block content %}
 
-<div class="dashboard-breadcrumb">
+<style>
+    @keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-up {
+        animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+    }
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+</style>
+
+<div class="dashboard-breadcrumb animate-up" style="animation-delay: 0.1s;">
     <span class="crumb-parent">Warden</span>
     <span class="crumb-sep">›</span>
     <span class="crumb-active">Leave Applications</span>
 </div>
 
-<div class="dashboard-greeting">
-    <h1>Leave Applications</h1>
-    <p>Review and approve student leave requests.</p>
+<div class="dashboard-greeting animate-up" style="animation-delay: 0.2s; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(2ec4b6, 0.05) 100%); padding: 24px; border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.15); margin-bottom: 24px;">
+    <h1 style="color: var(--text); font-size: 28px; font-weight: 700; margin-bottom: 8px;">Leave Applications</h1>
+    <p style="color: var(--text2); font-size: 15px; font-weight: 500;">Review and approve student leave requests.</p>
 </div>
 
 <div class="tab-nav">
@@ -23,11 +41,12 @@
 
 <!-- ================= PENDING ================= -->
 
-<div id="pending" class="tab-content active">
+<div id="pending" class="tab-content active animate-up" style="animation-delay: 0.3s;">
 
     {% if pending_requests %}
         {% for leave in pending_requests %}
-        <div class="leave-card">
+        <div class="leave-card hover-card" style="border-radius:12px; border:1px solid var(--border); overflow:hidden; position:relative;">
+            <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:#f59e0b;"></div>
 
             <div class="leave-header">
                 <div class="leave-student">
@@ -71,10 +90,11 @@
 
 <!-- ================= PROCESSED ================= -->
 
-<div id="processed" class="tab-content">
+<div id="processed" class="tab-content animate-up" style="animation-delay: 0.3s;">
 
     {% for leave in processed_requests %}
-        <div class="leave-card">
+        <div class="leave-card hover-card" style="border-radius:12px; border:1px solid var(--border); overflow:hidden; position:relative;">
+            <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:{% if leave.status == 'approved' %}#10b981{% else %}#ef4444{% endif %};"></div>
 
             <div class="leave-header">
                 <div class="leave-student">

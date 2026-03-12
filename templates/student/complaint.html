@@ -84,10 +84,23 @@ textarea {
 {% if complaints %}
     {% for complaint in complaints %}
         <div class="complaint-card">
-            <div>{{ complaint.message }}</div>
+
+            <div style="display:flex; justify-content:space-between;">
+                
+                <div>{{ complaint.message }}</div>
+
+                {% if complaint.status == "pending" %}
+                    <span class="badge pending">PENDING</span>
+                {% else %}
+                    <span class="badge approved">RESOLVED</span>
+                {% endif %}
+
+            </div>
+
             <div class="complaint-date">
                 {{ complaint.created_at }}
             </div>
+
         </div>
     {% endfor %}
 {% else %}

@@ -1,26 +1,126 @@
 {% extends "student/base_student.html" %}
 
 {% block page_title %}
-Broadcast History
+Broadcast
 {% endblock %}
 
 {% block content %}
 
-<h2 style="margin-bottom:30px;">All Broadcast Messages</h2>
+<style>
+
+.broadcast-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.broadcast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.broadcast-message {
+    font-size: 15px;
+}
+
+.broadcast-meta {
+    font-size: 12px;
+    color: var(--text2);
+}
+
+.badge-admin {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(168,85,247,0.15);
+    color: #c084fc;
+}
+
+.badge-warden {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(190, 123, 30, 0.15);
+    color: #f67b2f;
+}
+
+.badge-mess {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(34,197,94,0.15);
+    color: #22c55e;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text2);
+}
+
+.sender-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(56,189,248,0.15);
+    color: #38bdf8;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text2);
+}
+
+</style>
+
+
+<h2 style="margin-bottom:25px;">All Broadcast Messages</h2>
+
 
 {% if broadcasts %}
+
     {% for broadcast in broadcasts %}
-        <div style="background:var(--surface2); padding:20px; border-radius:12px; margin-bottom:20px;">
-            <p style="margin-bottom:8px;">
-                {{ broadcast.message }}
-            </p>
-            <small style="color:var(--text2);">
-                Sent on {{ broadcast.created_at }}
-            </small>
+
+        <div class="broadcast-card">
+
+            <div class="broadcast-header">
+
+                <div class="broadcast-message">
+                    {{ broadcast.message }}
+                </div>
+
+                {% if broadcast.sender.role == "admin" %}
+                    <span class="badge-admin">Admin</span>
+
+                {% elif broadcast.sender.role == "warden" %}
+                    <span class="badge-warden">Warden</span>
+
+                {% elif broadcast.sender.role == "mess" %}
+                    <span class="badge-mess">Mess Manager</span>
+
+                {% endif %}
+
+            </div>
+
+            <div class="broadcast-meta">
+                Sent on {{ broadcast.created_at|date:"F j, Y, g:i a" }}
+            </div>
+
         </div>
+
     {% endfor %}
+
 {% else %}
-    <p>No broadcast messages yet.</p>
+
+    <div class="empty-state">
+        No broadcast messages yet.
+    </div>
+
 {% endif %}
 
 {% endblock %}

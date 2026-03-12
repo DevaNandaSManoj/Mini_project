@@ -291,14 +291,122 @@ def attendance_report(request):
     })
 
 
+from datetime import date
+from django.utils.dateparse import parse_date
+from django.db.models import Count, Q
+
 # ================= FOOD REPORT =================
 def food_report(request):
+    # Filters
+    selected_date_str = request.GET.get('date')
+    selected_month_str = request.GET.get('month')
+    student_id = request.GET.get('student_id')
 
-    records = StudentDailyRecord.objects.all()
+    # Default to today if neither date nor month is provided
+    if not selected_date_str and not selected_month_str:
+        selected_date = date.today()
+    else:
+        selected_date = parse_date(selected_date_str) if selected_date_str else None
 
-    return render(request, 'admin/food_report.html', {
-        "records": records
-    })
+    # Base query
+    records = StudentDailyRecord.objects.select_related('student__user').all()
+
+    # Apply filters
+    if selected_date:
+        records = records.filter(date=selected_date)
+    elif selected_month_str:
+        try:
+            year, month = map(int, selected_month_str.split('-'))
+            records = records.filter(date__year=year, date__month=month)
+        except ValueError:
+            pass
+
+    if student_id:
+        records = records.filter(student_id=student_id)
+
+    # All active students for dropdown
+    all_students = Student.objects.select_related('user').all()
+    total_active_students = all_students.count()
+
+    # Metrics
+    breakfast_count = 0
+    lunch_count = 0
+    dinner_count = 0
+    selected_any_count = 0
+
+    students_selected = []
+    students_not_selected = []
+
+    # If filtering by a specific month, aggregate data differently
+    if selected_month_str and not selected_date:
+        # For month view, we might just sum up the meal counts
+        # and list students who had at least one meal vs none
+        student_meal_counts = records.values('student').annotate(
+            b_count=Count('id', filter=Q(breakfast=True)),
+            l_count=Count('id', filter=Q(lunch=True)),
+            d_count=Count('id', filter=Q(dinner=True)),
+        )
+        
+        breakfast_count = sum(item['b_count'] for item in student_meal_counts)
+        lunch_count = sum(item['l_count'] for item in student_meal_counts)
+        dinner_count = sum(item['d_count'] for item in student_meal_counts)
+        
+        # Determine who selected any food during the month
+        selected_student_ids = [
+            item['student'] for item in student_meal_counts 
+            if item['b_count'] > 0 or item['l_count'] > 0 or item['d_count'] > 0
+        ]
+        selected_any_count = len(selected_student_ids)
+        
+        for student in all_students:
+            if student.id in selected_student_ids:
+                students_selected.append(student)
+            else:
+                students_not_selected.append(student)
+
+    else:
+        # Daily view logic
+        for r in records:
+            has_meal = False
+            if r.breakfast:
+                breakfast_count += 1
+                has_meal = True
+            if r.lunch:
+                lunch_count += 1
+                has_meal = True
+            if r.dinner:
+                dinner_count += 1
+                has_meal = True
+                
+            if has_meal:
+                selected_any_count += 1
+                students_selected.append(r.student)
+
+        # Find students who didn't select food
+        # This includes students who have a record with all False, OR students with no record for the day
+        selected_student_ids = [s.id for s in students_selected]
+        for student in all_students:
+            if student.id not in selected_student_ids:
+                students_not_selected.append(student)
+
+    not_selected_count = total_active_students - selected_any_count
+
+    context = {
+        'records': records,
+        'all_students': all_students,
+        'selected_date_str': selected_date_str if selected_date_str else str(date.today()) if not selected_month_str else '',
+        'selected_month_str': selected_month_str,
+        'selected_student_id': int(student_id) if student_id else '',
+        'breakfast_count': breakfast_count,
+        'lunch_count': lunch_count,
+        'dinner_count': dinner_count,
+        'selected_any_count': selected_any_count,
+        'not_selected_count': not_selected_count,
+        'students_selected': students_selected,
+        'students_not_selected': students_not_selected,
+    }
+
+    return render(request, 'admin/food_report.html', context)
 
 
 # ================= MEAL ANALYSIS =================

@@ -4,60 +4,203 @@
 <div class="section">
   <div class="page-header">
     <div class="breadcrumb"><span>Admin</span> › Food Report</div>
-    <h1>Daily Food Report</h1>
-    <p>Detailed list of student meal selections per day.</p>
+    <h1>Food Report</h1>
+    <p>View-only food selection data by date or month.</p>
   </div>
 
-  <div class="card">
-    <div class="card-title">Meal Selections</div>
-    
-    <div class="table-wrap mt-16">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Student</th>
-            <th>Room</th>
-            <th>Breakfast</th>
-            <th>Lunch</th>
-            <th>Dinner</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% if records %}
-            {% for r in records %}
-            <tr>
-              <td>{{ r.date|date:"M d, Y" }}</td>
-              <td>{{ r.student.user.first_name|default:r.student.user.username }}</td>
-              <td>{{ r.student.room_no }}</td>
-              <td>
-                <span class="badge {% if r.breakfast %}badge-green{% else %}badge-red{% endif %}">
-                  {% if r.breakfast %}Yes{% else %}No{% endif %}
-                </span>
-              </td>
-              <td>
-                <span class="badge {% if r.lunch %}badge-green{% else %}badge-red{% endif %}">
-                  {% if r.lunch %}Yes{% else %}No{% endif %}
-                </span>
-              </td>
-              <td>
-                <span class="badge {% if r.dinner %}badge-green{% else %}badge-red{% endif %}">
-                  {% if r.dinner %}Yes{% else %}No{% endif %}
-                </span>
-              </td>
-            </tr>
-            {% endfor %}
-          {% else %}
-            <tr>
-              <td colspan="6" style="text-align:center; padding:24px; color:var(--text3);">
-                No food selection records found.
-              </td>
-            </tr>
-          {% endif %}
-        </tbody>
-      </table>
+  <form method="GET" action="{% url 'food_report' %}" id="foodReportFilterForm">
+    <div class="card mb-16">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <label style="font-size:0.8rem;color:var(--text2);font-weight:600;display:block;margin-bottom:6px">📅 Select Date</label>
+          <input type="date" class="inp" id="frDate" name="date" value="{{ selected_date_str }}" style="width:200px" onchange="document.getElementById('frMonth').value=''; document.getElementById('foodReportFilterForm').submit();">
+        </div>
+        <div>
+          <label style="font-size:0.8rem;color:var(--text2);font-weight:600;display:block;margin-bottom:6px">📆 Select Month</label>
+          <input type="month" class="inp" id="frMonth" name="month" value="{{ selected_month_str }}" style="width:200px" onchange="document.getElementById('frDate').value=''; document.getElementById('foodReportFilterForm').submit();">
+        </div>
+        <div>
+          <label style="font-size:0.8rem;color:var(--text2);font-weight:600;display:block;margin-bottom:6px">👤 Select / Search Student</label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select class="inp" id="frDropdown" name="student_id" style="width:220px" onchange="document.getElementById('foodReportFilterForm').submit();">
+              <option value="">-- Select a student --</option>
+              {% for s in all_students %}
+                <option value="{{ s.id }}" {% if s.id == selected_student_id %}selected{% endif %}>{{ s.user.first_name }} ({{ s.room_no }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  {% if selected_student_id %}
+    <!-- Individual Student Record View -->
+    <div class="card mb-16">
+      <div class="card-title">👤 Search Result for Student</div>
+      <div class="mt-16">
+        {% if records %}
+          {% for r in records %}
+          <div class="user-list-item">
+            <div class="user-list-left">
+              <div class="mini-avatar admin" style="background:var(--accent4); color:#fff">{{ r.student.user.first_name|make_list|first }}</div>
+              <div>
+                <div class="user-list-name">{{ r.student.user.first_name }} - {{ r.date|date:"M d, Y" }}</div>
+                <div class="user-list-detail">Room: {{ r.student.room_no }}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="badge {% if r.breakfast %}badge-green{% else %}badge-red{% endif %}">🌅 Breakfast {% if r.breakfast %}✓{% else %}✗{% endif %}</span>
+              <span class="badge {% if r.lunch %}badge-green{% else %}badge-red{% endif %}">☀️ Lunch {% if r.lunch %}✓{% else %}✗{% endif %}</span>
+              <span class="badge {% if r.dinner %}badge-green{% else %}badge-red{% endif %}">🌙 Dinner {% if r.dinner %}✓{% else %}✗{% endif %}</span>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+           <div class="empty-state" style="padding:20px; text-align:center; color:var(--text3);">No records found for this student on the selected date/month.</div>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <!-- Aggregated Metrics View -->
+    <div id="frStats" class="stat-grid mb-16">
+      <div class="stat-card" style="--stat-color:rgba(52,211,153,0.15)"><div class="stat-icon" style="color:var(--accent3)"><i class="fa fa-check-circle"></i></div><div class="stat-value">{{ selected_any_count }}</div><div class="stat-label">Selected (Any)</div></div>
+      <div class="stat-card" style="--stat-color:rgba(248,113,113,0.15)"><div class="stat-icon" style="color:var(--accent5)"><i class="fa fa-times-circle"></i></div><div class="stat-value">{{ not_selected_count }}</div><div class="stat-label">Not Selected</div></div>
+      <div class="stat-card"><div class="stat-icon"><i class="fa fa-coffee"></i></div><div class="stat-value">{{ breakfast_count }}</div><div class="stat-label">Breakfast</div></div>
+      <div class="stat-card" style="--stat-color:rgba(52,211,153,0.15)"><div class="stat-icon" style="color:var(--accent3)"><i class="fa fa-sun"></i></div><div class="stat-value">{{ lunch_count }}</div><div class="stat-label">Lunch</div></div>
+      <div class="stat-card" style="--stat-color:rgba(129,140,248,0.15)"><div class="stat-icon" style="color:var(--accent2)"><i class="fa fa-moon"></i></div><div class="stat-value">{{ dinner_count }}</div><div class="stat-label">Dinner</div></div>
     </div>
 
-  </div>
+    <div class="grid-2">
+      <!-- Selected Food Panel -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer" onclick="toggleFRPanel('selected')">
+          <div style="width:14px;height:14px;border-radius:3px;background:var(--accent3)"></div>
+          <div class="card-title" style="margin-bottom:0">✅ Students Who Selected Food</div>
+          <span class="badge badge-green" style="margin-left:auto">{{ selected_any_count }}</span>
+          <i class="fa fa-chevron-down" id="frSelArrow" style="color:var(--text3);font-size:0.8rem"></i>
+        </div>
+        <div id="frSelPanel" style="display:none">
+          <div id="frSelList">
+            {% if students_selected %}
+              {% for s in students_selected %}
+                <div class="user-list-item">
+                  <div class="user-list-left">
+                    <div class="mini-avatar admin">{{ s.user.first_name|make_list|first }}</div>
+                    <div><div class="user-list-name">{{ s.user.first_name }}</div><div class="user-list-detail">{{ s.room_no }}</div></div>
+                  </div>
+                  <!-- Details omitted for brevity as it's an aggregate list, full details are in individual view -->
+                </div>
+              {% endfor %}
+            {% else %}
+               <div class="empty-state" style="padding:20px; text-align:center;">No students selected food.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Not Selected Food Panel -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer" onclick="toggleFRPanel('notselected')">
+          <div style="width:14px;height:14px;border-radius:3px;background:var(--accent5)"></div>
+          <div class="card-title" style="margin-bottom:0">❌ Students Who Didn't Select</div>
+          <span class="badge badge-red" style="margin-left:auto">{{ not_selected_count }}</span>
+          <i class="fa fa-chevron-down" id="frNotSelArrow" style="color:var(--text3);font-size:0.8rem"></i>
+        </div>
+        <div id="frNotSelPanel" style="display:none">
+          <div id="frNotSelList">
+            {% if students_not_selected %}
+              {% for s in students_not_selected %}
+                <div class="user-list-item">
+                  <div class="user-list-left">
+                    <div class="mini-avatar admin" style="background:#f87171; color:#fff">{{ s.user.first_name|make_list|first }}</div>
+                    <div><div class="user-list-name">{{ s.user.first_name }}</div><div class="user-list-detail">{{ s.room_no }}</div></div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+               <div class="empty-state" style="padding:20px; text-align:center;">All students selected food!</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card mt-16">
+      <div class="card-title">📊 Participation Chart</div>
+      <canvas id="foodReportChart" height="200" style="margin-top:16px;width:100%"></canvas>
+    </div>
+  {% endif %}
 </div>
+
+<script>
+  function toggleFRPanel(which){
+    const pid = which === 'selected' ? 'frSelPanel' : 'frNotSelPanel';
+    const aid = which === 'selected' ? 'frSelArrow' : 'frNotSelArrow';
+    const p = document.getElementById(pid), a = document.getElementById(aid);
+    if (!p) return;
+    const show = p.style.display === 'none';
+    p.style.display = show ? 'block' : 'none';
+    if(a) a.className = 'fa fa-chevron-' + (show ? 'up' : 'down');
+  }
+
+  // Draw Chart
+  document.addEventListener("DOMContentLoaded", function() {
+    // We check if student is selected by rendering a JS boolean
+    var isStudentSelected = "{% if selected_student_id %}true{% else %}false{% endif %}" === "true";
+    
+    if (!isStudentSelected) {
+      const cc = document.getElementById('foodReportChart');
+      if(cc) {
+        const ctx = cc.getContext('2d');
+        const W = cc.offsetWidth || 400, H = 200; 
+        cc.width = W; cc.height = H;
+        const labels = ['Breakfast','Lunch','Dinner'];
+        
+        // Safely parse Django variables into JavaScript numbers
+        const bCount = parseInt("{{ breakfast_count|default:0 }}", 10) || 0;
+        const lCount = parseInt("{{ lunch_count|default:0 }}", 10) || 0;
+        const dCount = parseInt("{{ dinner_count|default:0 }}", 10) || 0;
+        
+        const vals = [bCount, lCount, dCount];
+        const clrs = ['#38bdf8','#34d399','#818cf8'];
+        const bW = Math.floor(W/labels.length * 0.5), gp = Math.floor(W/labels.length);
+        const mx = Math.max(...vals, 1);
+        
+        ctx.clearRect(0,0,W,H);
+        labels.forEach((l,i) => {
+          const x = gp * i + gp * 0.25;
+          const bh = Math.floor((vals[i]/mx) * (H-44));
+          const y = H - bh - 22;
+          
+          const grad = ctx.createLinearGradient(0,y,0,H-22);
+          grad.addColorStop(0,clrs[i]); 
+          grad.addColorStop(1,clrs[i]+'44');
+          
+          ctx.fillStyle = grad; 
+          ctx.beginPath(); 
+          ctx.roundRect(x,y,bW,bh,6); 
+          ctx.fill();
+          
+          ctx.fillStyle = '#e2e8f0'; 
+          ctx.font = 'bold 13px Syne,sans-serif'; 
+          ctx.textAlign = 'center';
+          ctx.fillText(vals[i], x+bW/2, y-6);
+          
+          ctx.fillStyle = '#94a3b8'; 
+          ctx.font = '12px DM Sans,sans-serif'; 
+          ctx.fillText(l, x+bW/2, H-5);
+        });
+        
+        ctx.strokeStyle = 'rgba(99,179,237,0.12)'; 
+        ctx.lineWidth = 1; 
+        ctx.beginPath(); 
+        ctx.moveTo(0,H-22); 
+        ctx.lineTo(W,H-22); 
+        ctx.stroke();
+      }
+    }
+  });
+</script>
 {% endblock %}

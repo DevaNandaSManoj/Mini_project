@@ -11,4 +11,5 @@ urlpatterns = [
     path("mess/", views.warden_mess, name="warden_mess"),
     path("complaints/", views.warden_complaints, name="warden_complaints"),
     path("complaint/resolve/<int:complaint_id>/", views.resolve_complaint, name="resolve_complaint"),
+    path("resolve-complaint/<int:complaint_id>/", views.resolve_complaint, name="resolve_complaint"),
 ]

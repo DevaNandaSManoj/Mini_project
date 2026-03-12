@@ -1,158 +1,608 @@
 {% extends 'admin/base_admin.html' %}
 
 {% block content %}
+<style>
+    /* Scoped styles specifically for the Meal Analysis page */
+    .ma-header-glow {
+        position: relative;
+        display: inline-block;
+    }
+
+    .ma-header-glow::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(56, 189, 248, 0.5);
+    }
+
+    .ma-filter-bar {
+        background: rgba(17, 24, 39, 0.4);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 40px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    body.light-mode .ma-filter-bar {
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    }
+
+    .ma-filter-bar::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, var(--accent), var(--accent3));
+    }
+
+    .ma-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ma-filter-group label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text2);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ma-filter-group label i {
+        color: var(--accent);
+    }
+
+    .ma-filter-input {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 16px;
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+    }
+
+    .ma-filter-input:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        background: var(--surface);
+    }
+
+    .ma-filter-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .ma-or-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface2);
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--text3);
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .ma-stat-card {
+        background: linear-gradient(145deg, var(--surface) 0%, rgba(17, 24, 39, 0.95) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 24px;
+        padding: 32px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+    }
+
+    body.light-mode .ma-stat-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+    }
+
+    .ma-stat-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    body.light-mode .ma-stat-card:hover {
+        border-color: rgba(56, 189, 248, 0.2);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08);
+    }
+
+    .ma-stat-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+        opacity: 0.15;
+        transform: translate(30%, -30%);
+        border-radius: 50%;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+    }
+
+    .ma-stat-card:hover::after {
+        opacity: 0.25;
+    }
+
+    .ma-selected-card {
+        --glow-color: rgba(52, 211, 153, 0.8);
+    }
+
+    .ma-selected-card:hover {
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 40px rgba(52, 211, 153, 0.1);
+    }
+
+    .ma-skipped-card {
+        --glow-color: rgba(248, 113, 113, 0.8);
+    }
+
+    .ma-skipped-card:hover {
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 40px rgba(248, 113, 113, 0.1);
+    }
+
+    .ma-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ma-title-wrap h3 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ma-title-wrap p {
+        font-size: 0.85rem;
+        color: var(--text3);
+        font-weight: 500;
+    }
+
+    .ma-hero-metric {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 32px;
+        position: relative;
+        z-index: 2;
+        backdrop-filter: blur(8px);
+    }
+
+    body.light-mode .ma-hero-metric {
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .ma-icon-box {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        flex-shrink: 0;
+    }
+
+    .ma-selected-card .ma-icon-box {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+    }
+
+    .ma-skipped-card .ma-icon-box {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+    }
+
+    .ma-metric-data .ma-metric-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text2);
+        margin-bottom: 4px;
+    }
+
+    .ma-metric-data .ma-metric-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .ma-selected-card .ma-metric-value span:first-child {
+        color: var(--accent3);
+    }
+
+    .ma-skipped-card .ma-metric-value span:first-child {
+        color: #f87171;
+    }
+
+    .ma-metric-value .ma-metric-sub {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text3);
+    }
+
+    .ma-chart-container {
+        height: 180px;
+        /* Reduced from 260px */
+        position: relative;
+        width: 100%;
+        z-index: 2;
+    }
+</style>
+
 <div class="section">
-  <div class="page-header">
-    <div class="breadcrumb"><span>Admin</span> › Meal Analysis</div>
-    <h1>Meal Analysis</h1>
-    <p>Which meals are mostly selected, skipped, and wasted.</p>
-  </div>
-
-  <!-- Filters -->
-  <div class="card" style="margin-bottom: 32px;">
-    <form method="GET" action="" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-      <div>
-        <label style="display:block;font-size:0.8rem;color:var(--text2);margin-bottom:6px;font-weight:600">
-          <i class="fa fa-calendar-alt" style="margin-right:6px"></i> View by Date
-        </label>
-        <input type="date" name="date" class="inp" value="{{ selected_date_str }}" onchange="this.form.submit()" style="width:180px">
-      </div>
-      
-      <div style="font-weight:700;color:var(--text3);margin-top:18px">OR</div>
-      
-      <div>
-        <label style="display:block;font-size:0.8rem;color:var(--text2);margin-bottom:6px;font-weight:600">
-          <i class="fa fa-calendar-alt" style="margin-right:6px"></i> View by Month
-        </label>
-        <input type="month" name="month" class="inp" value="{{ selected_month_str }}" onchange="this.form.submit()" style="width:180px">
-      </div>
-    </form>
-  </div>
-
-  <div class="grid-2 mt-16">
-    
-    <!-- Most Selected Meal Card -->
-    <div class="card">
-      <div class="card-title" style="font-size:1.1rem">
-        🏆 Most Selected Meal
-      </div>
-      <div class="card-sub mb-16">{{ period_text }}</div>
-      
-      <div style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:16px;margin-bottom:24px;display:flex;gap:16px;align-items:center">
-        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent4));border-radius:8px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>
-        <div>
-          <div style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Most Selected Meal</div>
-          <div style="display:flex;align-items:baseline;gap:8px">
-            <span style="font-size:1.2rem;font-weight:800;color:var(--accent3);font-family:'DM Sans',sans-serif">{{ most_selected_meal }}</span>
-            <span style="font-size:0.85rem;color:var(--accent3)">• {{ most_selected_count }} selections</span>
-          </div>
-        </div>
-      </div>
-      
-      <div style="height:220px;position:relative">
-        <canvas id="selectedChart"></canvas>
-      </div>
-    </div>
-    
-    <!-- Most Skipped Meal Card -->
-    <div class="card">
-      <div class="card-title" style="font-size:1.1rem">
-        📉 Most Skipped Meal
-      </div>
-      <div class="card-sub mb-16">{{ period_text }}</div>
-      
-      <div style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:16px;margin-bottom:24px;display:flex;gap:16px;align-items:center">
-        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent4));border-radius:8px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>
-        <div>
-          <div style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Most Skipped Meal</div>
-          <div style="display:flex;align-items:baseline;gap:8px">
-            <span style="font-size:1.2rem;font-weight:800;color:var(--accent5);font-family:'DM Sans',sans-serif">{{ most_skipped_meal }}</span>
-            <span style="font-size:0.85rem;color:var(--accent5)">• {{ most_skipped_count }} selections</span>
-          </div>
-        </div>
-      </div>
-      
-      <div style="height:220px;position:relative">
-        <canvas id="skippedChart"></canvas>
-      </div>
+    <div class="page-header" style="margin-bottom: 40px;">
+        <div class="breadcrumb"><span>Admin</span> › Meal Analysis</div>
+        <h1 class="ma-header-glow">Meal Analysis</h1>
+        <p style="margin-top: 16px; font-size: 1.05rem;">Deep dive into campus dining preferences to reduce waste and
+            optimize menus.</p>
     </div>
 
-  </div>
+    <!-- Glassmorphic Filter Bar -->
+    <div class="ma-filter-bar">
+        <form method="GET" action="" style="display:flex; align-items:center; gap:32px; flex-wrap:wrap; width: 100%;">
 
+            <div class="ma-filter-group">
+                <label for="date_filter"><i class="fa fa-calendar-day"></i> Specific Date</label>
+                <input type="date" id="date_filter" name="date" class="ma-filter-input" value="{{ selected_date_str }}"
+                    onchange="this.form.submit()">
+            </div>
+
+            <div class="ma-or-divider">OR</div>
+
+            <div class="ma-filter-group">
+                <label for="month_filter"><i class="fa fa-calendar-alt"></i> Entire Month</label>
+                <input type="month" id="month_filter" name="month" class="ma-filter-input"
+                    value="{{ selected_month_str }}" onchange="this.form.submit()">
+            </div>
+
+            <div style="margin-left: auto;">
+                <button type="button" class="action-btn"
+                    style="background: var(--surface3); color: var(--text); border: 1px solid var(--border);"
+                    data-url="{% url 'meal_analysis' %}" onclick="window.location.href=this.dataset.url">
+                    <i class="fa fa-redo-alt" style="margin-right: 6px; font-size: 0.8rem;"></i> Reset View
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="grid-2 mt-16">
+
+        <!-- Most Selected Meal Card -->
+        <div class="ma-stat-card ma-selected-card">
+            <div class="ma-card-header">
+                <div class="ma-title-wrap">
+                    <h3>🏆 Most Popular</h3>
+                    <p>{{ period_text }}</p>
+                </div>
+            </div>
+
+            <div class="ma-hero-metric">
+                <div class="ma-icon-box">
+                    <i class="fa fa-fire"></i>
+                </div>
+                <div class="ma-metric-data">
+                    <div class="ma-metric-label">Highest Engagement</div>
+                    <div class="ma-metric-value">
+                        <span>{{ most_selected_meal }}</span>
+                        <span class="ma-metric-sub">• {{ most_selected_count }} selections</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ma-chart-container">
+                <canvas id="selectedChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Most Skipped Meal Card -->
+        <div class="ma-stat-card ma-skipped-card">
+            <div class="ma-card-header">
+                <div class="ma-title-wrap">
+                    <h3>📉 Lowest Turnout</h3>
+                    <p>{{ period_text }}</p>
+                </div>
+            </div>
+
+            <div class="ma-hero-metric">
+                <div class="ma-icon-box">
+                    <i class="fa fa-level-down-alt"></i>
+                </div>
+                <div class="ma-metric-data">
+                    <div class="ma-metric-label">Most Avoided</div>
+                    <div class="ma-metric-value">
+                        <span>{{ most_skipped_meal }}</span>
+                        <span class="ma-metric-sub">• {{ most_skipped_count }} selections</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ma-chart-container">
+                <canvas id="skippedChart"></canvas>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const bCount = parseInt("{{ breakfast_count|default:0 }}", 10) || 0;
-    const lCount = parseInt("{{ lunch_count|default:0 }}", 10) || 0;
-    const dCount = parseInt("{{ dinner_count|default:0 }}", 10) || 0;
-    
-    const labels = ['Breakfast', 'Lunch', 'Dinner'];
-    const vals = [bCount, lCount, dCount];
-    
-    // selected chart uses blues/greens/purples
-    const selClrs = ['#38bdf8', '#34d399', '#818cf8'];
-    // skipped chart uses warm colors (red/orange)
-    const skipClrs = ['#f87171', '#f59e0b', '#fb923c'];
-    
-    function drawChart(canvasId, values, colors) {
-      const cc = document.getElementById(canvasId);
-      if(!cc) return;
-      const ctx = cc.getContext('2d');
-      // Set precise canvas dimensions matching container
-      const parent = cc.parentElement;
-      const W = parent.offsetWidth; 
-      const H = parent.offsetHeight; 
-      cc.width = W; 
-      cc.height = H;
-      
-      const bW = Math.floor(W/labels.length * 0.4), gp = Math.floor(W/labels.length);
-      const mx = Math.max(...values, 1) * 1.2; // pad top
-      
-      ctx.clearRect(0,0,W,H);
-      
-      // Draw grid line at bottom
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)'; 
-      ctx.lineWidth = 1; 
-      ctx.beginPath(); 
-      ctx.moveTo(0,H-26); 
-      ctx.lineTo(W,H-26); 
-      ctx.stroke();
+    document.addEventListener("DOMContentLoaded", function () {
+        // Data injection from Django Context
+        const bCount = parseInt("{{ breakfast_count|default:0 }}", 10) || 0;
+        const lCount = parseInt("{{ lunch_count|default:0 }}", 10) || 0;
+        const dCount = parseInt("{{ dinner_count|default:0 }}", 10) || 0;
 
-      labels.forEach((l,i) => {
-        const x = gp * i + (gp - bW) / 2;
-        // height calculation
-        const bh = Math.floor((values[i]/mx) * (H-50));
-        const y = H - bh - 26; // 26px padded from bottom
-        
-        // draw bar
-        const grad = ctx.createLinearGradient(0,y,0,H-26);
-        grad.addColorStop(0,colors[i]); 
-        grad.addColorStop(1,colors[i]+'33');
-        
-        ctx.fillStyle = grad; 
-        ctx.beginPath(); 
-        ctx.roundRect(x,y,bW,bh,6); 
-        ctx.fill();
-        
-        // Value text
-        ctx.fillStyle = '#fff'; 
-        ctx.font = "bold 14px 'DM Sans',sans-serif"; 
-        ctx.textAlign = 'center';
-        ctx.fillText(values[i], x+bW/2, y-8);
-        
-        // Label text
-        ctx.fillStyle = '#94a3b8'; 
-        ctx.font = '12px DM Sans,sans-serif'; 
-        ctx.fillText(l, x+bW/2, H-5);
-      });
-    }
+        const bSkip = parseInt("{{ breakfast_skip|default:0 }}", 10) || 0;
+        const lSkip = parseInt("{{ lunch_skip|default:0 }}", 10) || 0;
+        const dSkip = parseInt("{{ dinner_skip|default:0 }}", 10) || 0;
 
-    drawChart('selectedChart', vals, selClrs);
-    
-    // For skipped, it's logically inverse or we could just show the same values but styled differently.
-    // In the mockup they show the same bars but colored warmly.
-    drawChart('skippedChart', vals, skipClrs);
-  });
+        const labels = ['Breakfast', 'Lunch', 'Dinner'];
+        const vals = [bCount, lCount, dCount];
+        const skipVals = [bSkip, lSkip, dSkip];
+
+        // Check if we are in light mode to adjust grid lines
+        const isLight = document.body.classList.contains('light-mode');
+        const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+        const textColor = isLight ? '#64748b' : '#94a3b8';
+
+        // Color Palettes
+        // Format: [Base Color, Glow/Gradient End Color]
+        const selPalette = [
+            ['#38bdf8', '#0284c7'], // Blue
+            ['#34d399', '#059669'], // Green
+            ['#818cf8', '#4f46e5']  // Indigo
+        ];
+
+        const skipPalette = [
+            ['#fb7185', '#e11d48'], // Rose
+            ['#fbbf24', '#d97706'], // Amber
+            ['#f87171', '#dc2626']  // Red
+        ];
+
+        const tooltip = document.getElementById('ma-tooltip');
+        let hoveredCanvas = null;
+
+        /**
+         * Advanced interactive canvas chart renderer with staggered animations
+         */
+        function renderInteractiveChart(canvasId, values, palettes) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const parent = canvas.parentElement;
+
+            // High-DPI Canvas Setup
+            const dpr = window.devicePixelRatio || 1;
+            let W, H;
+
+            function resize() {
+                W = parent.offsetWidth;
+                H = parent.offsetHeight;
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                canvas.style.width = `${W}px`;
+                canvas.style.height = `${H}px`;
+                ctx.scale(dpr, dpr);
+            }
+
+            // Initial setup
+            resize();
+            window.addEventListener('resize', () => {
+                resize();
+                draw(1); // Redraw immediately finished
+            });
+
+            // Chart Constants
+            const bottomPad = 30;
+            const topPad = 20;
+            const barWidthRatio = 0.45;
+            const maxVal = Math.max(...values, 1);
+            const yMax = maxVal * 1.2; // 20% headroom
+
+            // Animation State
+            let progress = 0;
+            let animationId;
+
+            // Hover State
+            let hoveredIndex = -1;
+
+            function draw(animProgress) {
+                ctx.clearRect(0, 0, W, H);
+
+                // Draw faint horizontal grid lines
+                ctx.strokeStyle = gridColor;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+
+                // 3 lines (bottom, middle, top)
+                for (let i = 0; i <= 2; i++) {
+                    const yPos = topPad + ((H - bottomPad - topPad) * (i / 2));
+                    ctx.moveTo(0, Math.round(yPos) + 0.5);
+                    ctx.lineTo(W, Math.round(yPos) + 0.5);
+                }
+                ctx.stroke();
+
+                const gap = W / labels.length;
+                const bW = Math.max(gap * barWidthRatio, 20); // min 20px width
+                const radius = 8;
+
+                // Draw bars
+                labels.forEach((label, i) => {
+                    const x = (gap * i) + (gap / 2) - (bW / 2);
+
+                    // Calculate target height
+                    const heightAvailable = H - bottomPad - topPad;
+                    const targetHeight = (values[i] / yMax) * heightAvailable;
+
+                    // Stagger animations based on index
+                    // Bar 0 starts at 0, Bar 1 starts at 0.1, Bar 2 starts at 0.2
+                    const delay = i * 0.15;
+                    let currentProg = Math.max(0, (animProgress - delay) / (1 - delay));
+                    currentProg = Math.min(1, currentProg); // Cap at 1
+
+                    // Ease out cubic
+                    const easeOut = 1 - Math.pow(1 - currentProg, 3);
+
+                    const currentHeight = targetHeight * easeOut;
+                    const y = Math.round(H - bottomPad - currentHeight);
+
+                    // -----------------------------
+                    // Hover Effects & Styling
+                    // -----------------------------
+                    const isHovered = hoveredIndex === i;
+                    const palette = palettes[i];
+
+                    // Create gradient
+                    const grad = ctx.createLinearGradient(0, y, 0, H - bottomPad);
+
+                    if (isHovered) {
+                        // Brighten gradient on hover
+                        grad.addColorStop(0, '#ffffff');
+                        grad.addColorStop(0.2, palette[0]);
+                        grad.addColorStop(1, palette[1]);
+
+                        // Add ambient glow behind hovered bar
+                        if (currentHeight > 5) {
+                            ctx.shadowColor = palette[0];
+                            ctx.shadowBlur = 20;
+                            ctx.shadowOffsetY = 10;
+                        }
+                    } else {
+                        // Normal gradient
+                        // If something is hovered, faintly dim the others
+                        const dimFactor = (hoveredIndex !== -1) ? '88' : 'ff'; // hex alpha
+                        grad.addColorStop(0, palette[0] + dimFactor);
+                        grad.addColorStop(1, palette[1] + dimFactor);
+                        ctx.shadowBlur = 0;
+                    }
+
+                    // Draw Rounded Rectangle Bar
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    // Custom round rect implementation for precise bottom flat control
+                    ctx.moveTo(x + radius, y);
+                    ctx.lineTo(x + bW - radius, y);
+                    ctx.quadraticCurveTo(x + bW, y, x + bW, y + radius);
+                    ctx.lineTo(x + bW, H - bottomPad);
+                    ctx.lineTo(x, H - bottomPad);
+                    ctx.lineTo(x, y + radius);
+                    ctx.quadraticCurveTo(x, y, x + radius, y);
+                    ctx.fill();
+
+                    // Reset shadow for text
+                    ctx.shadowBlur = 0;
+
+                    // Value text floating above bar
+                    if (currentHeight > 10) {
+                        ctx.fillStyle = isHovered ? '#fff' : textColor;
+                        if (isLight && !isHovered) ctx.fillStyle = '#1e293b';
+                        if (isLight && isHovered) ctx.fillStyle = palette[1];
+
+                        ctx.font = "bold 13px 'DM Sans', sans-serif";
+                        ctx.textAlign = "center";
+                        // Only show text if animation is mostly done
+                        if (easeOut > 0.8) {
+                            ctx.globalAlpha = (easeOut - 0.8) * 5; // fade in fast at end
+                            const displayVal = Math.round(values[i] * easeOut);
+                            ctx.fillText(displayVal, x + (bW / 2), y - 10 - (isHovered ? 4 : 0)); // lift slightly on hover
+                            ctx.globalAlpha = 1;
+                        }
+                    }
+
+                    // X-Axis Label below line
+                    ctx.fillStyle = textColor;
+                    if (isHovered) ctx.fillStyle = isLight ? '#0f172a' : '#fff';
+                    ctx.font = isHovered ? "bold 12px 'DM Sans', sans-serif" : "600 12px 'DM Sans', sans-serif";
+                    ctx.fillText(label, x + (bW / 2), H - 10);
+                });
+            }
+
+            // --- Animation Loop ---
+            function animate() {
+                progress += 0.015; // Animation speed
+                if (progress < 1) {
+                    draw(progress);
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    draw(1);
+                }
+            }
+
+            // Start animation delay slightly for layout settling
+            setTimeout(() => {
+                animate();
+            }, 100);
+
+            // Re-listen for theme toggle to redraw colors correctly
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    setTimeout(() => {
+                        // Hard reload to re-parse the `isLight` state easily, 
+                        // or we could make internal vars dynamic. 
+                        window.location.reload();
+                    }, 100);
+                });
+            }
+        }
+
+        // Initialize both charts with their distinct color palettes and separate data arrays
+        renderInteractiveChart('selectedChart', vals, selPalette);
+        renderInteractiveChart('skippedChart', skipVals, skipPalette);
+    });
 </script>
 {% endblock %}

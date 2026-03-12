@@ -416,6 +416,16 @@ def warden_complaints(request):
     if request.user.role != "warden":
         return redirect("login")
 
+    if request.method == "POST":
+        complaint_id = request.POST.get("complaint_id")
+
+        complaint = Complaint.objects.get(id=complaint_id)
+
+        complaint.status = "resolved"
+        complaint.save()
+
+        return redirect("warden_complaints")
+
     warden = Warden.objects.get(user=request.user)
 
     complaints = Complaint.objects.filter(
@@ -460,5 +470,22 @@ def resolve_complaint(request, complaint_id):
     if complaint:
         complaint.status = "resolved"
         complaint.save()
+
+    return redirect("warden_complaints")
+
+from django.contrib import messages
+
+@login_required
+def resolve_complaint(request, complaint_id):
+
+    complaint = Complaint.objects.get(id=complaint_id)
+
+    complaint.status = "resolved"
+    complaint.save()
+
+    messages.success(
+        request,
+        f'Complaint from {complaint.student.user.username} marked as resolved.'
+    )
 
     return redirect("warden_complaints")

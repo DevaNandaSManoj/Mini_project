@@ -19,6 +19,6 @@ class LeaveRequest(models.Model):
     )
 
     applied_on = models.DateTimeField(auto_now_add=True)
-
+    seen_by_student = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.student.user.username} ({self.from_date} → {self.to_date})"

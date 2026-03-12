@@ -1,0 +1,262 @@
+/* ================= ROOT VARIABLES ================= */
+:root{
+  --bg:#070e1c;
+  --surface:#0f172a;
+  --surface2:#162133;
+  --border:rgba(99,179,237,0.15);
+  --accent:#38bdf8;
+  --accent2:#818cf8;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+}
+
+/* ================= LIGHT MODE ================= */
+body.light{
+  --bg:#eef2f7;
+  --surface:#ffffff;
+  --surface2:#f3f6fb;
+  --border:rgba(0,0,0,0.08);
+  --text:#1e293b;
+  --text2:#64748b;
+}
+
+/* ================= BASE ================= */
+body{
+  margin:0;
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:0.3s ease;
+  position:relative;
+}
+
+/* ================= BROADCAST PAGE (CLAUDE MATCH) ================= */
+
+.broadcast-container{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:28px;
+    margin-top:24px;
+    width:100%;
+}
+
+/* PANEL BASE */
+
+.broadcast-panel{
+    background:var(--surface);
+    border-radius:14px;
+    padding:22px;
+}
+
+/* PANEL HEADER */
+
+.panel-header{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:14px;
+}
+
+/* TEXTAREA */
+
+.broadcast-form textarea{
+    width:100%;
+    height:110px;
+    background:var(--surface2);
+    border:none;
+    border-radius:10px;
+    padding:14px;
+    font-size:0.9rem;
+    color:var(--text);
+    resize:none;
+    margin-bottom:14px;
+}
+
+/* BUTTON */
+
+.send-gradient-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 16px;
+    border-radius:8px;
+    border:none;
+    font-size:0.85rem;
+    background:linear-gradient(90deg,#60a5fa,#818cf8);
+    color:white;
+    cursor:pointer;
+    transition:0.2s ease;
+}
+
+.send-gradient-btn:hover{
+    opacity:0.9;
+}
+
+/* MESSAGE BLOCK */
+
+.message-block{
+    background:var(--surface2);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:12px;
+}
+
+/* TOP ROW */
+
+.message-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+}
+
+.message-time{
+    font-size:0.75rem;
+    color:var(--text2);
+}
+
+/* READ BADGE */
+
+.read-count{
+    font-size:0.7rem;
+    background:#1d4ed8;
+    color:white;
+    padding:4px 10px;
+    border-radius:20px;
+}
+
+/* MESSAGE TEXT */
+
+.message-text{
+    font-size:0.9rem;
+    margin-bottom:8px;
+    color:var(--text);
+}
+
+/* DATE */
+
+.message-date{
+    font-size:0.75rem;
+    color:var(--text2);
+}
+
+/* EMPTY STATE */
+
+.no-data{
+    font-size:0.85rem;
+    color:var(--text2);
+}
+
+.main{
+    width:100%;
+}
+
+.broadcast-panel{
+    width:100%;
+}
+
+/* ================= LEAVE PAGE ================= */
+
+.tab-nav{
+    display:flex;
+    gap:12px;
+    background:var(--surface);
+    padding:6px;
+    border-radius:12px;
+    margin-bottom:24px;
+}
+
+.tab-btn{
+    padding:8px 16px;
+    border:none;
+    background:none;
+    color:var(--text2);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:13px;
+}
+
+.tab-btn.active{
+    background:linear-gradient(90deg,#60a5fa,#818cf8);
+    color:white;
+}
+
+.tab-content{ display:none; }
+.tab-content.active{ display:block; }
+
+.leave-card{
+    background:var(--surface2);
+    padding:18px;
+    border-radius:14px;
+    margin-bottom:16px;
+}
+
+.leave-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+}
+
+.leave-student{
+    font-weight:600;
+    font-size:14px;
+}
+
+.leave-dates{
+    font-size:13px;
+    color:var(--text2);
+    margin-bottom:8px;
+}
+
+.leave-reason{
+    font-size:14px;
+    margin-bottom:12px;
+}
+
+.leave-actions{
+    display:flex;
+    gap:10px;
+}
+
+.approve-btn{
+    background:#16a34a;
+    color:white;
+    padding:6px 14px;
+    border-radius:8px;
+    text-decoration:none;
+    font-size:13px;
+}
+
+.reject-btn{
+    background:#dc2626;
+    color:white;
+    padding:6px 14px;
+    border-radius:8px;
+    text-decoration:none;
+    font-size:13px;
+}
+
+.badge{
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+}
+
+.badge.pending{ background:#facc15; color:#000; }
+.badge.approved{ background:#16a34a; color:white; }
+.badge.rejected{ background:#dc2626; color:white; }
+
+.empty-state{
+    text-align:center;
+    margin-top:40px;
+    color:var(--text2);
+}
+
+.empty-icon{
+    font-size:28px;
+    margin-bottom:10px;
+}

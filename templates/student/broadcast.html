@@ -1,0 +1,26 @@
+{% extends "student/base_student.html" %}
+
+{% block page_title %}
+Broadcast History
+{% endblock %}
+
+{% block content %}
+
+<h2 style="margin-bottom:30px;">All Broadcast Messages</h2>
+
+{% if broadcasts %}
+    {% for broadcast in broadcasts %}
+        <div style="background:var(--surface2); padding:20px; border-radius:12px; margin-bottom:20px;">
+            <p style="margin-bottom:8px;">
+                {{ broadcast.message }}
+            </p>
+            <small style="color:var(--text2);">
+                Sent on {{ broadcast.created_at }}
+            </small>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No broadcast messages yet.</p>
+{% endif %}
+
+{% endblock %}

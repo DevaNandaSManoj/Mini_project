@@ -1,0 +1,135 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="breadcrumb"><span>Admin</span> &rsaquo; Manage Wardens</div>
+  <h1>Warden Management</h1>
+  <p>Add, view or remove wardens from the system.</p>
+</div>
+
+{% if error %}
+<div class="login-error" style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+  <i class="fa fa-exclamation-circle"></i> {{ error }}
+</div>
+{% endif %}
+
+<div class="grid-2">
+  <!-- ADD WARDEN FORM -->
+  <div class="card">
+    <div class="card-title">➕ Add New Warden</div>
+    <form method="POST" class="leave-form mt-16">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add">
+      
+      <div class="form-row">
+        <input type="text" name="username" class="inp" placeholder="Warden ID (Login UI)" required>
+        <input type="text" name="name" class="inp" placeholder="Full Name" required>
+      </div>
+      
+      <div class="form-row">
+        <select name="block" class="inp" required>
+          <option value="">Block Managed</option>
+          <option value="A">Block A</option>
+          <option value="B">Block B</option>
+          <option value="C">Block C</option>
+          <option value="D">Block D</option>
+          <option value="A & B">Block A & B</option>
+          <option value="C & D">Block C & D</option>
+        </select>
+        <input type="text" name="phone" class="inp" placeholder="Phone Number" required>
+      </div>
+      
+      <button type="submit" class="action-btn success"><i class="fa fa-plus"></i> Add Warden</button>
+    </form>
+  </div>
+  
+  <!-- WARDEN LIST -->
+  <div class="card">
+    <div class="card-title">🏛️ Warden List ({{ wardens|length }})</div>
+    <div class="mt-16">
+      {% for warden in wardens %}
+      <div class="user-list-item">
+        <div class="user-list-left">
+          <div class="mini-avatar warden">{{ warden.user.first_name|first|upper }}</div>
+          <div>
+            <div class="user-list-name">{{ warden.user.first_name }}</div>
+            <div class="user-list-detail">{{ warden.user.username }} &middot; Block {{ warden.hostel_block }} &middot; {{ warden.phone_number }}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <!-- Edit Button -->
+          <button type="button" class="delete-btn" style="color:var(--accent); background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.2)" onclick="openUpdateModal('{{ warden.id }}', '{{ warden.hostel_block|escapejs }}', '{{ warden.phone_number|escapejs }}')">
+            <i class="fa fa-pen"></i>
+          </button>
+          
+          <!-- Delete Button -->
+          <form method="POST" style="margin:0;">
+             {% csrf_token %}
+             <input type="hidden" name="action" value="delete">
+             <input type="hidden" name="warden_id" value="{{ warden.id }}">
+             <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this warden?')"><i class="fa fa-trash"></i></button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <div class="empty-icon">🏛️</div>
+        <div>No wardens found</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- UPDATE MODAL -->
+<div id="updateModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999; backdrop-filter:blur(4px);"></div>
+<div id="updateModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--surface); padding:24px; border:1px solid var(--border); border-radius:var(--radius); z-index:1000; width:90%; max-width:500px; box-shadow:0 12px 40px rgba(0,0,0,0.5);">
+    <div class="card-title" style="margin-bottom:16px;">✏️ Update Warden</div>
+    <form method="POST" class="leave-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update">
+        <input type="hidden" name="warden_id" id="update_warden_id">
+        
+        <div class="form-row">
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Block Managed</label>
+                <select name="block" class="inp" id="update_block" required>
+                    <option value="A">Block A</option>
+                    <option value="B">Block B</option>
+                    <option value="C">Block C</option>
+                    <option value="D">Block D</option>
+                    <option value="A & B">Block A & B</option>
+                    <option value="C & D">Block C & D</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Phone</label>
+                <input type="text" class="inp" name="phone" id="update_phone" placeholder="Phone" required>
+            </div>
+        </div>
+        
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+            <button type="button" class="action-btn" style="background:var(--surface2); color:var(--text);" onclick="closeUpdateModal()">Cancel</button>
+            <button type="submit" class="action-btn success"><i class="fa fa-save"></i> Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function openUpdateModal(id, block, phone) {
+        document.getElementById("update_warden_id").value = id;
+        document.getElementById("update_block").value = block;
+        document.getElementById("update_phone").value = phone;
+        
+        document.getElementById("updateModalOverlay").style.display = "block";
+        document.getElementById("updateModal").style.display = "block";
+    }
+
+    function closeUpdateModal() {
+        document.getElementById("updateModalOverlay").style.display = "none";
+        document.getElementById("updateModal").style.display = "none";
+    }
+</script>
+
+{% endblock %}

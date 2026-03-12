@@ -15,7 +15,7 @@ class StudentDailyRecord(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     date = models.DateField()
 
-    # Food should also allow NULL (not selected yet)
+    # Food (keep as it is)
     breakfast = models.BooleanField(null=True, blank=True)
     lunch = models.BooleanField(null=True, blank=True)
     dinner = models.BooleanField(null=True, blank=True)
@@ -23,7 +23,28 @@ class StudentDailyRecord(models.Model):
     # Attendance
     present = models.BooleanField(null=True, blank=True)
 
+    # NEW FIELD → Who marked attendance
+    MARKED_BY_CHOICES = [
+        ('student', 'Marked by Student'),
+        ('warden', 'Marked by Warden'),
+        ('auto', 'Auto (Approved Leave)'),
+    ]
+
+    marked_by = models.CharField(
+        max_length=20,
+        choices=MARKED_BY_CHOICES,
+        null=True,
+        blank=True
+    )
+    
+    class Meta:
+        unique_together = ('student', 'date')
+
     def __str__(self):
         return f"{self.student.user.username} - {self.date}"
 
+class SystemLog(models.Model):
+    last_run = models.DateField()
 
+    def __str__(self):
+        return f"Last automation run: {self.last_run}"

@@ -1,0 +1,74 @@
+{% extends "warden/base_warden.html" %}
+{% block content %}
+
+<div class="dashboard-breadcrumb">
+    <span class="crumb-parent">Warden</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-active">Broadcasts</span>
+</div>
+
+<div class="dashboard-greeting">
+    <h1>Broadcast Messages</h1>
+    <p>Send announcements to all students in your block.</p>
+</div>
+
+<div class="broadcast-container">
+
+    <!-- LEFT PANEL -->
+    <div class="broadcast-panel">
+        <div class="panel-header">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span>Send New Broadcast</span>
+        </div>
+
+        <form method="POST" class="broadcast-form">
+            {% csrf_token %}
+            <textarea name="message"
+                placeholder="Type your message here... (e.g., Gate timings, events, urgent notices)"
+                required></textarea>
+
+            <button type="submit" class="send-gradient-btn">
+                <i class="fa fa-paper-plane"></i>
+                Send to All Students
+            </button>
+        </form>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="broadcast-panel">
+        <div class="panel-header">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Sent Messages(latest)</span>
+        </div>
+
+        {% for item in broadcast_data %}
+        <div class="message-block">
+
+            <div class="message-meta">
+                <span class="message-time">
+                    {{ item.broadcast.created_at|date:"h:i A" }}
+                </span>
+
+                <span class="read-count">
+                    {{ item.read_count }}/{{ item.total_students }} Read
+                </span>
+            </div>
+
+            <div class="message-text">
+                {{ item.broadcast.message }}
+            </div>
+
+            <div class="message-date">
+                {{ item.broadcast.created_at|date:"d M Y" }}
+            </div>
+
+        </div>
+        {% empty %}
+            <p class="no-data">No broadcasts sent within last 24 hours.</p>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

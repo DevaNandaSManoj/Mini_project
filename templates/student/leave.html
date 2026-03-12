@@ -1,0 +1,339 @@
+{% extends "student/base_student.html" %}
+
+{% block content %}
+
+<style>
+
+/* ================= HEADER ================= */
+
+.page-header{
+    margin-bottom:28px;
+}
+
+.breadcrumb{
+    font-size:12px;
+    display:flex;
+    gap:6px;
+    margin-bottom:8px;
+}
+
+.breadcrumb .parent{ color:var(--accent); }
+.breadcrumb .sep{ color:var(--text2); }
+.breadcrumb .active{ font-weight:500; }
+
+.page-title{
+    font-family:'Inter',sans-serif;
+    font-size:32px;
+    font-weight:800;
+    margin-bottom:6px;
+}
+
+.page-sub{
+    font-size:14px;
+    color:var(--text2);
+}
+
+/* ================= CARD BASE ================= */
+
+.leave-card{
+    padding:28px;
+    border-radius:20px;
+    margin-bottom:32px;
+    position:relative;
+    overflow:hidden;
+
+    background:linear-gradient(135deg, 
+        rgba(56,189,248,0.05), 
+        rgba(129,140,248,0.05)
+    );
+
+    border:1px solid rgba(56,189,248,0.18);
+    transition:all 0.25s ease;
+}
+
+.leave-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 30px rgba(0,0,0,0.35);
+}
+
+.leave-card::after{
+    content:"";
+    position:absolute;
+    width:190px;
+    height:190px;
+    border-radius:50%;
+    top:-70px;
+    right:-70px;
+    opacity:0.6;
+
+    background:radial-gradient(circle at center,
+        rgba(110, 71, 200, 0.25),   /* purple */
+        rgba(56,189,248,0.18),   /* blue */
+        rgba(16,185,129,0.12)    /* teal */
+    );
+}
+/* ================= FORM ================= */
+
+.form-group{
+    margin-bottom:18px;
+}
+
+.form-group label{
+    font-size:13px;
+    font-weight:600;
+    display:block;
+    margin-bottom:6px;
+}
+
+.form-group input,
+.form-group textarea{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid rgba(56,189,248,0.25);
+    background:var(--surface);
+    color:var(--text);
+    transition:all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus{
+    outline:none;
+    border:1px solid #38bdf8;
+    box-shadow:0 0 10px rgba(56,189,248,0.4);
+}
+
+.form-group textarea{
+    min-height:110px;
+    resize:vertical;
+}
+
+/* ================= BUTTON ================= */
+
+.primary-btn{
+    background:linear-gradient(135deg,#38bdf8,#6366f1);
+    border:none;
+    padding:10px 22px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    color:white;
+    transition:all 0.2s ease;
+}
+
+.primary-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(99,102,241,0.4);
+}
+
+/* ================= ERRORS ================= */
+
+.error-box{
+    background:rgba(248,113,113,0.08);
+    border:1px solid rgba(248,113,113,0.4);
+    color:#f87171;
+    padding:10px 14px;
+    border-radius:10px;
+    margin-bottom:16px;
+    font-size:14px;
+}
+
+/* ================= STATUS CARD ================= */
+
+.application-item{
+    padding:22px;
+    border-radius:16px;
+    position:relative;
+    margin-bottom:16px;
+    transition:all 0.25s ease;
+
+    background:linear-gradient(135deg, 
+        rgba(56,189,248,0.05), 
+        rgba(129,140,248,0.05)
+    );
+
+    border:1px solid rgba(56,189,248,0.18);
+}
+
+.application-item:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 32px rgba(24, 43, 70, 0.45);
+}
+
+.status-badge{
+    position:absolute;
+    top:18px;
+    right:18px;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.badge-approved{
+    background:rgba(52,211,153,0.12);
+    color:#34d399;
+    border:1px solid rgba(52,211,153,0.5);
+}
+
+.badge-pending{
+    background:rgba(251,191,36,0.12);
+    color:#fbbf24;
+    border:1px solid rgba(251,191,36,0.5);
+}
+
+.badge-rejected{
+    background:rgba(248,113,113,0.12);
+    color:#f87171;
+    border:1px solid rgba(248,113,113,0.5);
+}
+
+.cancel-btn{
+    margin-top:14px;
+    padding:6px 14px;
+    border:none;
+    border-radius:8px;
+    background:#ef4444;
+    color:white;
+    font-size:13px;
+    cursor:pointer;
+    transition:0.2s ease;
+}
+
+.cancel-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(239,68,68,0.4);
+}
+
+/* Placeholder styling */
+.form-group textarea::placeholder{
+    color:var(--text2);
+    opacity:0.7;
+    font-size:14px;
+}
+
+.form-group input::placeholder{
+    color:var(--text2);
+    opacity:0.7;
+}
+
+</style>
+
+
+<!-- ================= HEADER ================= -->
+
+<div class="page-header">
+    <div class="breadcrumb">
+        <span class="parent">Student</span>
+        <span class="sep">›</span>
+        <span class="active">Leave Application</span>
+    </div>
+
+    <div class="page-title">Leave Applications</div>
+    <div class="page-sub">Apply for long leave. Warden approval required.</div>
+</div>
+
+
+<!-- ================= APPLY LEAVE (TOP) ================= -->
+
+<div class="leave-card">
+
+    <h3 style="margin-bottom:20px;">📝 Apply for Leave</h3>
+
+    {% if error %}
+        <div class="error-box">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>From Date</label>
+            <input type="date" name="from_date" required>
+        </div>
+
+        <div class="form-group">
+            <label>To Date</label>
+            <input type="date" name="to_date" required>
+        </div>
+
+        <div class="form-group">
+            <label>Reason</label>
+            <textarea 
+                name="reason" 
+                required 
+                placeholder="Explain your reason for leave..."
+            ></textarea>
+        </div>
+
+         <button type="submit" class="primary-btn">
+             <i class="fa fa-paper-plane"></i> Submit Application
+         </button>
+    </form>
+
+</div>
+
+
+<!-- ================= STATUS (BOTTOM) ================= -->
+
+<div class="leave-card">
+
+    <h3 style="margin-bottom:20px;">📄 My Applications</h3>
+
+    {% if leave %}
+
+        <div class="application-item">
+
+            <div class="status-badge
+                {% if leave.status == 'approved' %}
+                    badge-approved
+                {% elif leave.status == 'pending' %}
+                    badge-pending
+                {% else %}
+                    badge-rejected
+                {% endif %}
+            ">
+                {{ leave.status|upper }}
+            </div>
+
+            <p><strong>{{ leave.from_date }} → {{ leave.to_date }}</strong></p>
+            <p style="margin-top:8px;">{{ leave.reason }}</p>
+
+            {% if leave.status == "approved" %}
+                <p style="margin-top:10px; color:#34d399; font-size:13px;">
+                    ✔ Approved by Warden
+                </p>
+            {% endif %}
+
+            {% if leave.status == "pending" or leave.status == "approved" %}
+                <form method="post" action="{% url 'modify_leave' leave.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cancel">
+                    <button type="submit" class="cancel-btn">
+                        Cancel
+                    </button>
+                </form>
+            {% endif %}
+
+            {% if leave.status == "approved" %}
+                <form method="post" action="{% url 'modify_leave' leave.id %}" style="margin-top:14px;">
+                    {% csrf_token %}
+                    <label style="font-size:13px;">Change End Date:</label>
+                    <input type="date" name="new_end_date" required style="margin-left:10px;">
+                    <button type="submit" class="primary-btn" style="padding:6px 14px; margin-left:10px;">
+                        Update
+                    </button>
+                </form>
+            {% endif %}
+
+        </div>
+
+    {% else %}
+        <p style="color:var(--text2);">No leave requests yet.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}

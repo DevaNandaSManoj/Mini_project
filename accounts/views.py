@@ -1,8 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from .models import Complaint, Student
-from .models import Broadcast
+from .models import Complaint, Student, Broadcast
+from django.contrib import messages
+from django.utils import timezone
+from datetime import date, timedelta, datetime
+from food.models import StudentDailyRecord
+from leave.models import LeaveRequest
+ 
 
 def login_view(request):
     if request.method == "POST":
@@ -38,163 +43,70 @@ def student_dashboard(request):
     if request.user.role != 'student':
         return redirect('login')
 
-    from accounts.models import Student
-    from food.models import DailyMenu, StudentDailyRecord
-    from leave.models import LeaveRequest
-    from datetime import date, timedelta, datetime
-
     student = Student.objects.get(user=request.user)
 
     today = date.today()
     tomorrow = today + timedelta(days=1)
 
-    leave_error = None
+    
+    # ================= DASHBOARD STATS =================
 
-    # ================= LEAVE BLOCK CHECK =================
-    leave_blocked = LeaveRequest.objects.filter(
+ 
+
+    # Attendance %
+    total_days = StudentDailyRecord.objects.filter(student=student).count()
+    present_days = StudentDailyRecord.objects.filter(
         student=student,
-        status='approved',
-        from_date__lte=tomorrow,
-        to_date__gte=tomorrow
-    ).exists()
+        present=True
+    ).count()
 
-    leave_today = LeaveRequest.objects.filter(
-        student=student,
-        status='approved',
-        from_date__lte=today,
-        to_date__gte=today
-    ).exists()
+    attendance_percentage = 0
+    if total_days > 0:
+        attendance_percentage = round((present_days / total_days) * 100, 1)
 
-    # ================= MENU =================
-    menu, _ = DailyMenu.objects.get_or_create(
-        date=tomorrow,
-        defaults={
-            'breakfast': 'Default Breakfast',
-            'lunch': 'Default Lunch',
-            'dinner': 'Default Dinner'
-        }
-    )
-
-    food_record, _ = StudentDailyRecord.objects.get_or_create(
+    # Tomorrow meals count
+    tomorrow_record = StudentDailyRecord.objects.filter(
         student=student,
         date=tomorrow
-    )
+    ).first()
 
-    attendance_record, _ = StudentDailyRecord.objects.get_or_create(
-        student=student,
-        date=today
-    )
+    meals_selected = 0
+    if tomorrow_record:
+        meals_selected = sum([
+            tomorrow_record.breakfast or False,
+            tomorrow_record.lunch or False,
+            tomorrow_record.dinner or False
+        ])
 
-    # ================= FOOD =================
-    if request.method == "POST" and request.POST.get("action") == "food":
-        if not leave_blocked:
-            food_record.breakfast = request.POST.get('breakfast') == 'yes'
-            food_record.lunch = request.POST.get('lunch') == 'yes'
-            food_record.dinner = request.POST.get('dinner') == 'yes'
-            food_record.save()
-        return redirect('student_dashboard')
+    # Leave count
+    leave_count = LeaveRequest.objects.filter(student=student).count()
 
-    # ================= ATTENDANCE =================
-    if request.method == "POST" and request.POST.get("action") == "attendance":
-        if attendance_record.present is None:
-            attendance_record.present = request.POST.get('status') == 'present'
-            attendance_record.save()
-        return redirect('student_dashboard')
+    # ================= BROADCAST (24 HOUR ACTIVE) =================
 
-    # ================= APPLY LEAVE =================
-    if request.method == "POST" and request.POST.get("action") == "apply_leave":
 
-        from_date = request.POST.get('from_date')
-        to_date = request.POST.get('to_date')
-        reason = request.POST.get('reason')
+    now = timezone.now()
+    last_24_hours = now - timedelta(hours=24)
 
-        if from_date and to_date and reason:
+    active_broadcasts = Broadcast.objects.filter(
+        target_role="student",
+        created_at__gte=last_24_hours
+    ).order_by('-created_at')
+     
 
-            from_date = datetime.strptime(from_date, "%Y-%m-%d").date()
-            to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
+    # Auto mark active broadcasts as read
+    for broadcast in active_broadcasts:
+        broadcast.read_by.add(request.user)
 
-            if from_date < today:
-                leave_error = "Leave start date cannot be in the past."
+    active_broadcast_count = active_broadcasts.count()
 
-            elif to_date < from_date:
-                leave_error = "Leave end date cannot be before start date."
-
-            else:
-                overlap = LeaveRequest.objects.filter(
-                    student=student,
-                    status__in=["pending", "approved"],
-                    from_date__lte=to_date,
-                    to_date__gte=from_date
-                ).exists()
-
-                if overlap:
-                    leave_error = "You already have a pending or approved leave during this period."
-                else:
-                    LeaveRequest.objects.create(
-                        student=student,
-                        from_date=from_date,
-                        to_date=to_date,
-                        reason=reason,
-                        status='pending'
-                    )
-                    return redirect('/student/?tab=leave')
-
-    # ================= CANCEL =================
-    if request.method == "POST" and request.POST.get("action") == "cancel_leave":
-        leave_id = request.POST.get("leave_id")
-        leave = LeaveRequest.objects.filter(id=leave_id, student=student).first()
-        if leave and leave.status in ["pending", "approved"]:
-            leave.delete()
-        return redirect('/student/?tab=leave')
-
-    # ================= SHORTEN =================
-    if request.method == "POST" and request.POST.get("action") == "shorten_leave":
-        leave_id = request.POST.get("leave_id")
-        new_to_date = request.POST.get("new_to_date")
-
-        leave = LeaveRequest.objects.filter(id=leave_id, student=student).first()
-
-        if leave and leave.status == "approved" and new_to_date:
-            new_to_date = datetime.strptime(new_to_date, "%Y-%m-%d").date()
-            if new_to_date >= leave.from_date:
-                leave.to_date = new_to_date
-                leave.save()
-
-        return redirect('/student/?tab=leave')
-
-    # ================= FLAGS =================
-    food_submitted = (
-        food_record.breakfast is not None and
-        food_record.lunch is not None and
-        food_record.dinner is not None
-    )
-
-    attendance_allowed = (
-        (
-            (food_submitted and not leave_blocked)
-            or leave_blocked
-        )
-        and not leave_today
-        and attendance_record.present is None
-    )
-
-    leave_requests = LeaveRequest.objects.filter(
-        student=student
-    ).order_by('-from_date')
-
-    return render(request, 'student_dashboard.html', {
-        'student': student,
-        'menu': menu,
-        'food_record': food_record,
-        'attendance_record': attendance_record,
-        'leave_blocked': leave_blocked,
-        'leave_today': leave_today,
-        'attendance_allowed': attendance_allowed,
-        'food_submitted': food_submitted,
+    return render(request, 'student/dashboard.html', {
+        'student': student, 
         'today': today,
-        'tomorrow': tomorrow,
-        'leave_requests': leave_requests,
-        'leave_error': leave_error,
+        'attendance_percentage': attendance_percentage,
+        'meals_selected': meals_selected,
+        'leave_count': leave_count,
+        'active_broadcasts': active_broadcasts,
+        'active_broadcast_count': active_broadcast_count,
     })
 
 
@@ -204,18 +116,8 @@ def student_dashboard(request):
 
 
 
-@login_required
-def warden_dashboard(request):
-    if request.user.role != 'warden':
-        return redirect('login')
-    return render(request, 'warden_dashboard.html')
+ 
 
-
-@login_required
-def mess_dashboard(request):
-    if request.user.role != 'mess':
-        return redirect('login')
-    return render(request, 'mess_dashboard.html')
 
 
 
@@ -223,7 +125,7 @@ def mess_dashboard(request):
 def admin_dashboard(request):
     if request.user.role != 'admin':
         return redirect('login')
-    return render(request, 'admin_dashboard.html')
+    return render(request, 'admin/admin_dashboard.html')
 
 @login_required
 def student_complaint(request):
@@ -239,30 +141,20 @@ def student_complaint(request):
                 student=student,
                 message=message
             )
-            return redirect('student_dashboard')
+            return redirect('student_complaint')
 
-    return render(request, 'student_complaint.html')
+    complaints = Complaint.objects.filter(student=student).order_by('-created_at')
+
+    return render(request, 'student/complaint.html', {
+        'complaints': complaints
+    })
 
 @login_required
 def student_broadcast(request):
-    if request.user.role != 'student':
-        return redirect('login')
+    broadcasts = Broadcast.objects.all().order_by('-created_at')
 
-    messages = Broadcast.objects.all().order_by('-created_at')
-
-    return render(request, 'student_broadcast.html', {
-        'messages': messages
+    return render(request, 'student/broadcast.html', {
+        'broadcasts': broadcasts
     })
-    
-@login_required
-def warden_broadcast(request):
-    if request.user.role != 'warden':
-        return redirect('login')
-
-    if request.method == "POST":
-        message = request.POST.get('message')
-        if message:
-            Broadcast.objects.create(message=message)
-            return redirect('warden_dashboard')
-
-    return render(request, 'warden_broadcast.html')
+ 
+ 

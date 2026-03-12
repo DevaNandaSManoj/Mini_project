@@ -1,0 +1,69 @@
+{% extends "warden/base_warden.html" %}
+
+{% block content %}
+
+<!-- Greeting -->
+<div class="dashboard-greeting">
+    <h1>Welcome, {{ warden.user.first_name }} 👋</h1>
+    <p>Hostel Block: {{ warden.hostel_block }}</p>
+</div>
+
+<!-- STAT CARDS -->
+<div class="stats-grid">
+
+    <div class="card">
+        <div class="stat-value">{{ total_students }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-value">{{ attendance_percent }}%</div>
+        <div class="stat-label">Today's Attendance</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-value">{{ pending_leaves }}</div>
+        <div class="stat-label">Pending Leave Requests</div>
+    </div>
+
+    <div class="card">
+        <div class="stat-value">{{ admin_broadcast_count }}</div>
+        <div class="stat-label">Admin Broadcasts (24hrs)</div>
+    </div>
+
+</div>
+
+<!-- ATTENDANCE SUMMARY -->
+<div class="card" style="margin-bottom:20px;">
+    <h3>Today's Attendance Summary</h3>
+    <p>Present: {{ present_today }}</p>
+    <p>Absent: {{ absent_today }}</p>
+</div>
+
+<!-- ADMIN BROADCAST PREVIEW -->
+<div class="broadcast-card">
+
+    <div class="broadcast-title">
+        Recent Admin Broadcasts
+    </div>
+
+    {% if active_admin_broadcasts %}
+        {% for broadcast in active_admin_broadcasts %}
+            <div class="broadcast-item">
+                <div class="broadcast-message">
+                    {{ broadcast.message }}
+                </div>
+                <div class="broadcast-time">
+                    {{ broadcast.created_at }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-broadcast">
+            No recent broadcasts.
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

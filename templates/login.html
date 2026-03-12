@@ -1,190 +1,360 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Optimess Login</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: #e5e9f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optimess – Smart Hostel Management</title>
 
-        .main-container {
-            text-align: center;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-        /* Logo Box */
-        .logo-box {
-            width: 90px;
-            height: 90px;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            border-radius: 20px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 35px;
-            color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-    
-        h1 {
-            margin: 10px 0 5px 0;
-        }
+<style>
 
-        .subtext {
-            color: #555;
-            margin-bottom: 30px;
-        }
+/* ================= ROOT VARIABLES ================= */
+:root{
+  --bg:#070e1c;
+  --surface:#0f172a;
+  --surface2:#162133;
+  --border:rgba(99,179,237,0.15);
+  --accent:#38bdf8;
+  --accent2:#818cf8;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+}
 
-        /* Role Buttons */
-        .role-section {
-            width: 420px;
-            margin: auto;
-            margin-bottom: 30px;
-        }
+/* ================= LIGHT MODE ================= */
+body.light{
+  --bg:#eef2f7;
+  --surface:#ffffff;
+  --surface2:#f3f6fb;
+  --border:rgba(0,0,0,0.08);
+  --text:#1e293b;
+  --text2:#64748b;
+}
 
-        .role-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 18px;
-        }
+/* ================= BASE ================= */
+body{
+  margin:0;
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:0.3s ease;
+  position:relative;
+}
 
-        .role-btn {
-            width: 48%;
-            padding: 14px;
-            border-radius: 14px;
-            border: 1px solid #cbd5e1;
-            background: white;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-weight: 500;
-        }
+/* ================= GRID BACKGROUND ================= */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
 
-        .role-btn:hover {
-            transform: translateY(-3px);
-        }
+/* Dark grid */
+body:not(.light)::before{
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
+}
 
-        .active {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            border: none;
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
+/* Light grid */
+body.light::before{
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+}
 
-        /* Login Card */
-        .login-card {
-            background: white;
-            padding: 35px;
-            border-radius: 18px;
-            width: 420px;
-            margin: auto;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-        }
+/* ================= HEADER ================= */
+.header{
+  text-align:center;
+  padding-top:60px;
+  position:relative;
+  z-index:1;
+}
 
-        input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 18px;
-            border-radius: 12px;
-            border: 1px solid #cbd5e1;
-            font-size: 15px;
-        }
+.logo-box{
+  width:80px;
+  height:80px;
+  margin:auto;
+  border-radius:20px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:30px;
+  color:white;
+  box-shadow:0 0 35px rgba(56,189,248,0.6);
+  margin-bottom:20px;
+}
 
-        input:focus {
-            outline: none;
-            border: 1px solid #2a5298;
-        }
+/* ===== Optimess Gradient Logo ===== */
+.optimess-logo{
+  font-family:'Syne', sans-serif;
+  font-weight:900;
+  font-size:42px;
+  letter-spacing:-0.05em;
 
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            border: none;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+  background: linear-gradient(
+    90deg,
+    #b9ebf2 0%,
+    #4dc3fa 30%,
+    #1e94f4 65%,
+    #9571d3 100%
+  );
 
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 
-        .error {
-            color: red;
-            margin-bottom: 15px;
-        }
-    </style>
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+
+  display:inline-block;          /* IMPORTANT */
+  transform: translateZ(0);      /* GPU force */
+  will-change: transform;        /* Stabilize */
+}
+
+.header p{
+  color:var(--text2);
+  margin-top:8px;
+  font-size:14px;
+}
+
+/* ================= CARD ================= */
+.container{
+  display:flex;
+  justify-content:center;
+  margin-top:40px;
+  position:relative;
+  z-index:1;
+}
+
+.card{
+  width:430px;
+  background:var(--surface);
+  padding:40px;
+  border-radius:20px;
+  border:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+
+.card h2{
+  font-family:'Syne',sans-serif;
+  font-size:32px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.card .sub{
+  color:var(--text2);
+  font-size:14px;
+  margin-bottom:25px;
+}
+
+/* ================= ROLE SECTION ================= */
+.role-label{
+  font-size:12px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--text2);
+  margin-bottom:10px;
+}
+
+.role-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:25px;
+}
+
+.role-btn{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px 10px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.role-btn i{
+  font-size:18px;
+  display:block;
+  margin-bottom:8px;
+}
+
+.role-btn:hover{
+  transform:translateY(-2px);
+}
+
+.role-btn.active{
+  border-color:var(--accent);
+  box-shadow:0 0 20px rgba(56,189,248,0.4);
+}
+
+/* ================= INPUTS ================= */
+.input-group{
+  margin-bottom:18px;
+}
+
+.input-group label{
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--text2);
+  margin-bottom:8px;
+  display:block;
+}
+
+.input-group input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  font-size:14px;
+  transition:0.3s ease;
+}
+
+body.light .input-group input{
+  background:#ffffff;
+  border:1px solid #dbe2ea;
+}
+
+.input-group input:focus{
+  outline:none;
+  border:1px solid var(--accent);
+  box-shadow:0 0 0 3px rgba(56,189,248,0.15);
+}
+
+/* ================= BUTTON ================= */
+.login-btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.login-btn:hover{
+  transform:translateY(-2px);
+}
+
+/* ================= THEME TOGGLE ================= */
+.theme-toggle{
+  position:fixed;
+  top:20px;
+  right:20px;
+  padding:8px 16px;
+  border-radius:30px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  cursor:pointer;
+  z-index:2;
+}
+
+.error{
+  color:#f87171;
+  margin-bottom:10px;
+  text-align:center;
+}
+
+</style>
 </head>
+
 <body>
 
-<div class="main-container">
+<div class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</div>
 
-    <div class="logo-box">
-        🏢
+<div class="header">
+  <div class="logo-box">
+    <i class="fa-solid fa-utensils"></i>
+  </div>
+  <h1 class="optimess-logo">Optimess</h1>
+  <p>Smart Hostel & Mess Management System</p>
+</div>
+
+<div class="container">
+<div class="card">
+
+  <h2>Welcome Back</h2>
+  <div class="sub">Select your role and sign in to continue</div>
+
+  <div class="role-label">I Am A</div>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <div class="role-grid">
+    <div class="role-btn active" onclick="selectRole(this,'student')">
+      <i class="fa-solid fa-graduation-cap"></i>
+      Student
+    </div>
+    <div class="role-btn" onclick="selectRole(this,'warden')">
+      <i class="fa-solid fa-building-columns"></i>
+      Warden
+    </div>
+    <div class="role-btn" onclick="selectRole(this,'mess')">
+      <i class="fa-solid fa-bowl-food"></i>
+      Mess Manager
+    </div>
+    <div class="role-btn" onclick="selectRole(this,'admin')">
+      <i class="fa-solid fa-gear"></i>
+      Admin
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="role" id="role" value="student">
+
+    <div class="input-group">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Enter your username" required>
     </div>
 
-    <h1>Optimess</h1>
-    <div class="subtext">
-        Hostel Management System <br>
-        Select your portal and login
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Enter your password" required>
     </div>
 
-    <!-- Role Buttons -->
-    <div class="role-section">
-        <div class="role-row">
-            <button type="button" class="role-btn active" onclick="selectRole(this, 'student')">Student</button>
-            <button type="button" class="role-btn" onclick="selectRole(this, 'warden')">Warden</button>
-        </div>
-        <div class="role-row">
-            <button type="button" class="role-btn" onclick="selectRole(this, 'mess')">Mess Manager</button>
-            <button type="button" class="role-btn" onclick="selectRole(this, 'admin')">Admin</button>
-        </div>
-    </div>
+    <button class="login-btn" id="loginText">
+      Sign In →
+    </button>
+  </form>
 
-    <!-- Login Box -->
-    <div class="login-card">
-
-        {% if error %}
-        <div class="error">{{ error }}</div>
-        {% endif %}
-
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="role" id="role" value="student">
-
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-
-            <button type="submit" class="login-btn" id="loginText">
-                Login as Student
-            </button>
-        </form>
-
-    </div>
-
+</div>
 </div>
 
 <script>
-    function selectRole(button, role) {
-        let buttons = document.querySelectorAll('.role-btn');
-        buttons.forEach(btn => btn.classList.remove('active'));
+function selectRole(el,role){
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('role').value=role;
+  document.getElementById('loginText').innerText="Sign In as "+el.innerText+" →";
+}
 
-        button.classList.add('active');
-
-        document.getElementById('role').value = role;
-
-        document.getElementById('loginText').innerText =
-            "Login as " + button.innerText;
-    }
+function toggleTheme(){
+  document.body.classList.toggle("light");
+  const btn=document.querySelector('.theme-toggle');
+  if(document.body.classList.contains("light")){
+    btn.innerText="☀ Light Mode";
+  }else{
+    btn.innerText="🌙 Dark Mode";
+  }
+}
 </script>
 
 </body>

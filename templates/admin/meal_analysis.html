@@ -1,0 +1,158 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="section">
+  <div class="page-header">
+    <div class="breadcrumb"><span>Admin</span> › Meal Analysis</div>
+    <h1>Meal Analysis</h1>
+    <p>Which meals are mostly selected, skipped, and wasted.</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom: 32px;">
+    <form method="GET" action="" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div>
+        <label style="display:block;font-size:0.8rem;color:var(--text2);margin-bottom:6px;font-weight:600">
+          <i class="fa fa-calendar-alt" style="margin-right:6px"></i> View by Date
+        </label>
+        <input type="date" name="date" class="inp" value="{{ selected_date_str }}" onchange="this.form.submit()" style="width:180px">
+      </div>
+      
+      <div style="font-weight:700;color:var(--text3);margin-top:18px">OR</div>
+      
+      <div>
+        <label style="display:block;font-size:0.8rem;color:var(--text2);margin-bottom:6px;font-weight:600">
+          <i class="fa fa-calendar-alt" style="margin-right:6px"></i> View by Month
+        </label>
+        <input type="month" name="month" class="inp" value="{{ selected_month_str }}" onchange="this.form.submit()" style="width:180px">
+      </div>
+    </form>
+  </div>
+
+  <div class="grid-2 mt-16">
+    
+    <!-- Most Selected Meal Card -->
+    <div class="card">
+      <div class="card-title" style="font-size:1.1rem">
+        🏆 Most Selected Meal
+      </div>
+      <div class="card-sub mb-16">{{ period_text }}</div>
+      
+      <div style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:16px;margin-bottom:24px;display:flex;gap:16px;align-items:center">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent4));border-radius:8px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>
+        <div>
+          <div style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Most Selected Meal</div>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font-size:1.2rem;font-weight:800;color:var(--accent3);font-family:'DM Sans',sans-serif">{{ most_selected_meal }}</span>
+            <span style="font-size:0.85rem;color:var(--accent3)">• {{ most_selected_count }} selections</span>
+          </div>
+        </div>
+      </div>
+      
+      <div style="height:220px;position:relative">
+        <canvas id="selectedChart"></canvas>
+      </div>
+    </div>
+    
+    <!-- Most Skipped Meal Card -->
+    <div class="card">
+      <div class="card-title" style="font-size:1.1rem">
+        📉 Most Skipped Meal
+      </div>
+      <div class="card-sub mb-16">{{ period_text }}</div>
+      
+      <div style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:16px;margin-bottom:24px;display:flex;gap:16px;align-items:center">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent4));border-radius:8px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.2)"></div>
+        <div>
+          <div style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Most Skipped Meal</div>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font-size:1.2rem;font-weight:800;color:var(--accent5);font-family:'DM Sans',sans-serif">{{ most_skipped_meal }}</span>
+            <span style="font-size:0.85rem;color:var(--accent5)">• {{ most_skipped_count }} selections</span>
+          </div>
+        </div>
+      </div>
+      
+      <div style="height:220px;position:relative">
+        <canvas id="skippedChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const bCount = parseInt("{{ breakfast_count|default:0 }}", 10) || 0;
+    const lCount = parseInt("{{ lunch_count|default:0 }}", 10) || 0;
+    const dCount = parseInt("{{ dinner_count|default:0 }}", 10) || 0;
+    
+    const labels = ['Breakfast', 'Lunch', 'Dinner'];
+    const vals = [bCount, lCount, dCount];
+    
+    // selected chart uses blues/greens/purples
+    const selClrs = ['#38bdf8', '#34d399', '#818cf8'];
+    // skipped chart uses warm colors (red/orange)
+    const skipClrs = ['#f87171', '#f59e0b', '#fb923c'];
+    
+    function drawChart(canvasId, values, colors) {
+      const cc = document.getElementById(canvasId);
+      if(!cc) return;
+      const ctx = cc.getContext('2d');
+      // Set precise canvas dimensions matching container
+      const parent = cc.parentElement;
+      const W = parent.offsetWidth; 
+      const H = parent.offsetHeight; 
+      cc.width = W; 
+      cc.height = H;
+      
+      const bW = Math.floor(W/labels.length * 0.4), gp = Math.floor(W/labels.length);
+      const mx = Math.max(...values, 1) * 1.2; // pad top
+      
+      ctx.clearRect(0,0,W,H);
+      
+      // Draw grid line at bottom
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)'; 
+      ctx.lineWidth = 1; 
+      ctx.beginPath(); 
+      ctx.moveTo(0,H-26); 
+      ctx.lineTo(W,H-26); 
+      ctx.stroke();
+
+      labels.forEach((l,i) => {
+        const x = gp * i + (gp - bW) / 2;
+        // height calculation
+        const bh = Math.floor((values[i]/mx) * (H-50));
+        const y = H - bh - 26; // 26px padded from bottom
+        
+        // draw bar
+        const grad = ctx.createLinearGradient(0,y,0,H-26);
+        grad.addColorStop(0,colors[i]); 
+        grad.addColorStop(1,colors[i]+'33');
+        
+        ctx.fillStyle = grad; 
+        ctx.beginPath(); 
+        ctx.roundRect(x,y,bW,bh,6); 
+        ctx.fill();
+        
+        // Value text
+        ctx.fillStyle = '#fff'; 
+        ctx.font = "bold 14px 'DM Sans',sans-serif"; 
+        ctx.textAlign = 'center';
+        ctx.fillText(values[i], x+bW/2, y-8);
+        
+        // Label text
+        ctx.fillStyle = '#94a3b8'; 
+        ctx.font = '12px DM Sans,sans-serif'; 
+        ctx.fillText(l, x+bW/2, H-5);
+      });
+    }
+
+    drawChart('selectedChart', vals, selClrs);
+    
+    // For skipped, it's logically inverse or we could just show the same values but styled differently.
+    // In the mockup they show the same bars but colored warmly.
+    drawChart('skippedChart', vals, skipClrs);
+  });
+</script>
+{% endblock %}

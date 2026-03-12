@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-5i$!dmj^ognb0go1dq0c*j1mxfk4fjp4t*%!_j)i+=-y*t&dg7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["https://mini-project-ji62.onrender.com"]
 
 # Application definition
 
@@ -39,9 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'food',
-    'attendance',
     'leave',
     'reports',
+    'warden',
+    'adminapp',
+    'mess_manager',
 ]
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -67,9 +69,11 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'accounts.context_processors.global_context',
             ],
         },
     },
@@ -113,7 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -125,7 +129,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+from pathlib import Path
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ 

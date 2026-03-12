@@ -1,0 +1,131 @@
+{% extends "warden/base_warden.html" %}
+{% block content %}
+
+<div class="dashboard-greeting">
+    <h1>Mark Mess for Student</h1>
+    <p>Manually select meals on behalf of students.</p>
+</div>
+
+<div class="broadcast-panel">
+
+    <form method="POST" class="broadcast-form">
+        {% csrf_token %}
+
+        <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px;">
+
+            <select name="student_id" required
+                style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text); min-width:200px;">
+                <option value="">Select Student</option>
+                {% for student in students %}
+                    <option value="{{ student.id }}"
+                        {% if student.id|stringformat:"s" == selected_student_id %}
+                            selected
+                        {% endif %}>
+                        {{ student.user.get_full_name|default:student.user.username }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <input type="date" name="date" value="{{ today }}"
+                style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+
+        </div>
+
+        <br>
+
+        <!-- DAILY MEAL COUNTS -->
+        <div class="stats-grid" style="margin-bottom:20px;">
+            <div class="card">
+                <div class="stat-value">{{ breakfast_count }}</div>
+                <div class="stat-label">Breakfast Count</div>
+            </div>
+            <div class="card">
+                <div class="stat-value">{{ lunch_count }}</div>
+                <div class="stat-label">Lunch Count</div>
+            </div>
+            <div class="card">
+                <div class="stat-value">{{ dinner_count }}</div>
+                <div class="stat-label">Dinner Count</div>
+            </div>
+        </div>
+
+        <!-- MEALS -->
+        <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:20px;">
+
+            <!-- BREAKFAST -->
+            <div class="card">
+                <h3 style="margin-bottom:10px;">Breakfast</h3>
+
+                {% if leave_locked %}
+                    <p style="color:#f87171;">On approved leave — cannot modify</p>
+                {% else %}
+                    <label>
+                        <input type="radio" name="breakfast" value="yes"
+                        {% if selected_record and selected_record.breakfast %}checked{% endif %}>
+                        Opt-In
+                    </label>
+                    <br>
+                    <label>
+                        <input type="radio" name="breakfast" value="no"
+                        {% if selected_record and selected_record.breakfast == False %}checked{% endif %}>
+                        Opt-Out
+                    </label>
+                {% endif %}
+            </div>
+
+            <!-- LUNCH -->
+            <div class="card">
+                <h3 style="margin-bottom:10px;">Lunch</h3>
+
+                {% if leave_locked %}
+                    <p style="color:#f87171;">On approved leave — cannot modify</p>
+                {% else %}
+                    <label>
+                        <input type="radio" name="lunch" value="yes"
+                        {% if selected_record and selected_record.lunch %}checked{% endif %}>
+                        Opt-In
+                    </label>
+                    <br>
+                    <label>
+                        <input type="radio" name="lunch" value="no"
+                        {% if selected_record and selected_record.lunch == False %}checked{% endif %}>
+                        Opt-Out
+                    </label>
+                {% endif %}
+            </div>
+
+            <!-- DINNER -->
+            <div class="card">
+                <h3 style="margin-bottom:10px;">Dinner</h3>
+
+                {% if leave_locked %}
+                    <p style="color:#f87171;">On approved leave — cannot modify</p>
+                {% else %}
+                    <label>
+                        <input type="radio" name="dinner" value="yes"
+                        {% if selected_record and selected_record.dinner %}checked{% endif %}>
+                        Opt-In
+                    </label>
+                    <br>
+                    <label>
+                        <input type="radio" name="dinner" value="no"
+                        {% if selected_record and selected_record.dinner == False %}checked{% endif %}>
+                        Opt-Out
+                    </label>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <br>
+
+        <button type="submit" class="send-gradient-btn">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Save Meals
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

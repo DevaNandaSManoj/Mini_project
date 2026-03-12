@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimess - Admin</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/admin_theme.css' %}">
+</head>
+<body>
+
+<button id="themeToggle" onclick="toggleTheme()" style="position:fixed;top:18px;right:20px;z-index:9999;background:var(--surface2);border:1.5px solid var(--border);border-radius:50px;padding:8px 16px;cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--text);font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:8px;transition:all 0.3s;box-shadow:0 2px 12px rgba(0,0,0,0.15)">🌙 Dark Mode</button>
+
+<div id="appPage" style="display:block; min-height:100vh;">
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">🍽️</div>
+        <h2>Optimess</h2>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebarAvatar">{{ request.user.username|first|upper }}</div>
+        <div>
+          <div class="user-info-name" id="sidebarName">{{ request.user.first_name|default:request.user.username }}</div>
+          <div class="user-info-role" id="sidebarRole">Admin</div>
+        </div>
+      </div>
+      <div class="sidebar-nav" id="sidebarNav">
+          <div class="nav-section-title">SYSTEM</div>
+          <a href="{% url 'admin_dashboard' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-tachometer-alt"></i>Dashboard</a>
+          <a href="{% url 'manage_students' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-user-graduate"></i>Students</a>
+          <a href="{% url 'manage_wardens' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-user-shield"></i>Wardens</a>
+          <a href="{% url 'manage_mess' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-user-tie"></i>Mess Managers</a>
+          
+          <div class="nav-section-title">REPORTS</div>
+          <a href="{% url 'all_leaves' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-plane-departure"></i>View Leaves</a>
+          <a href="{% url 'broadcasts' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-bullhorn"></i>Broadcasts</a>
+          <a href="{% url 'attendance_report' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-calendar-check"></i>Attendance</a>
+          <a href="{% url 'food_report' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-utensils"></i>Food Report</a>
+          <a href="{% url 'meal_analysis' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-chart-line"></i>Meal Analysis</a>
+      </div>
+      <div class="sidebar-footer">
+          <form action="{% url 'logout' %}" method="POST" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="logout-btn" style="background:transparent; border:none; width:100%; text-align:left; font-family:inherit;">
+                  <i class="fa fa-sign-out-alt"></i> Logout
+              </button>
+          </form>
+      </div>
+    </nav>
+    
+    <!-- MAIN -->
+    <main class="main-content" id="mainContent">
+       {% block content %}
+       {% endblock %}
+    </main>
+  </div>
+</div>
+
+<script>
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    const btn = document.getElementById('themeToggle');
+    if(btn) btn.innerHTML = isLight ? '☀️ Light Mode' : '🌙 Dark Mode';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+(function() {
+    const saved = localStorage.getItem('theme');
+    if(saved === 'light') {
+        document.body.classList.add('light-mode');
+        const btn = document.getElementById('themeToggle');
+        if(btn) btn.innerHTML = '☀️ Light Mode';
+    }
+    
+    // Auto-active link
+    const path = window.location.pathname;
+    document.querySelectorAll('.nav-item').forEach(link => {
+        if(link.getAttribute('href') === path) {
+            link.classList.add('active');
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

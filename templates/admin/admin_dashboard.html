@@ -1,0 +1,45 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><span>Admin</span> &rsaquo; Dashboard</div>
+  <h1>Admin Dashboard</h1>
+  <p>Full system overview and management.</p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card" style="--stat-color:rgba(56,189,248,0.15)">
+    <div class="stat-icon"><i class="fa fa-user-graduate"></i></div>
+    <div class="stat-value">{{ total_students }}</div>
+    <div class="stat-label">Total Students</div>
+  </div>
+  
+  <div class="stat-card" style="--stat-color:rgba(245,158,11,0.15)">
+    <div class="stat-icon" style="color:var(--accent4)"><i class="fa fa-user-shield"></i></div>
+    <div class="stat-value">{{ total_wardens }}</div>
+    <div class="stat-label">Wardens</div>
+  </div>
+  
+  <div class="stat-card" style="--stat-color:rgba(52,211,153,0.15)">
+    <div class="stat-icon" style="color:var(--accent3)"><i class="fa fa-user-tie"></i></div>
+    <div class="stat-value">{{ total_mess }}</div>
+    <div class="stat-label">Mess Managers</div>
+  </div>
+  
+  <div class="stat-card" style="--stat-color:rgba(248,113,113,0.15)">
+    <div class="stat-icon" style="color:var(--accent5)"><i class="fa fa-file-signature"></i></div>
+    <div class="stat-value">{{ pending_leaves }}</div>
+    <div class="stat-label">Pending Leaves</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Quick Access</div>
+  <div class="btn-row mt-16">
+    <a href="{% url 'manage_students' %}" class="action-btn" style="text-decoration:none;"><i class="fa fa-user-graduate"></i> Manage Students</a>
+    <a href="{% url 'manage_wardens' %}" class="action-btn warning" style="text-decoration:none;"><i class="fa fa-user-shield"></i> Manage Wardens</a>
+    <a href="{% url 'manage_mess' %}" class="action-btn success" style="text-decoration:none;"><i class="fa fa-user-tie"></i> Manage Mess</a>
+    <a href="{% url 'all_leaves' %}" class="action-btn" style="text-decoration:none; background:var(--accent2);"><i class="fa fa-plane"></i> View All Leaves</a>
+  </div>
+</div>
+{% endblock %}

@@ -26,5 +26,5 @@ urlpatterns = [
     path('', include('food.urls')),
     path('', include('leave.urls')),
     path('warden/', include('warden.urls')),
- 
+    path('adminapp/', include('adminapp.urls')),
 ]

@@ -1,0 +1,55 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="section">
+  <div class="page-header">
+    <div class="breadcrumb"><span>Admin</span> › Attendance Report</div>
+    <h1>Student Attendance</h1>
+    <p>Overview of all student daily attendance marks.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Attendance Records</div>
+    
+    <div class="table-wrap mt-16">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Student</th>
+            <th>Room</th>
+            <th>Status</th>
+            <th>Marked By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if records %}
+            {% for r in records %}
+            <tr>
+              <td>{{ r.date|date:"M d, Y" }}</td>
+              <td>{{ r.student.user.first_name|default:r.student.user.username }}</td>
+              <td>{{ r.student.room_no }}</td>
+              <td>
+                <span class="badge {% if r.present %}badge-green{% else %}badge-red{% endif %}">
+                  {% if r.present %}Present{% else %}Absent{% endif %}
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-blue">{{ r.get_marked_by_display|default:"Unknown" }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5" style="text-align:center; padding:24px; color:var(--text3);">
+                No attendance records found in the system.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -131,7 +131,7 @@ def mess_dashboard(request):
 def admin_dashboard(request):
     if request.user.role != 'admin':
         return redirect('login')
-    return render(request, 'admin_dashboard.html')
+    return render(request, 'admin/admin_dashboard.html')
 
 @login_required
 def student_complaint(request):

@@ -311,6 +311,11 @@
                    class="{% if request.resolver_match.url_name == 'warden_leave_requests' %}active{% endif %}">
                     <i class="fa-solid fa-file-signature"></i>
                     <span>Leave Applications</span>
+                    {% if pending_count and pending_count > 0 %}
+                        <span style="background:#f87171; color:white; padding:2px 8px; border-radius:50%; font-size:11px; margin-left:auto;">
+                            {{ pending_count }}
+                        </span>
+                    {% endif %}
                 </a>
 
                 <a href="{% url 'warden_attendance' %}"

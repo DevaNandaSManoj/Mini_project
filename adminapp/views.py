@@ -297,6 +297,7 @@ def attendance_report(request):
 
     selected_date_str = request.GET.get('date')
     selected_month_str = request.GET.get('month')
+    student_id = request.GET.get('student_id')
     sort_order = request.GET.get('sort', 'desc') # default newest first
 
     order_by_clause = 'date' if sort_order == 'asc' else '-date'
@@ -338,6 +339,13 @@ def attendance_report(request):
         display_month = f"{calendar.month_name[today.month]} - {today.year}"
         selected_month_str = f"{today.year}-{today.month:02d}"
 
+    # Filter by specific student
+    if student_id:
+        records = records.filter(student_id=student_id)
+
+    # Fetch all students for the dropdown
+    all_students = Student.objects.select_related('user').all()
+
     context = {
         "records": records,
         "view_mode": "vertical",
@@ -345,6 +353,8 @@ def attendance_report(request):
         "display_month": display_month,
         "selected_date_str": selected_date_str,
         "current_month_str": selected_month_str,
+        "selected_student_id": student_id,
+        "all_students": all_students,
         "sort_order": sort_order
     }
 

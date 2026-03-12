@@ -282,6 +282,20 @@
                 <input type="month" id="month_filter" name="month" class="at-filter-input" value="{{ current_month_str }}" onchange="this.form.submit()">
             </div>
 
+            <div class="at-or-divider">+</div>
+
+            <div class="at-filter-group">
+                <label for="student_filter"><i class="fa fa-user"></i> Student</label>
+                <select id="student_filter" name="student_id" class="at-filter-input" onchange="this.form.submit()">
+                    <option value="">All Students</option>
+                    {% for student in all_students %}
+                        <option value="{{ student.id }}" {% if selected_student_id == student.id|stringformat:"s" %}selected{% endif %}>
+                            {{ student.user.get_full_name|default:student.user.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="at-filter-group" style="margin-left: auto;">
                 <label for="sort_filter"><i class="fa fa-sort"></i> Sort By Date</label>
                 <select id="sort_filter" name="sort" class="at-filter-input" onchange="this.form.submit()">

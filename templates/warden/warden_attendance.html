@@ -1,33 +1,51 @@
 {% extends "warden/base_warden.html" %}
 {% block content %}
 
-<div class="dashboard-greeting">
-    <h1>Attendance Management</h1>
-    <p>Track daily attendance and review history.</p>
+<style>
+    @keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-up {
+        animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+    }
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+</style>
+
+<div class="dashboard-greeting animate-up" style="animation-delay: 0.1s; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(2ec4b6, 0.05) 100%); padding: 24px; border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.15); margin-bottom: 24px;">
+    <h1 style="color: var(--text); font-size: 28px; font-weight: 700; margin-bottom: 8px;">Attendance Management</h1>
+    <p style="color: var(--text2); font-size: 15px; font-weight: 500;">Track daily attendance and review history.</p>
 </div>
 
 <!-- ================= SUMMARY ================= -->
 <div class="stats-grid">
 
-    <div class="card">
-        <div class="stat-value">{{ present_count }}</div>
+    <div class="card hover-card animate-up" style="animation-delay: 0.2s; border-top: 3px solid #10b981;">
+        <div class="stat-value" style="color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);">{{ present_count }}</div>
         <div class="stat-label">Present Today</div>
     </div>
 
-    <div class="card">
-        <div class="stat-value">{{ absent_count }}</div>
+    <div class="card hover-card animate-up" style="animation-delay: 0.3s; border-top: 3px solid #ef4444;">
+        <div class="stat-value" style="color: #ef4444; text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);">{{ absent_count }}</div>
         <div class="stat-label">Absent Today</div>
     </div>
 
-    <div class="card">
-        <div class="stat-value">{{ unmarked_count }}</div>
+    <div class="card hover-card animate-up" style="animation-delay: 0.4s; border-top: 3px solid #f59e0b;">
+        <div class="stat-value" style="color: #f59e0b; text-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);">{{ unmarked_count }}</div>
         <div class="stat-label">Unmarked</div>
     </div>
 
 </div>
 
 <!-- ================= MARK ATTENDANCE ================= -->
-<div class="broadcast-panel">
+<div class="broadcast-panel hover-card animate-up" style="animation-delay: 0.5s; border-radius: 16px;">
 
     <div class="panel-header">
         <i class="fa-solid fa-user-check"></i>
@@ -64,7 +82,7 @@
 </div>
 
 <!-- ================= TODAY RECORDS ================= -->
-<div class="broadcast-panel" style="margin-top:24px;">
+<div class="broadcast-panel hover-card animate-up" style="animation-delay: 0.6s; margin-top:24px; border-radius: 16px;">
 
     <div class="panel-header">
         <i class="fa-solid fa-calendar-day"></i>
@@ -112,7 +130,7 @@
 </div>
 
 <!-- ================= DAILY SEARCH ================= -->
-<div class="broadcast-panel" style="margin-top:24px;">
+<div class="broadcast-panel hover-card animate-up" style="animation-delay: 0.7s; margin-top:24px; border-radius: 16px;">
 
     <div class="panel-header">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -120,10 +138,17 @@
     </div>
 
     <form method="GET" style="display:flex; gap:14px; flex-wrap:wrap;">
-        <input type="text" name="student_name" placeholder="Student Name"
-            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+        <select name="search_student_id"
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text); min-width:200px;">
+            <option value="">Select Student</option>
+            {% for student in students %}
+                <option value="{{ student.id }}">
+                    {{ student.user.get_full_name|default:student.user.username }}
+                </option>
+            {% endfor %}
+        </select>
 
-        <input type="date" name="search_date"
+        <input type="date" name="search_date" required
             style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
 
         <button type="submit" class="send-gradient-btn">
@@ -131,32 +156,39 @@
         </button>
     </form>
 
-    {% if search_result %}
+    {% if search_student_id %}
         <div style="margin-top:16px;">
             {% for record in search_result %}
-            <div class="message-block">
-                <div class="message-meta">
-                    <div>{{ record.student.user.username }}</div>
-                    <div class="message-time">{{ record.date }}</div>
+            <div class="message-block" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                <div class="message-meta" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                    <div style="font-weight:600; color:var(--text);">{{ record.student.user.get_full_name|default:record.student.user.username }}</div>
+                    <div class="message-time" style="color:var(--text2); font-size:12px;">{{ record.date|date:"F d, Y" }}</div>
                 </div>
-                <div class="message-text">
-                    {% if record.present %}
-                        Present
-                    {% else %}
-                        Absent
-                    {% endif %}
-                </div>
-                <div class="message-date">
-                    Marked by: {{ record.marked_by }}
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="message-text">
+                        {% if record.present %}
+                            <span class="badge approved" style="background:rgba(52,211,153,0.15); color:#34d399; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">Present</span>
+                        {% else %}
+                            <span class="badge rejected" style="background:rgba(248,113,113,0.15); color:#f87171; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">Absent</span>
+                        {% endif %}
+                    </div>
+                    <div class="message-date" style="font-size:11px; color:var(--text2); display:flex; gap:6px; align-items:center;">
+                        <i class="fa-solid fa-user-tag"></i> Marked by: {{ record.marked_by|title }}
+                    </div>
                 </div>
             </div>
+            {% empty %}
+                <div class="empty-state" style="padding:20px; text-align:center; color:var(--text2); font-size:13px; background:var(--surface); border:1px dashed var(--border); border-radius:12px;">
+                    No attendance record found for this student on the selected date.
+                </div>
             {% endfor %}
         </div>
     {% endif %}
 
 </div>
 <!-- ================= MONTHLY CALENDAR ================= -->
-<div class="broadcast-panel" style="margin-top:24px;">
+<div class="broadcast-panel animate-up" style="animation-delay: 0.8s; margin-top:24px; border-radius: 16px;">
 
     <div class="panel-header">
         <i class="fa-solid fa-calendar"></i>
@@ -164,14 +196,26 @@
     </div>
 
     <form method="GET" style="display:flex; gap:14px; flex-wrap:wrap;">
-        <input type="number" name="month" placeholder="Month (1-12)" min="1" max="12"
-            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+        <input type="number" name="month" placeholder="Month (1-12)" min="1" max="12" required
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text); width:120px;">
 
-        <input type="number" name="year" placeholder="Year"
-            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+        <select name="year" required
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text); width:100px;">
+            <option value="">Year</option>
+            {% for y in years %}
+                <option value="{{ y }}">{{ y }}</option>
+            {% endfor %}
+        </select>
 
-        <input type="text" name="student_name" placeholder="Student Name"
-            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text);">
+        <select name="calendar_student_id" required
+            style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text); min-width:200px;">
+            <option value="">Select Student</option>
+            {% for student in students %}
+                <option value="{{ student.id }}">
+                    {{ student.user.get_full_name|default:student.user.username }}
+                </option>
+            {% endfor %}
+        </select>
 
         <button type="submit" class="send-gradient-btn">
             View Calendar
@@ -183,36 +227,37 @@
             {{ selected_student.user.get_full_name|default:selected_student.user.username }}
         </h4>
 
-        <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; margin-top:15px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap:12px; margin-top:20px;">
 
             {% for day in monthly_calendar %}
-                <div style="padding:14px; border-radius:12px;
-                    {% if day.record %}
-                        {% if day.record.present %}
-                            background:rgba(52,211,153,0.2);
-                        {% elif day.record.marked_by == 'auto' %}
-                            background:rgba(168,85,247,0.2);
-                        {% else %}
-                            background:rgba(248,113,113,0.2);
-                        {% endif %}
-                    {% else %}
-                        background:var(--surface2);
-                    {% endif %}
-                ">
+                <div style="
+                    background:var(--surface);
+                    border:1px solid {% if day.record %}{% if day.record.present %}rgba(52,211,153,0.3){% elif day.record.marked_by == 'auto' %}rgba(168,85,247,0.3){% else %}rgba(248,113,113,0.3){% endif %}{% else %}var(--border){% endif %};
+                    border-radius:12px;
+                    padding:12px 8px;
+                    display:flex;
+                    flex-direction:column;
+                    align-items:center;
+                    justify-content:center;
+                    gap:8px;
+                    box-shadow:0 2px 4px rgba(0,0,0,0.02);
+                    transition:transform 0.2s, box-shadow 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';"
+                   onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
 
-                    <strong>{{ day.day }}</strong>
+                    <strong style="font-size:18px; color:var(--text); opacity:0.9;">{{ day.day }}</strong>
 
-                    <div style="font-size:12px; margin-top:6px;">
+                    <div style="font-size:11px; font-weight:600; text-align:center;">
                         {% if day.record %}
                             {% if day.record.present %}
-                                Present
+                                <span style="background:rgba(52,211,153,0.15); color:#34d399; padding:4px 8px; border-radius:20px; display:inline-block; width:100%;">Present</span>
                             {% elif day.record.marked_by == "auto" %}
-                                Leave
+                                <span style="background:rgba(168,85,247,0.15); color:#c084fc; padding:4px 8px; border-radius:20px; display:inline-block; width:100%;">Leave</span>
                             {% else %}
-                                Absent
+                                <span style="background:rgba(248,113,113,0.15); color:#f87171; padding:4px 8px; border-radius:20px; display:inline-block; width:100%;">Absent</span>
                             {% endif %}
                         {% else %}
-                            -
+                            <span style="color:var(--text2); opacity:0.5;">-</span>
                         {% endif %}
                     </div>
 

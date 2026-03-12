@@ -2,65 +2,126 @@
 
 {% block content %}
 
+<style>
+    @keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .animate-up {
+        animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+    }
+
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+</style>
+
 <!-- Greeting -->
-<div class="dashboard-greeting">
-    <h1>Welcome, {{ warden.user.first_name }} 👋</h1>
-    <p>Hostel Block: {{ warden.hostel_block }}</p>
+<div class="dashboard-greeting animate-up" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(2ec4b6, 0.05) 100%); padding: 24px; border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.15); margin-bottom: 24px;">
+    <h1 style="color: var(--text); font-size: 28px; font-weight: 700; margin-bottom: 8px;">Welcome back, <span style="color: var(--accent);">{{ warden.user.first_name }}</span> 👋</h1>
+    <p style="color: var(--text2); font-size: 15px; font-weight: 500;">Hostel Block: <span style="background: var(--surface2); padding: 4px 10px; border-radius: 20px; color: var(--text);">{{ warden.hostel_block }}</span></p>
 </div>
 
 <!-- STAT CARDS -->
 <div class="stats-grid">
 
-    <div class="card">
-        <div class="stat-value">{{ total_students }}</div>
+    <div class="card hover-card animate-up" style="animation-delay: 0.1s; border-top: 3px solid #3b82f6;">
+        <div class="stat-value" style="color: #3b82f6; text-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);">{{ total_students }}</div>
         <div class="stat-label">Total Students</div>
     </div>
 
-    <div class="card">
-        <div class="stat-value">{{ attendance_percent }}%</div>
+    <div class="card hover-card animate-up" style="animation-delay: 0.2s; border-top: 3px solid #10b981;">
+        <div class="stat-value" style="color: #10b981; text-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);">{{ attendance_percent }}%</div>
         <div class="stat-label">Today's Attendance</div>
     </div>
 
-    <div class="card">
-        <div class="stat-value">{{ pending_leaves }}</div>
+    <div class="card hover-card animate-up" style="animation-delay: 0.3s; border-top: 3px solid #f59e0b;">
+        <div class="stat-value" style="color: #f59e0b; text-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);">{{ pending_count }}</div>
         <div class="stat-label">Pending Leave Requests</div>
     </div>
 
-    <div class="card">
-        <div class="stat-value">{{ admin_broadcast_count }}</div>
+    <div class="card hover-card animate-up" style="animation-delay: 0.4s; border-top: 3px solid #8b5cf6;">
+        <div class="stat-value" style="color: #8b5cf6; text-shadow: 0 2px 10px rgba(139, 92, 246, 0.2);">{{ admin_broadcast_count }}</div>
         <div class="stat-label">Admin Broadcasts (24hrs)</div>
     </div>
 
 </div>
 
 <!-- ATTENDANCE SUMMARY -->
-<div class="card" style="margin-bottom:20px;">
-    <h3>Today's Attendance Summary</h3>
-    <p>Present: {{ present_today }}</p>
-    <p>Absent: {{ absent_today }}</p>
+<div class="card hover-card animate-up" style="animation-delay: 0.5s; margin-bottom:20px; padding: 24px;">
+    <h3 style="margin-bottom: 16px; font-size: 18px; color: var(--text);">
+        <i class="fa-solid fa-clipboard-user" style="color: #64748b; margin-right: 8px;"></i>
+        Today's Attendance Summary
+    </h3>
+    
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <!-- Present Module -->
+        <div style="flex: 1; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: rgba(16, 185, 129, 0.15); color: #10b981; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <span style="font-weight: 600; color: var(--text); font-size: 15px;">Present</span>
+            </div>
+            <span style="font-size: 24px; font-weight: 700; color: #10b981;">{{ present_today }}</span>
+        </div>
+
+        <!-- Absent Module -->
+        <div style="flex: 1; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+                <span style="font-weight: 600; color: var(--text); font-size: 15px;">Absent</span>
+            </div>
+            <span style="font-size: 24px; font-weight: 700; color: #ef4444;">{{ absent_today }}</span>
+        </div>
+    </div>
 </div>
 
 <!-- ADMIN BROADCAST PREVIEW -->
-<div class="broadcast-card">
+<div class="card broadcast-wrapper hover-card animate-up" style="animation-delay: 0.6s; margin-top:20px; border-left:4px solid var(--accent); padding:24px;">
 
-    <div class="broadcast-title">
+    <div class="broadcast-title" style="font-size:18px; font-weight:700; display:flex; align-items:center; gap:10px; margin-bottom:16px; color:var(--text);">
+        <i class="fa-solid fa-bullhorn" style="color:var(--accent); animation: pulse 2s infinite;"></i>
         Recent Admin Broadcasts
     </div>
 
     {% if active_admin_broadcasts %}
-        {% for broadcast in active_admin_broadcasts %}
-            <div class="broadcast-item">
-                <div class="broadcast-message">
-                    {{ broadcast.message }}
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            {% for broadcast in active_admin_broadcasts %}
+                <div class="broadcast-item" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; position:relative; overflow:hidden; transition: background 0.2s;" onmouseover="this.style.background='var(--surface2)';" onmouseout="this.style.background='var(--surface)';">
+                    
+                    <!-- Decorative accent line on the left of each item -->
+                    <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent2);"></div>
+                    
+                    <div class="broadcast-message" style="font-size:14px; color:var(--text); font-weight:500; margin-bottom:8px; line-height:1.5;">
+                        {{ broadcast.message }}
+                    </div>
+                    
+                    <div class="broadcast-time" style="font-size:11px; color:var(--text2); display:flex; align-items:center; gap:6px;">
+                        <i class="fa-regular fa-clock"></i>
+                        {{ broadcast.created_at|date:"M d, Y • h:i A" }}
+                    </div>
                 </div>
-                <div class="broadcast-time">
-                    {{ broadcast.created_at }}
-                </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     {% else %}
-        <div class="no-broadcast">
-            No recent broadcasts.
+        <div class="no-broadcast" style="padding:20px; text-align:center; background:var(--surface); border:1px dashed var(--border); border-radius:12px; color:var(--text2); font-size:13px;">
+            <i class="fa-solid fa-box-open" style="font-size:24px; margin-bottom:10px; display:block; opacity:0.5;"></i>
+            No recent broadcasts from the Admin.
         </div>
     {% endif %}
 

@@ -410,6 +410,13 @@
                 <span>Food History</span>
             </a>
 
+            <a href="{% url 'student_attendance' %}"
+               class="{% if request.resolver_match.url_name == 'student_attendance' %}active{% endif %}">
+                <i class="fa-solid fa-calendar-check"></i>
+                Attendance History
+            </a>
+            
+
         </div>
 
         <!-- FOOTER -->

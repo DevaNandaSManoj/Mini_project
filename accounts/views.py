@@ -53,16 +53,27 @@ def student_dashboard(request):
 
  
 
-    # Attendance %
-    total_days = StudentDailyRecord.objects.filter(student=student).count()
-    present_days = StudentDailyRecord.objects.filter(
+    # ================= MONTHLY ATTENDANCE =================
+
+    current_month = today.month
+    current_year = today.year
+
+    monthly_records = StudentDailyRecord.objects.filter(
         student=student,
-        present=True
-    ).count()
+        date__month=current_month,
+        date__year=current_year
+    )
+
+    total_days = monthly_records.count()
+    present_days = monthly_records.filter(present=True).count()
 
     attendance_percentage = 0
     if total_days > 0:
         attendance_percentage = round((present_days / total_days) * 100, 1)
+
+    # Month name for dashboard
+    import calendar
+    month_name = calendar.month_name[current_month]
 
     # Tomorrow meals count
     tomorrow_record = StudentDailyRecord.objects.filter(
@@ -107,11 +118,67 @@ def student_dashboard(request):
         'leave_count': leave_count,
         'active_broadcasts': active_broadcasts,
         'active_broadcast_count': active_broadcast_count,
+        'month_name': month_name,
     })
 
+@login_required
+def student_attendance_month(request):
 
+    if request.user.role != "student":
+        return redirect("login")
 
+    import calendar
+    from datetime import date
 
+    student = Student.objects.get(user=request.user)
+
+    month = request.GET.get("month")
+    year = request.GET.get("year")
+
+    monthly_calendar = None
+
+    if month and year:
+
+        month = int(month)
+        year = int(year)
+
+        days_in_month = calendar.monthrange(year, month)[1]
+
+        records = StudentDailyRecord.objects.filter(
+            student=student,
+            date__month=month,
+            date__year=year
+        )
+
+        record_dict = {
+            record.date.day: record
+            for record in records
+        }
+
+        monthly_calendar = []
+
+        for day in range(1, days_in_month + 1):
+
+            monthly_calendar.append({
+                "day": day,
+                "record": record_dict.get(day)
+            })
+
+    months = [
+        (1,"January"),(2,"February"),(3,"March"),(4,"April"),
+        (5,"May"),(6,"June"),(7,"July"),(8,"August"),
+        (9,"September"),(10,"October"),(11,"November"),(12,"December")
+    ]
+
+    years = list(range(2023,2031))
+
+    return render(request, "student/attendance_history.html", {
+        "monthly_calendar": monthly_calendar,
+        "months": months,
+        "years": years,
+        "selected_month": month,
+        "selected_year": year
+    })
 
 
 

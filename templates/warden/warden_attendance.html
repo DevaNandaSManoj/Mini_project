@@ -223,8 +223,25 @@
     </form>
 
     {% if monthly_calendar and selected_student %}
-        <h4 style="margin-top:18px;">
-            {{ selected_student.user.get_full_name|default:selected_student.user.username }}
+        <h4 style="margin-top:18px; font-weight:600;">
+
+        {{ selected_student.user.get_full_name|default:selected_student.user.username }}
+
+        {% if selected_month and selected_year %}
+
+        <span style="  
+        margin-left:8px;
+        font-size:14px;
+        color:var(--text2);
+        font-weight:500;
+        ">
+
+        • {{ selected_month }}/{{ selected_year }}
+
+        </span>
+
+        {% endif %}
+
         </h4>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap:12px; margin-top:20px;">

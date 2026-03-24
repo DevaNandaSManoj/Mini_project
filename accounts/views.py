@@ -157,11 +157,21 @@ def student_attendance_month(request):
 
         monthly_calendar = []
 
+        today = date.today()
+
         for day in range(1, days_in_month + 1):
+
+            record = record_dict.get(day)
+
+            day_date = date(year, month, day)
+
+            # Future days should show "-"
+            if day_date > today:
+                record = None
 
             monthly_calendar.append({
                 "day": day,
-                "record": record_dict.get(day)
+                "record": record
             })
 
     months = [
@@ -179,7 +189,6 @@ def student_attendance_month(request):
         "selected_month": month,
         "selected_year": year
     })
-
 
 
 

@@ -1,0 +1,259 @@
+{% extends "student/base_student.html" %}
+{% block page_title %}Attendance History{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* ================= PANEL ================= */
+
+.calendar-panel{
+    background: linear-gradient(135deg,#0b1c33,#091427);
+    padding: 28px;
+    border-radius: 18px;
+    border: 1px solid rgba(56,189,248,0.18);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+    animation: fadeInUp .45s ease;
+}
+
+/* ================= TITLE ================= */
+
+.page-title{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+/* ================= FORM ================= */
+
+.calendar-form{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+}
+
+.calendar-form select{
+    background:#12213a;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    color:white;
+}
+
+/* ================= BUTTON ================= */
+
+.view-btn{
+    background:linear-gradient(135deg,#60a5fa,#818cf8);
+    border:none;
+    padding:10px 20px;
+    border-radius:10px;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.view-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+}
+
+/* ================= STUDENT NAME ================= */
+
+.student-name{
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:14px;
+}
+
+/* ================= GRID ================= */
+
+.calendar-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+    gap:16px;
+}
+
+/* ================= DAY CARD ================= */
+
+.day-card{
+    background:linear-gradient(145deg,#0f1b2e,#0c1626);
+    border:1px solid rgba(56,189,248,0.25);
+    border-radius:14px;
+    padding:16px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    transition:0.25s;
+}
+
+.day-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+}
+
+/* ================= DAY NUMBER ================= */
+
+.day-number{
+    font-size:22px;
+    font-weight:700;
+    color:#d1e7ff;
+}
+
+/* ================= STATUS PILL ================= */
+
+.status-pill{
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:20px;
+    font-weight:600;
+}
+
+/* PRESENT */
+
+.present{
+    background:rgba(16,185,129,0.15);
+    color:#34d399;
+}
+
+/* ABSENT */
+
+.absent{
+    background:rgba(239,68,68,0.15);
+    color:#f87171;
+}
+
+/* EMPTY */
+
+.empty{
+    color:#94a3b8;
+    font-size:12px;
+}
+
+/* ================= ANIMATION ================= */
+
+@keyframes fadeInUp{
+    0%{opacity:0; transform:translateY(10px)}
+    100%{opacity:1; transform:translateY(0)}
+}
+
+</style>
+
+
+
+<div class="calendar-panel">
+
+<div class="page-title">
+📅 Monthly Attendance
+</div>
+
+
+<form method="GET" class="calendar-form">
+
+<select name="month" required>
+<option value="">Month</option>
+
+{% for m,n in months %}
+<option value="{{m}}">{{n}}</option>
+{% endfor %}
+
+</select>
+
+
+<select name="year" required>
+<option value="">Year</option>
+
+{% for y in years %}
+<option value="{{y}}">{{y}}</option>
+{% endfor %}
+
+</select>
+
+
+<button class="view-btn">
+View Calendar
+</button>
+
+</form>
+
+
+
+{% if monthly_calendar %}
+
+<div class="student-name">
+
+{{ request.user.get_full_name|default:request.user.username }}
+
+{% if selected_month and selected_year %}
+<span style="
+margin-left:10px;
+font-size:16px;
+font-weight:500;
+color:#d3c654;
+">
+
+• 
+{% for m,n in months %}
+    {% if m|stringformat:"s" == selected_month|stringformat:"s" %}
+        {{ n }}
+    {% endif %}
+{% endfor %}
+
+{{ selected_year }}
+
+</span>
+
+{% endif %}
+
+</div>
+
+
+<div class="calendar-grid">
+
+{% for day in monthly_calendar %}
+
+<div class="day-card">
+
+<div class="day-number">
+{{ day.day }}
+</div>
+
+{% if day.record %}
+
+    {% if day.record.present %}
+
+        <span class="status-pill present">
+        Present
+        </span>
+
+    {% else %}
+
+        <span class="status-pill absent">
+        Absent
+        </span>
+
+    {% endif %}
+
+{% else %}
+
+<span class="empty">—</span>
+
+{% endif %}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

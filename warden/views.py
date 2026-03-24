@@ -300,6 +300,8 @@ def warden_attendance(request):
         "active_page": "attendance",
         "pending_count": pending_count,
         "years": years,
+        "selected_month": month,
+        "selected_year": year,
     })
 
 @login_required

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from datetime import date, timedelta
+from django.utils.dateparse import parse_date
 import calendar
 from sklearn.linear_model import LinearRegression
 import numpy as np
@@ -444,6 +445,93 @@ def meal_statistics(request):
 
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
+
+@login_required
+def mess_meal_analysis(request):
+    if request.user.role != 'mess':
+        return redirect('login')
+
+    selected_date_str = request.GET.get('date')
+    selected_month_str = request.GET.get('month')
+
+    records = StudentDailyRecord.objects.all()
+
+    # Filter by date or month
+    if selected_date_str:
+        records = records.filter(date=parse_date(selected_date_str))
+        period_text = "Based on selected date"
+    elif selected_month_str:
+        try:
+            year, month = map(int, selected_month_str.split('-'))
+            records = records.filter(date__year=year, date__month=month)
+            period_text = f"Based on {selected_month_str} average"
+        except ValueError:
+            period_text = "Based on all time"
+    else:
+        # Default to last 30 days if no filter
+        thirty_days_ago = date.today() - timedelta(days=30)
+        records = records.filter(date__gte=thirty_days_ago)
+        period_text = "Based on last 30 days average"
+
+    # Aggregate data
+    student_meal_counts = records.aggregate(
+        b_count=Count('id', filter=Q(breakfast=True)),
+        l_count=Count('id', filter=Q(lunch=True)),
+        d_count=Count('id', filter=Q(dinner=True))
+    )
+
+    b_count = student_meal_counts['b_count'] or 0
+    l_count = student_meal_counts['l_count'] or 0
+    d_count = student_meal_counts['d_count'] or 0
+
+    counts = {
+        'Breakfast': b_count,
+        'Lunch': l_count,
+        'Dinner': d_count
+    }
+
+    total_recs = records.count()
+
+    # Find most selected and most skipped
+    min_count = min(counts.values())
+    max_count = max(counts.values())
+
+    if min_count == max_count:
+        if max_count == 0:
+            most_selected_meal = "No Data"
+            most_skipped_meal = "No Data"
+        else:
+            most_selected_meal = "All Equal"
+            most_skipped_meal = "None (All Equal)"
+    else:
+        max_meals = [k for k, v in counts.items() if v == max_count]
+        most_selected_meal = " & ".join(max_meals)
+
+        min_meals = [k for k, v in counts.items() if v == min_count]
+        most_skipped_meal = " & ".join(min_meals)
+
+    most_selected_count = max_count
+    most_skipped_count = total_recs - min_count
+
+    context = {
+        "selected_date_str": selected_date_str or '',
+        "selected_month_str": selected_month_str or '',
+        "period_text": period_text,
+        "breakfast_count": b_count,
+        "lunch_count": l_count,
+        "dinner_count": d_count,
+        "breakfast_skip": total_recs - b_count,
+        "lunch_skip": total_recs - l_count,
+        "dinner_skip": total_recs - d_count,
+        "most_selected_meal": most_selected_meal,
+        "most_selected_count": most_selected_count,
+        "most_skipped_meal": most_skipped_meal,
+        "most_skipped_count": most_skipped_count,
+    }
+
+    return render(request, 'mess_manager/meal_analysis.html', context)
+
+
 
 def _most_selected_menu_item(days_7, meal_field):
     """Return the menu item name most frequently chosen by students over last 7 days."""

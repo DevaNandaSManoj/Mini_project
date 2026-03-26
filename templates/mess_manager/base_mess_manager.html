@@ -314,6 +314,12 @@
                 <span>Statistics</span>
             </a>
 
+            <a href="{% url 'mess_meal_analysis' %}"
+               class="{% if request.resolver_match.url_name == 'mess_meal_analysis' %}active{% endif %}">
+                <i class="fa-solid fa-chart-bar"></i>
+                <span>Meal Analysis</span>
+            </a>
+
         </div>
 
         <!-- FOOTER -->

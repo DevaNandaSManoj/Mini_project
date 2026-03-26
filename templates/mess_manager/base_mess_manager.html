@@ -1,0 +1,379 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Optimess - Mess Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/student_theme.css' %}">
+
+    <style>
+        :root{
+            --bg:#070e1c;
+            --surface:#0f172a;
+            --surface2:#162133;
+            --border:rgba(99,179,237,0.15);
+            --accent:#38bdf8;
+            --accent2:#818cf8;
+            --accent3:#34d399;
+            --text:#e2e8f0;
+            --text2:#94a3b8;
+            --radius:16px;
+        }
+
+        /* LIGHT MODE */
+        body.light{
+            --bg:#eef2f7;
+            --surface:#ffffff;
+            --surface2:#f3f6fb;
+            --border:rgba(0,0,0,0.08);
+            --text:#1e293b;
+            --text2:#64748b;
+        }
+
+        body{
+            margin:0;
+            font-family:'DM Sans',sans-serif;
+            background:var(--bg);
+            color:var(--text);
+        }
+
+        .layout{
+            display:flex;
+            min-height:100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar{
+            width:240px;
+            background:var(--surface);
+            border-right:1px solid var(--border);
+            padding:18px 14px;
+            display:flex;
+            flex-direction:column;
+            min-height:100vh;
+        }
+
+        .menu{
+            flex:1;
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding-bottom:14px;
+            border-bottom:1px solid var(--border);
+            margin-bottom:14px;
+        }
+
+        .logo-box{
+            width:38px;
+            height:38px;
+            border-radius:12px;
+            background:linear-gradient(135deg,var(--accent),var(--accent2));
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:white;
+        }
+
+        .logo-text{
+            font-family:'Syne',sans-serif;
+            font-size:20px;
+            font-weight:800;
+            background:linear-gradient(90deg,#b9ebf2,var(--accent));
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .profile{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:10px 0 14px;
+            border-bottom:1px solid var(--border);
+            margin-bottom:14px;
+        }
+
+        .avatar{
+            width:34px;
+            height:34px;
+            border-radius:50%;
+            background:linear-gradient(135deg,var(--accent),var(--accent3));
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:14px;
+        }
+
+        .profile-info .name{
+            font-size:13px;
+            font-weight:600;
+        }
+
+        .profile-info .role{
+            font-size:10px;
+            color:var(--accent);
+            letter-spacing:1px;
+        }
+
+        /* NAV */
+        .menu a{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding:9px 12px;
+            border-radius:12px;
+            margin-bottom:6px;
+            font-size:13px;
+            color:var(--text2);
+            text-decoration:none;
+            transition:0.2s ease;
+        }
+
+        .menu a:hover{
+            background:var(--surface2);
+            color:var(--text);
+        }
+
+        .menu a.active{
+            background:rgba(56,189,248,0.12);
+            border:1px solid rgba(56,189,248,0.25);
+            color:var(--accent);
+        }
+
+        .sidebar-footer{
+            border-top:1px solid var(--border);
+            padding-top:14px;
+        }
+
+        .logout-btn{
+            width:100%;
+            background:none;
+            border:none;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding:9px 12px;
+            border-radius:12px;
+            cursor:pointer;
+            color:#f87171;
+            font-size:13px;
+        }
+
+        /* MAIN */
+        .main{
+            flex:1;
+            padding:22px 38px 38px;
+        }
+
+        .topbar{
+            display:flex;
+            justify-content:flex-end;
+            margin-bottom:6px;
+        }
+
+        .theme-toggle{
+            padding:6px 16px;
+            border-radius:30px;
+            background:var(--surface2);
+            border:1px solid var(--border);
+            font-size:13px;
+            cursor:pointer;
+            color:var(--text);
+        }
+
+        /* BREADCRUMB */
+        .dashboard-breadcrumb{
+            font-size:12px;
+            display:flex;
+            gap:6px;
+            margin-bottom:6px;
+        }
+
+        .crumb-parent{ color:var(--accent); }
+        .crumb-sep{ color:var(--text2); }
+        .crumb-active{ font-weight:500; }
+
+        /* GREETING */
+        .dashboard-greeting{
+            margin-bottom:16px;
+        }
+
+        .dashboard-greeting h1{
+            font-size:26px;
+            margin:0 0 4px;
+        }
+
+        .dashboard-greeting p{
+            font-size:13px;
+            color:var(--text2);
+            margin:0;
+        }
+
+        /* CARD BASE */
+        .card{
+            background:var(--surface2);
+            border-radius:var(--radius);
+            padding:22px;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .card::after{
+            content:"";
+            position:absolute;
+            width:120px;
+            height:120px;
+            border-radius:50%;
+            background:rgba(56,189,248,0.08);
+            top:-40px;
+            right:-40px;
+        }
+
+        /* STATS */
+        .stats-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:18px;
+            margin-bottom:20px;
+        }
+
+        .stat-value{
+            font-size:24px;
+            font-weight:700;
+        }
+
+        .stat-label{
+            font-size:13px;
+            color:var(--text2);
+            margin-top:4px;
+        }
+
+        /* TIMER */
+        .timer-value{
+            font-size:30px;
+            font-weight:700;
+            margin-top:8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <div class="sidebar">
+
+        <!-- BRAND -->
+        <div class="brand">
+            <div class="logo-box">
+                <i class="fa-solid fa-utensils"></i>
+            </div>
+            <div class="logo-text">Optimess</div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="profile">
+            <div class="avatar">
+                {{ request.user.first_name|default:request.user.username|first|upper }}
+            </div>
+            <div class="profile-info">
+                <div class="name">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </div>
+                <div class="role">
+                    MESS MANAGER
+                </div>
+            </div>
+        </div>
+
+        <!-- MENU -->
+        <div class="menu">
+
+            <a href="{% url 'mess_dashboard' %}"
+               class="{% if request.resolver_match.url_name == 'mess_dashboard' %}active{% endif %}">
+                <i class="fa-solid fa-gauge"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'edit_menu' %}"
+               class="{% if request.resolver_match.url_name == 'edit_menu' %}active{% endif %}">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Edit Menu</span>
+            </a>
+
+            <a href="{% url 'meal_statistics' %}"
+               class="{% if request.resolver_match.url_name == 'meal_statistics' %}active{% endif %}">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Statistics</span>
+            </a>
+
+            <a href="{% url 'mess_meal_analysis' %}"
+               class="{% if request.resolver_match.url_name == 'mess_meal_analysis' %}active{% endif %}">
+                <i class="fa-solid fa-chart-bar"></i>
+                <span>Meal Analysis</span>
+            </a>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="sidebar-footer">
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="main">
+
+        <div class="topbar">
+            <div></div>
+            <div class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</div>
+        </div>
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+</div>
+
+<script>
+function toggleTheme(){
+    document.body.classList.toggle("light");
+    const btn=document.querySelector('.theme-toggle');
+
+    if(document.body.classList.contains("light")){
+        btn.innerText="☀ Light Mode";
+        localStorage.setItem("theme","light");
+    }else{
+        btn.innerText="🌙 Dark Mode";
+        localStorage.setItem("theme","dark");
+    }
+}
+
+window.onload=function(){
+    const savedTheme=localStorage.getItem("theme");
+    const btn=document.querySelector('.theme-toggle');
+
+    if(savedTheme==="light"){
+        document.body.classList.add("light");
+        btn.innerText="☀ Light Mode";
+    }else{
+        btn.innerText="🌙 Dark Mode";
+    }
+};
+</script>
+</body>
+</html>

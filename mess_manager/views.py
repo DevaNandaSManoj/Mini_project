@@ -314,8 +314,8 @@ def meal_statistics(request):
         month_labels.append(month_start.strftime('%b'))
         month_totals.append(total)
 
-    # ── 4. WASTE ESTIMATION (last 3 months, aggregated monthly) ─────────────────
-    # Waste per month = sum of daily skipped students across the month
+    # ── 4. WASTE ESTIMATION (last 3 months, bi-monthly buckets) ─────────────────
+    # Each month is split into two halves: 1st–14th and 15th–end
     waste_labels = []
     waste_counts = []
     for m in range(2, -1, -1):
@@ -324,20 +324,26 @@ def meal_statistics(request):
         while mo <= 0:
             mo += 12
             yr -= 1
-        month_start = date(yr, mo, 1)
         _, last_day = calendar.monthrange(yr, mo)
-        month_end = date(yr, mo, last_day)
-        month_skip_total = 0
-        current = month_start
-        while current <= month_end and current <= today:
-            day_recs = StudentDailyRecord.objects.filter(date=current)
-            opted = day_recs.filter(
-                Q(breakfast=True) | Q(lunch=True) | Q(dinner=True)
-            ).values('student').distinct().count()
-            month_skip_total += max(total_students - opted, 0)
-            current += timedelta(days=1)
-        waste_labels.append(month_start.strftime('%b %Y'))
-        waste_counts.append(month_skip_total)
+        # Half 1: 1st → 14th
+        h1_start = date(yr, mo, 1)
+        h1_end   = date(yr, mo, 14)
+        # Half 2: 15th → end
+        h2_start = date(yr, mo, 15)
+        h2_end   = date(yr, mo, last_day)
+
+        for (hstart, hend, label_day) in [(h1_start, h1_end, 1), (h2_start, h2_end, 15)]:
+            skip_total = 0
+            current = hstart
+            while current <= hend and current <= today:
+                day_recs = StudentDailyRecord.objects.filter(date=current)
+                opted = day_recs.filter(
+                    Q(breakfast=True) | Q(lunch=True) | Q(dinner=True)
+                ).values('student').distinct().count()
+                skip_total += max(total_students - opted, 0)
+                current += timedelta(days=1)
+            waste_labels.append(f"{date(yr, mo, label_day).strftime('%b')} {label_day}")
+            waste_counts.append(skip_total)
 
     total_waste_week = sum(waste_counts)
     waste_trend = 'High' if total_waste_week > total_students * 3 else 'Moderate' if total_waste_week > total_students else 'Low'
@@ -348,7 +354,7 @@ def meal_statistics(request):
 
     # ── 6. ML PREDICTIONS ────────────────────────────────────────────────────
     X_7 = np.array([[1],[2],[3],[4],[5],[6],[7]])
-    X_3 = np.array([[1],[2],[3]])
+    X_6 = np.array([[1],[2],[3],[4],[5],[6]])
 
     # A) Participation prediction (based on last 7 days)
     y_part = np.array(week_participation, dtype=float)
@@ -357,11 +363,11 @@ def meal_statistics(request):
     predicted_participation = max(0, round(float(model_part.predict([[8]])[0]), 1))
     predicted_participation = min(predicted_participation, 100.0)
 
-    # B) Waste prediction (based on last 3 months)
+    # B) Waste prediction (based on last 6 bi-monthly buckets)
     y_waste = np.array(waste_counts, dtype=float)
     model_waste = LinearRegression()
-    model_waste.fit(X_3, y_waste)
-    predicted_waste = max(0, round(float(model_waste.predict([[4]])[0])))
+    model_waste.fit(X_6, y_waste)
+    predicted_waste = max(0, round(float(model_waste.predict([[7]])[0])))
 
     # ── ALERTS ────────────────────────────────────────────────────────────────
     alerts = []

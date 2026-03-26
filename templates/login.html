@@ -85,6 +85,35 @@
             margin-bottom: 25px;
             text-shadow: 0 10px 30px rgba(0,0,0,0.8);
             letter-spacing: -2px;
+            display: flex;
+        }
+
+        .hero-left h1 span {
+            display: inline-block;
+            opacity: 0;
+            transform-origin: bottom center;
+            animation: popLetter 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popLetter {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.3) rotate(-15deg);
+                color: var(--accent-blue);
+                text-shadow: 0 0 40px var(--accent-blue), 0 0 20px var(--accent-blue);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-15px) scale(1.1) rotate(5deg);
+                color: #a8efff;
+                text-shadow: 0 0 20px var(--accent-blue);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotate(0deg);
+                color: #ffffff;
+                text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            }
         }
 
         .hero-left p {
@@ -530,7 +559,16 @@
 
     <!-- Left Side Hero Text -->
     <div class="hero-left animate-up delay-2">
-        <h1>Optimess.</h1>
+        <h1>
+            <span style="animation-delay: 0.5s;">O</span>
+            <span style="animation-delay: 0.6s;">p</span>
+            <span style="animation-delay: 0.7s;">t</span>
+            <span style="animation-delay: 0.8s;">i</span>
+            <span style="animation-delay: 0.9s;">m</span>
+            <span style="animation-delay: 1.0s;">e</span>
+            <span style="animation-delay: 1.1s;">s</span>
+            <span style="animation-delay: 1.2s;">s</span>
+        </h1>
         <p>A smart, elegant food waste management system designed to track dining attendance, forecast meals accurately, and reduce your hostel food wastage efficiently.</p>
     </div>
 

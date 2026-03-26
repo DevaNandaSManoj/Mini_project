@@ -10,6 +10,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/student_theme.css' %}">
+    
+    <!-- Select2 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <style>
         :root{
@@ -33,6 +38,15 @@
             --border:rgba(0,0,0,0.08);
             --text:#1e293b;
             --text2:#64748b;
+        }
+        body.light h1, body.light h2, body.light h3,
+        body.light h4, body.light h5, body.light h6,
+        body.light .card-title, body.light .page-header h1,
+        body.light .animate-up h1, body.light .student-details h3,
+        body.light .broadcast-message, body.light .stat-value,
+        body.light .section-title, body.light .profile-name,
+        body.light .search-header h2 {
+            color: #0f172a !important;
         }
 
         body{
@@ -256,9 +270,200 @@
 
         /* TIMER */
         .timer-value{
-            font-size:30px;
-            font-weight:700;
-            margin-top:8px;
+            font-size:36px;
+            font-weight:800;
+            font-family: 'Inter', sans-serif;
+            margin-top:10px;
+        }
+
+        /* Select2 Custom Theme Overhaul */
+        .select2-container--default .select2-selection--single {
+            background-color: var(--surface2) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            height: 52px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: all 0.3s ease !important;
+        }
+        .select2-container--focus .select2-selection--single {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15) !important;
+            transform: translateY(-2px);
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text) !important;
+            line-height: normal !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            padding-left: 16px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 50px !important;
+            right: 14px !important;
+        }
+        .select2-dropdown {
+            background-color: var(--surface2) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.15) !important;
+            overflow: hidden !important;
+            font-size: 14px !important;
+            padding: 8px !important;
+            margin-top: 8px !important;
+        }
+        .select2-search--dropdown .select2-search__field {
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            font-family: inherit;
+        }
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+            outline: none;
+        }
+        .select2-container--default .select2-results__option--selected {
+            background-color: var(--accent) !important;
+            color: #fff !important;
+            border-radius: 8px !important;
+        }
+        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+            background-color: rgba(56, 189, 248, 0.15) !important;
+            color: var(--accent) !important;
+            border-radius: 8px !important;
+        }
+        .select2-results__option {
+            padding: 12px 16px !important;
+            color: var(--text2) !important;
+            font-weight: 500 !important;
+            margin-bottom: 4px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        /* --- GLOBAL PREMIUM UI OVERRIDES --- */
+
+        body {
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        /* Smooth Page Entry Animation */
+        @keyframes pageLoad {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .main {
+            animation: pageLoad 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* Sidebar & Menu Enhancements */
+        .sidebar {
+            transition: background 0.4s ease;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+        }
+        .brand {
+            cursor: pointer;
+        }
+        .logo-box {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+        }
+        .brand:hover .logo-box {
+            transform: rotate(-10deg) scale(1.1);
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+        }
+        .menu a {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
+        }
+        .menu a:hover {
+            transform: translateX(4px);
+        }
+        .menu a i {
+            transition: transform 0.3s ease;
+        }
+        .menu a:hover i {
+            transform: scale(1.15);
+        }
+
+        /* Sophisticated Buttons */
+        .send-gradient-btn, button[type="submit"]:not(.logout-btn) {
+            background: linear-gradient(135deg, var(--accent), var(--accent2)) !important;
+            color: white !important;
+            border: none !important;
+            padding: 12px 28px !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            font-family: 'Inter', sans-serif !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 10px !important;
+        }
+        .send-gradient-btn:hover, button[type="submit"]:not(.logout-btn):hover {
+            transform: translateY(-3px) scale(1.02) !important;
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.5) !important;
+            background: linear-gradient(135deg, var(--accent2), var(--accent)) !important;
+        }
+        .send-gradient-btn:active, button[type="submit"]:not(.logout-btn):active {
+            transform: translateY(1px) scale(0.98) !important;
+        }
+
+        /* Glassmorphism Cards */
+        .card {
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        }
+        body.light .card {
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+        .card::after {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card:hover::after {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        /* Inputs */
+        input[type="text"], input[type="date"], input[type="number"], input[type="password"], input[type="email"], select:not(.search-select) {
+            transition: all 0.3s ease !important;
+            border: 1px solid var(--border) !important;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus, input[type="password"]:focus, input[type="email"]:focus, select:not(.search-select):focus {
+            outline: none !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15) !important;
+            background: var(--surface) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Profile Hover */
+        .profile {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin: 0 -10px 14px -10px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+        }
+        .profile:hover {
+            background: var(--surface2);
+            transform: translateX(4px);
+            border-color: var(--border);
         }
     </style>
 </head>
@@ -287,7 +492,7 @@
                     {{ warden.user.get_full_name|default:warden.user.username }}
                 </div>
                 <div class="role">
-                    {{ warden.user.role|upper }}
+                    Warden of Block {{ warden.hostel_block }}
                 </div>
             </div>
         </div>
@@ -299,6 +504,12 @@
                    class="{% if request.resolver_match.url_name == 'warden_dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-gauge"></i>
                     <span>Dashboard</span>
+                </a>
+
+                <a href="{% url 'warden_student_portal' %}"
+                   class="{% if 'student_portal' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fa-solid fa-address-card"></i>
+                    <span>Student Portal</span>
                 </a>
 
                 <a href="{% url 'warden_broadcast' %}"
@@ -397,6 +608,12 @@ window.onload=function(){
         btn.innerText="🌙 Dark Mode";
     }
 };
+
+$(document).ready(function() {
+    $('.search-select').select2({
+        width: 'resolve'
+    });
+});
 </script>
 </body>
 </html>

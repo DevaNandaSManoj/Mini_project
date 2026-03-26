@@ -232,5 +232,40 @@ def student_broadcast(request):
     return render(request, 'student/broadcast.html', {
         'broadcasts': broadcasts
     })
- 
- 
+
+@login_required
+def student_profile(request):
+    if request.user.role != 'student':
+        return redirect('login')
+
+    student = Student.objects.get(user=request.user)
+
+    if request.method == "POST":
+        # Photo upload is always allowed regardless of edit permission
+        if 'profile_picture' in request.FILES:
+            student.profile_picture = request.FILES['profile_picture']
+            student.save()
+            messages.success(request, "Profile photo updated successfully!")
+            return redirect('student_profile')
+
+        # Text field edits require warden's permission
+        if not student.can_edit_profile:
+            messages.error(request, "Editing is locked. Ask your warden to enable profile editing.")
+            return redirect('student_profile')
+
+        student.father_name = request.POST.get("father_name")
+        student.mother_name = request.POST.get("mother_name")
+        student.parent_phone_number = request.POST.get("parent_phone")
+        student.address = request.POST.get("address")
+        student.place = request.POST.get("place")
+        student.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect('student_profile')
+
+    from accounts.models import Warden
+    assigned_warden = Warden.objects.filter(hostel_block=student.hostel_block).first()
+
+    return render(request, 'student/profile.html', {
+        'student': student,
+        'assigned_warden': assigned_warden,
+    })

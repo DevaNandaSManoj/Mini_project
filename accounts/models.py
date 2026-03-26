@@ -27,8 +27,15 @@ class Student(models.Model):
     phone_number = models.CharField(max_length=15)
     department = models.CharField(max_length=100)
     
+    father_name = models.CharField(max_length=100, blank=True, null=True)
+    mother_name = models.CharField(max_length=100, blank=True, null=True)
+    parent_phone_number = models.CharField(max_length=15, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    place = models.CharField(max_length=100, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     parent_email = models.EmailField(blank=True, null=True)
+    can_edit_profile = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username

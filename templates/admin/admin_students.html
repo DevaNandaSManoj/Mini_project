@@ -44,8 +44,27 @@
             </div>
 
             <div class="form-row">
+                <input type="text" name="father_name" class="inp" placeholder="Father's Name">
+                <input type="text" name="mother_name" class="inp" placeholder="Mother's Name">
+            </div>
+
+            <div class="form-row">
+                <input type="text" name="parent_phone" class="inp" placeholder="Parent's Phone">
+                <input type="text" name="place" class="inp" placeholder="Place / City">
+            </div>
+
+            <div class="form-row">
                 <input type="email" name="parent_email" class="inp" placeholder="Parent Email">
-                <div></div> <!-- Empty for alignment -->
+                <input type="text" name="address" class="inp" placeholder="Full Address">
+            </div>
+
+            <!-- Warden auto-assign info -->
+            <div style="background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:12px 16px; margin-bottom:12px; font-size:13px; color:var(--text2); display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-user-shield" style="color:#818cf8; font-size:16px;"></i>
+                <div>
+                    <strong style="color:var(--text);">Warden auto-assigned by block.</strong>
+                    The selected block determines which warden manages this student.
+                </div>
             </div>
 
             <button type="submit" class="action-btn success"><i class="fa fa-plus"></i> Add Student</button>
@@ -63,14 +82,17 @@
                     <div>
                         <div class="user-list-name">{{ student.user.first_name }}</div>
                         <div class="user-list-detail">{{ student.user.username }} &middot; Room {{ student.room_no }}
-                            &middot; Block {{ student.hostel_block }} &middot; {{ student.department }}</div>
+                            &middot; Block {{ student.hostel_block }} &middot; {{ student.department }}
+                            &middot; <i class="fa-solid fa-user-shield" style="color:#818cf8;"></i>
+                            {% for wkey, wval in block_warden_map.items %}{% if wkey == student.hostel_block %}<span style="color:#818cf8; font-weight:600;">{{ wval.user.get_full_name|default:wval.user.username }}</span>{% endif %}{% endfor %}
+                        </div>
                     </div>
                 </div>
                 <div style="display:flex; gap:8px;">
                     <!-- Edit Button -->
                     <button type="button" class="delete-btn"
                         style="color:var(--accent); background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.2)"
-                        onclick="openUpdateModal('{{ student.id }}', '{{ student.room_no|escapejs }}', '{{ student.hostel_block|escapejs }}', '{{ student.phone_number|escapejs }}', '{{ student.department|escapejs }}', '{{ student.parent_email|escapejs }}')">
+                        onclick="openUpdateModal('{{ student.id }}', '{{ student.user.username|escapejs }}', '{{ student.user.first_name|escapejs }}', '{{ student.room_no|escapejs }}', '{{ student.hostel_block|escapejs }}', '{{ student.phone_number|escapejs }}', '{{ student.department|escapejs }}', '{{ student.parent_email|escapejs }}', '{{ student.father_name|escapejs }}', '{{ student.mother_name|escapejs }}', '{{ student.parent_phone_number|escapejs }}', '{{ student.address|escapejs }}', '{{ student.place|escapejs }}')">
                         <i class="fa fa-pen"></i>
                     </button>
 
@@ -109,12 +131,23 @@
 
         <div class="form-row">
             <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Student ID</label>
+                <input type="text" class="inp" id="update_username_display" disabled style="opacity:0.65; cursor:not-allowed; font-family:monospace; font-weight:700; letter-spacing:0.5px;">
+            </div>
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Full Name</label>
+                <input type="text" class="inp" name="name" id="update_name" placeholder="Full Name" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
                 <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Room Number</label>
                 <input type="text" class="inp" name="room" id="update_room" placeholder="Room Number" required>
             </div>
             <div>
                 <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Block</label>
-                <select name="block" class="inp" id="update_block" required>
+                <select name="block" class="inp" id="update_block" required onchange="updateWardenField(this.value)">
                     <option value="A">Block A</option>
                     <option value="B">Block B</option>
                     <option value="C">Block C</option>
@@ -125,19 +158,53 @@
 
         <div class="form-row">
             <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Warden</label>
+                <input type="text" class="inp" id="warden_name_display" placeholder="Auto-assigned by block" disabled style="opacity:0.7; cursor:not-allowed;">
+            </div>
+            <div>
                 <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Phone</label>
                 <input type="text" class="inp" name="phone" id="update_phone" placeholder="Phone" required>
             </div>
+        </div>
+
+        <div class="form-row">
             <div>
                 <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Department</label>
-                <input type="text" class="inp" name="department" id="update_department" placeholder="Department"
-                    required>
+                <input type="text" class="inp" name="department" id="update_department" placeholder="Department" required>
             </div>
         </div>
 
-        <div>
-            <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Parent Email</label>
-            <input type="email" class="inp" name="parent_email" id="update_parent_email" placeholder="Parent Email">
+        <div class="form-row">
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Father's Name</label>
+                <input type="text" class="inp" name="father_name" id="update_father_name" placeholder="Father's Name">
+            </div>
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Mother's Name</label>
+                <input type="text" class="inp" name="mother_name" id="update_mother_name" placeholder="Mother's Name">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Parent Phone</label>
+                <input type="text" class="inp" name="parent_phone" id="update_parent_phone" placeholder="Parent Phone">
+            </div>
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Place / City</label>
+                <input type="text" class="inp" name="place" id="update_place" placeholder="Place / City">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Parent Email</label>
+                <input type="email" class="inp" name="parent_email" id="update_parent_email" placeholder="Parent Email">
+            </div>
+            <div>
+                <label style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;display:block;">Full Address</label>
+                <input type="text" class="inp" name="address" id="update_address" placeholder="Address">
+            </div>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
@@ -149,13 +216,37 @@
 </div>
 
 <script>
-    function openUpdateModal(id, room, block, phone, department, parent_email) {
+    // Build a JS map of block -> warden name from Django context
+    const blockWardenMap = {
+        {% for warden in wardens %}
+        "{{ warden.hostel_block|escapejs }}": "{{ warden.user.get_full_name|default:warden.user.username|escapejs }}",
+        {% endfor %}
+    };
+
+    function updateWardenField(block) {
+        const field = document.getElementById('warden_name_display');
+        if (blockWardenMap[block]) {
+            field.value = blockWardenMap[block];
+        } else {
+            field.value = 'No warden assigned for this block';
+        }
+    }
+
+    function openUpdateModal(id, username, name, room, block, phone, department, parent_email, father_name, mother_name, parent_phone, address, place) {
         document.getElementById("update_student_id").value = id;
+        document.getElementById("update_username_display").value = username;
+        document.getElementById("update_name").value = name !== 'None' ? name : '';
         document.getElementById("update_room").value = room;
         document.getElementById("update_block").value = block;
+        updateWardenField(block);  // auto-fill warden name
         document.getElementById("update_phone").value = phone;
         document.getElementById("update_department").value = department;
         document.getElementById("update_parent_email").value = parent_email;
+        document.getElementById("update_father_name").value = father_name !== 'None' ? father_name : '';
+        document.getElementById("update_mother_name").value = mother_name !== 'None' ? mother_name : '';
+        document.getElementById("update_parent_phone").value = parent_phone !== 'None' ? parent_phone : '';
+        document.getElementById("update_address").value = address !== 'None' ? address : '';
+        document.getElementById("update_place").value = place !== 'None' ? place : '';
 
         document.getElementById("updateModalOverlay").style.display = "block";
         document.getElementById("updateModal").style.display = "block";

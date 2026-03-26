@@ -34,6 +34,13 @@
             --text:#1e293b;
             --text2:#64748b;
         }
+        body.light h1, body.light h2, body.light h3,
+        body.light h4, body.light h5, body.light h6,
+        body.light .card-title, body.light .page-header h1,
+        body.light .broadcast-message, body.light .stat-value,
+        body.light .profile-name, body.light .dashboard-greeting h1,
+        body.light .section-title, body.light .broadcast-title,
+        body.light .timer-label { color: #0f172a !important; }
 
         body{
             margin:0;
@@ -372,6 +379,12 @@
                class="{% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}">
                 <i class="fa-solid fa-gauge"></i>
                 <span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'student_profile' %}"
+               class="{% if request.resolver_match.url_name == 'student_profile' %}active{% endif %}">
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
             </a>
 
             <a href="{% url 'student_food_attendance' %}"

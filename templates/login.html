@@ -1,539 +1,665 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Optimess – Smart Hostel Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimess – Smart Hostel Management</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
+    <style>
+        /* ================= ROOT VARIABLES ================= */
+        :root {
+            --bg-dark: #020617;
+            --surface-blur: rgba(15, 23, 42, 0.65);
+            --border-glow: rgba(0, 212, 255, 0.2);
+            --accent-blue: #0ea5e9;
+            --accent-deep: #2563eb;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+        }
 
-/* ================= ROOT VARIABLES ================= */
-:root{
-  --bg:#070e1c;
-  --surface:#0f172a;
-  --surface2:#162133;
-  --border:rgba(99,179,237,0.15);
-  --accent:#38bdf8;
-  --accent2:#818cf8;
-  --text:#e2e8f0;
-  --text2:#94a3b8;
-}
+        /* ================= BASE ================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-/* ================= LIGHT MODE ================= */
-body.light{
-  --bg:#eef2f7;
-  --surface:#ffffff;
-  --surface2:#f3f6fb;
-  --border:rgba(0,0,0,0.08);
-  --text:#1e293b;
-  --text2:#64748b;
-}
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden; /* Hide scroll for desktop sleekness */
+            display: flex;
+            position: relative;
+        }
 
-/* ================= BASE ================= */
-body{
-  margin:0;
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  transition:0.3s ease;
-  position:relative;
-}
+        /* ================= ELEGANT FOOD BACKGROUND ================= */
+        .ambient-bg {
+            position: absolute;
+            top: -2%; left: -2%; width: 104%; height: 104%;
+            /* Food waste / cafeteria dining related image */
+            background-image: url('https://images.unsplash.com/photo-1543353071-873f17a7a088?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+            opacity: 0.8; /* Make background image much more clearly visible */
+            pointer-events: none;
+            /* Animated subtle slow pan */
+            animation: panSlowly 60s linear infinite alternate;
+        }
+        
+        /* Adjusted gradient overlay so the image is clearly visible, while left text still pops */
+        .ambient-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.6) 50%, rgba(14, 165, 233, 0.4) 100%);
+        }
 
-/* ================= GRID BACKGROUND ================= */
-@keyframes backgroundPan {
-  from { background-position: 0 0; }
-  to { background-position: 40px 40px; }
-}
+        @keyframes panSlowly {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-1%, -1%); }
+        }
 
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background-size:40px 40px;
-  pointer-events:none;
-  z-index:0;
-  animation: backgroundPan 1.5s linear infinite;
-  opacity: 0.6;
-}
+        /* ================= HERO TEXT ON LEFT ================= */
+        .hero-left {
+            position: absolute;
+            top: 50%;
+            left: 8%; /* Moved back to the left so it fits entirely in the visible area */
+            transform: translateY(-50%);
+            z-index: 5;
+            max-width: 450px;
+            pointer-events: none;
+        }
 
-/* Dark grid */
-body:not(.light)::before{
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
-}
+        .hero-left h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 85px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 25px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            letter-spacing: -2px;
+        }
 
-/* Light grid */
-body.light::before{
-  background-image:
-    linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
-}
+        .hero-left p {
+            font-size: 18px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-weight: 300;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            border-left: 3px solid var(--accent-blue);
+            padding: 18px 25px;
+            background: rgba(2, 6, 23, 0.4);
+            border-radius: 0 16px 16px 0;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
 
-/* ================= ANIMATIONS ================= */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+        /* Floating Light Particles */
+        .particles {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            filter: blur(4px);
+            opacity: 0;
+            animation: floatParticle linear infinite;
+        }
 
-.animate-up {
-  opacity: 0;
-  animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
+        /* Generate multiple particle sizes and speeds purely with CSS */
+        .p1 { width: 8px; height: 8px; left: 10%; animation-duration: 15s; animation-delay: 0s; }
+        .p2 { width: 12px; height: 12px; left: 30%; animation-duration: 18s; animation-delay: 2s; background: var(--accent-deep); }
+        .p3 { width: 6px; height: 6px; left: 50%; animation-duration: 12s; animation-delay: 5s; }
+        .p4 { width: 10px; height: 10px; left: 70%; animation-duration: 20s; animation-delay: 1s; }
+        .p5 { width: 15px; height: 15px; left: 85%; animation-duration: 22s; animation-delay: 4s; background: #fff; filter: blur(6px); }
 
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
+        @keyframes floatParticle {
+            0% { transform: translateY(110vh) scale(0); opacity: 0; }
+            20% { opacity: 0.6; transform: translateY(80vh) scale(1.2); }
+            80% { opacity: 0.6; transform: translateY(20vh) scale(1); }
+            100% { transform: translateY(-10vh) scale(0.5); opacity: 0; }
+        }
 
-/* ================= HEADER ================= */
-.header{
-  text-align:center;
-  padding-top:60px;
-  position:relative;
-  z-index:1;
-}
+        /* ================= ANIMATIONS ================= */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
 
-.logo-box{
-  width:80px;
-  height:80px;
-  margin:auto;
-  border-radius:20px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:30px;
-  color:white;
-  box-shadow:0 0 35px rgba(56,189,248,0.6);
-  margin-bottom:20px;
-}
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-/* ===== Optimess Gradient Logo ===== */
-.optimess-logo{
-  font-family:'Syne', sans-serif;
-  font-weight:900;
-  font-size:42px;
-  letter-spacing:-0.05em;
+        .animate-up {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
 
-  background: linear-gradient(
-    90deg,
-    #b9ebf2 0%,
-    #4dc3fa 30%,
-    #1e94f4 65%,
-    #9571d3 100%
-  );
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        .delay-5 { animation-delay: 1.0s; }
 
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+        /* ================= HEMISPHERE CONTAINER ================= */
+        .hemisphere-wrapper {
+            position: absolute;
+            top: 0; right: 0;
+            height: 100vh;
+            width: 100vh; /* Using vh to maintain perfect circle aspect relative to height */
+            /* The Hemisphere magic - perfectly round on the left, flat on right */
+            border-radius: 100vh 0 0 100vh;
+            background: var(--surface-blur);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-left: none; /* Removed inner lining to blend seamlessly */
+            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5), inset 20px 0 60px rgba(14, 165, 233, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            animation: slideInRight 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            overflow: hidden;
+        }
 
-  -webkit-background-clip: text;
-  background-clip: text;
+        /* A glowing ambient ring hugging the inner edge of the hemisphere (hidden) */
+        .hemisphere-wrapper::before {
+            display: none;
+        }
 
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+        /* ================= LOGIN FORM CONTENT ================= */
+        .login-content {
+            width: 420px;
+            /* Push content slightly to the right so it is centered visually in the cut circle */
+            margin-right: -10%;
+            position: relative;
+            z-index: 20;
+        }
 
-  display:inline-block;          /* IMPORTANT */
-  transform: translateZ(0);      /* GPU force */
-  will-change: transform;        /* Stabilize */
-}
+        .brand-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 52px;
+            font-weight: 700;
+            font-style: italic;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #ffffff 30%, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
 
-.header p{
-  color:var(--text2);
-  margin-top:8px;
-  font-size:14px;
-}
+        .sub-brand {
+            font-family: 'Outfit', sans-serif;
+            color: var(--accent-blue);
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
 
-/* ================= CARD ================= */
-.container{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height: 100vh;
-  position:relative;
-  z-index:1;
-  padding: 40px 20px;
-  box-sizing: border-box;
-}
+        /* ================= ROLE SECTION ================= */
+        .role-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .role-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0.1), transparent);
+            margin-left: 12px;
+        }
 
-.card{
-  width:900px;
-  min-height: 550px;
-  background:var(--surface);
-  border-radius:16px;
-  border:1px solid var(--border);
-  backdrop-filter:blur(16px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  position: relative;
-  display: flex;
-  overflow: hidden;
-  padding: 0;
-}
+        .role-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 35px;
+        }
 
-.card-left {
-  flex: 1.1;
-  background: url('/static/images/login_bg.png') no-repeat center center;
-  background-size: cover;
-  position: relative;
-}
+        .role-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
-.card-right {
-  flex: 1;
-  padding: 48px 40px;
-  background: var(--surface);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+        .role-btn i {
+            font-size: 20px;
+            transition: transform 0.4s, color 0.4s;
+            color: rgba(255,255,255,0.4);
+        }
 
-/* Subtle ambient glow behind the card */
-.card::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(129, 140, 248, 0.15));
-  z-index: -1;
-  filter: blur(12px);
-  pointer-events: none;
-}
+        .role-btn:hover {
+            background: rgba(14, 165, 233, 0.05);
+            border-color: rgba(14, 165, 233, 0.3);
+            transform: translateY(-5px);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
 
-.card-right h2{
-  font-family:'Syne',sans-serif;
-  font-size:32px;
-  font-weight:800;
-  color: var(--accent);
-  margin-bottom:8px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.card-right h2::after {
-  content: "";
-  display: block;
-  width: 40px;
-  height: 4px;
-  background: var(--accent);
-  margin-top: 8px;
-  border-radius: 2px;
-}
+        .role-btn:hover i {
+            transform: scale(1.2);
+            color: var(--accent-blue);
+        }
 
-.card-right .sub{
-  color:var(--text2);
-  font-size:14px;
-  margin-bottom:32px;
-  line-height: 1.6;
-}
+        .role-btn.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(37, 99, 235, 0.1));
+            border-color: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 5px 25px rgba(14, 165, 233, 0.25), inset 0 0 10px rgba(14, 165, 233, 0.1);
+        }
 
-/* ================= ROLE SECTION ================= */
-.role-label{
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-  color:var(--text2);
-  margin-bottom:12px;
-}
+        .role-btn.active i {
+            color: var(--accent-blue);
+            transform: scale(1.1);
+            text-shadow: 0 0 15px rgba(14, 165, 233, 0.8);
+        }
 
-.role-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-bottom:32px;
-}
+        /* ================= INPUTS ================= */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
 
-.role-btn{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:14px 10px;
-  text-align:center;
-  cursor:pointer;
-  transition:all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text2);
-}
+        .input-group i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.4);
+            font-size: 16px;
+            transition: all 0.3s;
+        }
 
-.role-btn i{
-  font-size:18px;
-  display:block;
-  margin-bottom:6px;
-}
+        .input-group input {
+            width: 100%;
+            padding: 18px 20px 18px 50px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
 
-.role-btn:hover{
-  transform:translateY(-2px);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
-}
+        .input-group input::placeholder {
+            color: #64748b;
+            font-weight: 300;
+        }
 
-body.light .role-btn:hover {
-  background: rgba(0, 0, 0, 0.02);
-}
+        .input-group input:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--accent-blue);
+            padding-left: 55px; /* Subtle text shift on focus */
+        }
 
-.role-btn.active{
-  border-color:var(--accent);
-  color: var(--text);
-  background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(129,140,248,0.05));
-  box-shadow:0 0 0 1px var(--accent) inset, 0 4px 12px rgba(56,189,248,0.15);
-}
+        .input-group:focus-within i {
+            color: var(--accent-blue);
+            transform: translateY(-50%) translateX(2px);
+            text-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
+        }
 
-/* ================= INPUTS ================= */
-.input-group {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  background: rgba(148, 163, 184, 0.1);
-  border-radius: 8px;
-  padding: 0 16px;
-  border: 1px solid transparent;
-  transition: all 0.3s;
-}
+        /* Fix autocomplete background for Chrome */
+        .input-group input:-webkit-autofill,
+        .input-group input:-webkit-autofill:hover, 
+        .input-group input:-webkit-autofill:focus, 
+        .input-group input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #020617 inset !important;
+            -webkit-text-fill-color: var(--text-primary) !important;
+            transition: background-color 5000s ease-in-out 0s;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
 
-body.light .input-group {
-  background: rgba(0, 0, 0, 0.04);
-}
+        /* ================= EXTRA OPTIONS ================= */
+        .extra-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            font-size: 13px;
+        }
 
-.input-group:focus-within {
-  border-color: var(--accent);
-  background: transparent;
-}
+        .extra-options .remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+        
+        .extra-options .remember:hover {
+            color: #fff;
+        }
 
-.input-group i {
-  color: var(--text2);
-  font-size: 16px;
-  margin-right: 12px;
-}
+        .extra-options .remember input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-.input-group label {
-  display: none;
-}
+        .extra-options .remember input[type="checkbox"]:checked {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            transform: scale(1.05);
+        }
 
-.input-group input {
-  flex: 1;
-  padding: 14px 0;
-  border: none;
-  background: transparent !important;
-  color: var(--text);
-  font-size: 14px;
-  box-shadow: none !important;
-  outline: none;
-  box-sizing: border-box;
-}
+        .extra-options .remember input[type="checkbox"]:checked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            color: #fff;
+            font-size: 11px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
 
-.input-group input::placeholder {
-  color: var(--text2);
-}
+        .extra-options .forgot {
+            color: var(--text-secondary);
+            text-decoration: none;
+            position: relative;
+            transition: color 0.3s;
+        }
 
-body.light .input-group input {
-  background: transparent !important;
-  border: none;
-  box-shadow: none !important;
-}
+        .extra-options .forgot::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: auto; right: 0;
+            width: 0; height: 1px;
+            background: var(--accent-blue);
+            transition: width 0.3s ease;
+        }
 
-.input-group input:focus{
-  outline:none;
-  border:none;
-  background:transparent;
-  box-shadow:none !important;
-}
+        .extra-options .forgot:hover {
+            color: #fff;
+        }
+        
+        .extra-options .forgot:hover::after {
+            width: 100%;
+            left: 0; right: auto;
+        }
 
-.input-group input:-webkit-autofill,
-.input-group input:-webkit-autofill:hover, 
-.input-group input:-webkit-autofill:focus, 
-.input-group input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px transparent inset !important;
-    transition: background-color 5000s ease-in-out 0s;
-    -webkit-text-fill-color: var(--text) !important;
-}
+        /* ================= BUTTON ================= */
+        .login-btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 30px; /* High rounding for elegant feel */
+            background: linear-gradient(135deg, var(--accent-deep), var(--accent-blue));
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+        }
 
-/* ================= EXTRA OPTIONS ================= */
-.extra-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  font-size: 13px;
-  color: var(--text2);
-}
+        /* Shine sweep effect */
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg);
+            transition: all 0.6s ease;
+        }
 
-.extra-options .remember {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
+        .login-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(14, 165, 233, 0.5);
+        }
 
-.extra-options .remember input[type="checkbox"] {
-  accent-color: var(--accent);
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-}
+        .login-btn:hover::after {
+            left: 150%;
+        }
 
-.extra-options .forgot {
-  color: var(--text2);
-  text-decoration: none;
-  font-style: italic;
-  transition: color 0.3s;
-}
+        .login-btn i {
+            transition: transform 0.4s ease;
+            font-size: 16px;
+        }
 
-.extra-options .forgot:hover {
-  color: var(--accent);
-}
+        .login-btn:hover i {
+            transform: translateX(5px) scale(1.1);
+        }
 
-/* ================= BUTTON ================= */
-.login-btn{
-  width:100%;
-  padding:15px;
-  border:none;
-  border-radius:8px;
-  background:linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc);
-  color:white;
-  font-weight:700;
-  font-size: 14px;
-  letter-spacing: 1px;
-  margin-top: 10px;
-  cursor:pointer;
-  transition:all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow:0 4px 15px rgba(67, 100, 247, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
+        /* ================= ERROR MESSAGE ================= */
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 12px 18px;
+            font-size: 13px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .error i {
+            font-size: 18px;
+            color: #ef4444;
+        }
 
-.login-btn:hover{
-  transform:translateY(-3px);
-  box-shadow:0 8px 25px rgba(67, 100, 247, 0.5);
-}
-
-/* ================= THEME TOGGLE ================= */
-.theme-toggle{
-  position:fixed;
-  top:24px;
-  right:24px;
-  padding:10px 18px;
-  border-radius:30px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  cursor:pointer;
-  z-index:2;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.theme-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
-}
-
-.error{
-  color:#f87171;
-  margin-bottom:10px;
-  text-align:center;
-}
-
-</style>
+        /* ================= MEDIA QUERIES ================= */
+        @media (max-width: 900px) {
+            .hero-left { display: none; }
+            .hemisphere-wrapper {
+                width: 100%;
+                border-radius: 0;
+                border-left: none;
+                background: rgba(15, 23, 42, 0.8);
+            }
+            .hemisphere-wrapper::before { display: none; }
+            .login-content { margin-right: 0; padding: 30px; width: 100%; max-width: 450px; }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</div>
+    <!-- Dynamic Food Background -->
+    <div class="ambient-bg"></div>
 
-<div class="container animate-up delay-1">
-<div class="card">
-  
-  <div class="card-left">
-    <!-- Image is set via CSS background -->
-  </div>
-
-  <div class="card-right">
-    <div class="animate-up delay-2">
-      <h2 style="text-transform: none; font-weight: bold;">Optimess</h2>
-      <div style="font-size: 14px; color: var(--text2); margin-top: -5px; margin-bottom: 20px;">hostel mess management system</div>
-
-      <div class="role-label">I Am A</div>
-
-      {% if error %}
-      <div class="error" style="font-size: 13px;">{{ error }}</div>
-      {% endif %}
-
-      <div class="role-grid">
-        <div class="role-btn active" onclick="selectRole(this,'student')">
-          <i class="fa-solid fa-graduation-cap"></i>
-          Student
-        </div>
-        <div class="role-btn" onclick="selectRole(this,'warden')">
-          <i class="fa-solid fa-building-columns"></i>
-          Warden
-        </div>
-        <div class="role-btn" onclick="selectRole(this,'mess')">
-          <i class="fa-solid fa-bowl-food"></i>
-          Mess
-        </div>
-        <div class="role-btn" onclick="selectRole(this,'admin')">
-          <i class="fa-solid fa-gear"></i>
-          Admin
-        </div>
-      </div>
+    <!-- Floating Elegant Particles -->
+    <div class="particles">
+        <div class="particle p1"></div>
+        <div class="particle p2"></div>
+        <div class="particle p3"></div>
+        <div class="particle p4"></div>
+        <div class="particle p5"></div>
     </div>
 
-    <form method="post" class="animate-up delay-3">
-      {% csrf_token %}
-      <input type="hidden" name="role" id="role" value="student">
+    <!-- Left Side Hero Text -->
+    <div class="hero-left animate-up delay-2">
+        <h1>Optimess.</h1>
+        <p>A smart, elegant food waste management system designed to track dining attendance, forecast meals accurately, and reduce your hostel food wastage efficiently.</p>
+    </div>
 
-      <div class="input-group">
-        <i class="fa-solid fa-user"></i>
-        <input type="text" name="username" placeholder="User ID" required>
-      </div>
+    <!-- Stunning Hemisphere Login Container on the Right -->
+    <div class="hemisphere-wrapper">
+        <div class="login-content">
+            
+            <div class="animate-up delay-1">
+                <div class="sub-brand" style="margin-top: 20px;">Hostel Mess Management</div>
 
-      <div class="input-group">
-        <i class="fa-solid fa-lock"></i>
-        <input type="password" name="password" placeholder="Password" required>
-      </div>
+                <div class="role-label">Choose Your Role</div>
 
-      <div class="extra-options">
-        <label class="remember">
-          <input type="checkbox" name="remember" checked>
-          Remember
-        </label>
-        <a href="#" class="forgot">Forgot your password?</a>
-      </div>
+                {% if error %}
+                <div class="error animate-up">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    {{ error }}
+                </div>
+                {% endif %}
 
-      <button class="login-btn animate-up delay-4" id="loginText">
-        LOGIN AS STUDENT <i class="fa-solid fa-arrow-right"></i>
-      </button>
-    </form>
-  </div>
+                <div class="role-grid">
+                    <div class="role-btn active" onclick="selectRole(this,'student')">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>Student</span>
+                    </div>
+                    <div class="role-btn" onclick="selectRole(this,'warden')">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <span>Warden</span>
+                    </div>
+                    <div class="role-btn" onclick="selectRole(this,'mess')">
+                        <i class="fa-solid fa-bowl-food"></i>
+                        <span>Mess Manager</span>
+                    </div>
+                    <div class="role-btn" onclick="selectRole(this,'admin')">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Admin</span>
+                    </div>
+                </div>
+            </div>
 
-</div>
-</div>
+            <form method="post" class="animate-up delay-2">
+                {% csrf_token %}
+                <input type="hidden" name="role" id="role" value="student">
 
-<script>
-function selectRole(el,role){
-  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('role').value=role;
-  document.getElementById('loginText').innerHTML="LOGIN AS " + el.innerText.trim().toUpperCase() + " <i class='fa-solid fa-arrow-right'></i>";
-}
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" name="username" placeholder="Email Address / User ID" required>
+                </div>
 
-function toggleTheme(){
-  document.body.classList.toggle("light");
-  const btn=document.querySelector('.theme-toggle');
-  if(document.body.classList.contains("light")){
-    btn.innerText="☀ Light Mode";
-  }else{
-    btn.innerText="🌙 Dark Mode";
-  }
-}
-</script>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+
+                <div class="extra-options animate-up delay-3">
+                    <label class="remember">
+                        <input type="checkbox" name="remember" checked>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="login-btn animate-up delay-4" id="loginText">
+                    LOGIN AS STUDENT <i class="fa-solid fa-arrow-right-long"></i>
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        function selectRole(el, role) {
+            // Remove active style from all buttons
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+            
+            // Add active style to clicked button
+            el.classList.add('active');
+            
+            // Set hidden input value for Django backend
+            document.getElementById('role').value = role;
+            
+            // Extract text from the span inside the button
+            const roleText = el.querySelector('span').innerText.trim().toUpperCase();
+            
+            // Update submit button text with animation
+            const btn = document.getElementById('loginText');
+            btn.style.transform = 'scale(0.95)';
+            btn.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                btn.innerHTML = "LOGIN AS " + roleText + " <i class='fa-solid fa-arrow-right-long'></i>";
+                btn.style.transform = 'scale(1)';
+                btn.style.opacity = '1';
+            }, 150);
+        }
+
+        // Store selected role in localStorage so if page reloads on error
+        window.onload = function() {
+            const form = document.querySelector('form');
+            if(form) {
+                form.addEventListener('submit', function() {
+                    localStorage.setItem('optimess_failed_role', document.getElementById('role').value);
+                    
+                    // Button loading effect
+                    const btn = document.getElementById('loginText');
+                    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> AUTHENTICATING...';
+                    btn.style.opacity = '0.8';
+                    btn.style.pointerEvents = 'none';
+                });
+            }
+
+            // Restore role if page loaded with an error
+            const hasError = `{% if error %}true{% else %}false{% endif %}` === 'true';
+            if (hasError) {
+                const prevRole = localStorage.getItem('optimess_failed_role');
+                if (prevRole) {
+                    const btns = document.querySelectorAll('.role-btn');
+                    const roleMap = {
+                        'student': btns[0],
+                        'warden': btns[1],
+                        'mess': btns[2], 
+                        'admin': btns[3]
+                    };
+                    if (roleMap[prevRole]) {
+                        selectRole(roleMap[prevRole], prevRole);
+                    }
+                }
+            }
+        };
+    </script>
 
 </body>
 </html>

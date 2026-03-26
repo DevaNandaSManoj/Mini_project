@@ -1,0 +1,309 @@
+{% extends "warden/base_warden.html" %}
+
+{% block content %}
+<style>
+/* ================= ANIMATIONS ================= */
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(15px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.animate-up {
+    animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+.hover-card {
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hover-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.search-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.search-header {
+    margin-bottom: 20px;
+}
+
+.search-header h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-header h2 i {
+    color: #38bdf8;
+}
+
+.search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    min-width: 250px;
+}
+
+.search-input-wrapper label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 15px;
+    transition: all 0.2s;
+}
+
+.search-input-wrapper input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
+    outline: none;
+}
+
+.search-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    height: 48px;
+    cursor: pointer;
+}
+
+.search-btn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+.student-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.student-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(56,189,248,0.25);
+}
+
+.student-details h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.student-meta {
+    font-size: 14px;
+    color: var(--text2);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.student-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.student-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-action {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: 1px solid var(--border);
+}
+
+.btn-action.locked {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.btn-action.unlocked {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.btn-action.view {
+    background: var(--surface2);
+    color: var(--text);
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+body.light .student-card {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+</style>
+
+<div class="page-header animate-up" style="animation-delay: 0s;">
+    <div class="breadcrumb"><span class="crumb-parent">Warden</span> <span class="crumb-sep">›</span> <span class="crumb-active">Student Portal</span></div>
+    <h1>Block {{ warden.hostel_block }} — Student Portal</h1>
+    <p style="color:var(--text2); font-size:14px; margin-top:4px;">You are viewing students in <strong style="color:var(--accent);">Block {{ warden.hostel_block }}</strong> only.</p>
+</div>
+
+<div class="search-container animate-up hover-card" style="animation-delay: 0.1s;">
+    <div class="search-header">
+        <h2><i class="fa-solid fa-users-viewfinder"></i> Find Students in Block {{ warden.hostel_block }}</h2>
+        <p style="color: var(--text2); font-size: 14px; margin: 0;">Search by Student ID or Name. Only Block {{ warden.hostel_block }} students are shown.</p>
+    </div>
+    
+    <div class="search-form">
+        <form method="GET" class="search-input-group">
+            <input type="hidden" name="t" value="{{ current_time }}">
+            
+            <div class="search-input-wrapper">
+                <label>Student ID or Name</label>
+                <select name="search_query" class="search-select" style="min-width:300px;">
+                    <option value="">Search by ID or Name...</option>
+                    {% for student in all_students %}
+                        <option value="{{ student.user.username }}" {% if student.user.username == search_query %}selected{% endif %}>{{ student.user.username }} - {% if student.name %}{{ student.name }}{% elif student.user.first_name %}{{ student.user.first_name }}{% else %}Unknown Name{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="search-input-wrapper" style="flex: 0; min-width: auto;">
+                <label style="color: transparent; user-select: none;">Action</label>
+                <div style="display:flex; gap:12px;">
+                    <button type="submit" class="search-btn"><i class="fa fa-search"></i> Search</button>
+                    <a href="{% url 'warden_student_portal' %}" class="search-btn" style="background:var(--surface2); color:var(--text); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; height: 48px; padding: 0 24px; text-decoration: none;">
+                        <i class="fa fa-eraser" style="margin-right:8px; color:var(--text2);"></i> Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if search_query %}
+    {% if students %}
+    <div class="card animate-up" style="border: none; background: transparent; padding: 0; animation-delay: 0.2s;">
+        <div class="card-title" style="margin-bottom: 16px; font-size: 18px;">Search Results ({{ students|length }})</div>
+        <div>
+            {% for student in students %}
+            <div class="student-card hover-card">
+                <div class="student-info">
+                    <div class="student-avatar">
+                        {% if student.profile_picture %}
+                            <img src="{{ student.profile_picture.url }}" style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            {{ student.user.first_name|default:student.user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="student-details">
+                        <h3>{{ student.name|default:student.user.username }}</h3>
+                        <div class="student-meta">
+                            <span><i class="fa-solid fa-id-badge" style="color:#8b5cf6;"></i> {{ student.user.username }}</span>
+                            {% if student.department %}<span><i class="fa-solid fa-graduation-cap" style="color:#3b82f6;"></i> {{ student.department }}</span>{% endif %}
+                            {% if student.room_no %}<span><i class="fa-solid fa-door-open" style="color:#10b981;"></i> Room {{ student.room_no }}</span>{% endif %}
+                            <span style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; padding:2px 10px; border-radius:20px; font-size:12px; font-weight:700;">
+                                <i class="fa-solid fa-user-shield"></i> {{ warden.user.get_full_name|default:warden.user.username }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="student-actions">
+                    <form method="POST" action="{% url 'toggle_student_edit_profile' student.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action {% if student.can_edit_profile %}locked{% else %}unlocked{% endif %}">
+                            {% if student.can_edit_profile %}
+                                <i class="fa fa-lock"></i> Disable Edit
+                            {% else %}
+                                <i class="fa fa-unlock"></i> Enable Edit
+                            {% endif %}
+                        </button>
+                    </form>
+                    <a href="{% url 'warden_view_student_profile' student.id %}" class="btn-action view"><i class="fa fa-eye" style="color:#38bdf8;"></i> View Portal</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state animate-up" style="animation-delay: 0.2s;">
+        <div class="empty-icon" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">🔍</div>
+        <div style="font-size: 18px; font-weight: 600; color: var(--text);">No students found</div>
+        <div style="color: var(--text2); margin-top: 8px;">Try adjusting your search query.</div>
+    </div>
+    {% endif %}
+{% else %}
+    <div class="empty-state animate-up" style="animation-delay: 0.2s; background: transparent; border: 1px dashed var(--border); border-radius: 18px;">
+        <div class="empty-icon" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5; color: #3b82f6;"><i class="fa-solid fa-magnifying-glass-arrow-right"></i></div>
+        <div style="font-size: 18px; font-weight: 600; color: var(--text);">Search Student Portal</div>
+        <div style="color: var(--text2); margin-top: 8px;">Find students by ID or Name to view details or toggle profile edit permissions.</div>
+    </div>
+{% endif %}
+
+{% endblock %}

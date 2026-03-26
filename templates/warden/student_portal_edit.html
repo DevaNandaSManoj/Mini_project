@@ -1,0 +1,323 @@
+{% extends "warden/base_warden.html" %}
+
+{% block content %}
+<style>
+    .profile-layout {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        margin-top: 16px;
+    }
+    .profile-sidebar {
+        width: 280px;
+        flex-shrink: 0;
+    }
+    .profile-main {
+        flex: 1;
+    }
+    .profile-card {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .profile-avatar-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+    .profile-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: var(--surface);
+        border: 2px solid #38bdf8;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        box-shadow: 0 8px 16px rgba(56,189,248,0.15);
+    }
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .profile-avatar i {
+        font-size: 50px;
+        color: var(--text2);
+    }
+    .profile-name {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--text);
+    }
+    .profile-id {
+        font-size: 13px;
+        color: var(--text2);
+    }
+    .profile-contact-info {
+        font-size: 13px;
+        color: var(--text2);
+        line-height: 1.8;
+    }
+    .profile-contact-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .profile-contact-item i {
+        color: #38bdf8;
+        width: 16px;
+        text-align: center;
+    }
+    
+    .profile-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 24px;
+    }
+    .profile-tab {
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text2);
+        border-bottom: 2px solid transparent;
+        cursor: default;
+    }
+    .profile-tab.active {
+        color: #38bdf8;
+        border-bottom: 2px solid #38bdf8;
+        background: rgba(56, 189, 248, 0.05);
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text2);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 14px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+    
+    .btn-save {
+        background: #10b981;
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-save:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .file-upload-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        margin-top: 10px;
+        width: 100%;
+    }
+    .file-upload-btn {
+        border: 1px dashed #38bdf8;
+        color: #38bdf8;
+        background: rgba(56, 189, 248, 0.05);
+        padding: 10px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .file-upload-btn:hover {
+        background: rgba(56, 189, 248, 0.1);
+    }
+    .file-input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    @media (max-width: 900px) {
+        .profile-layout {
+            flex-direction: column;
+        }
+        .profile-sidebar {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 24px;">
+    <div>
+        <div class="breadcrumb"><span>Warden</span> &rsaquo; <a href="{% url 'warden_student_portal' %}" style="color:inherit; text-decoration:none;">Student Portal</a> &rsaquo; {{ student.user.username }}</div>
+        <h1 style="font-size:26px; margin:4px 0;">Portal: {{ student.name|default:student.user.username }}</h1>
+        <p style="color:var(--text2); font-size:14px; margin:0;">View and manage details on behalf of this student.</p>
+    </div>
+    <a href="{% url 'warden_student_portal' %}" class="action-btn" style="background:var(--surface2); color:var(--text); text-decoration:none;"><i class="fa fa-arrow-left"></i> Back to Search</a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div style="background:rgba(52,211,153,0.1); color:#34d399; border:1px solid rgba(52,211,153,0.3); padding:14px 18px; margin-bottom:20px; border-radius:10px; font-weight:500; display:flex; align-items:center; gap:10px;">
+        <i class="fa fa-check-circle" style="font-size:18px;"></i> {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data" class="profile-layout">
+    {% csrf_token %}
+    
+    <!-- LEFT SIDEBAR -->
+    <div class="profile-sidebar">
+        <div class="profile-card" style="text-align:center;">
+            <div class="profile-avatar-container">
+                <div class="profile-avatar">
+                    {% if student.profile_picture %}
+                        <img src="{{ student.profile_picture.url }}" alt="Profile Photo">
+                    {% else %}
+                        <i class="fa fa-user"></i>
+                    {% endif %}
+                </div>
+                <div class="profile-name">{{ student.user.get_full_name|default:student.user.username }}</div>
+                <div class="profile-id">ID: {{ student.user.username }}</div>
+                <div class="profile-id" style="color:#38bdf8; font-weight:600; margin-top:2px;">{{ student.department }}</div>
+            </div>
+            
+            <div class="profile-contact-info" style="text-align:left;">
+                <div class="profile-contact-item">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Block {{ student.hostel_block|default:"-" }}</span>
+                </div>
+                <div class="profile-contact-item">
+                    <i class="fa-solid fa-door-closed"></i>
+                    <span>Room {{ student.room_no|default:"-" }}</span>
+                </div>
+                <div class="profile-contact-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>{{ student.phone_number|default:"No phone provided" }}</span>
+                </div>
+                <div class="profile-contact-item" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <i class="fa-solid fa-user-shield" style="color: #818cf8;"></i>
+                    <div>
+                        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text2); margin-bottom:2px;">Assigned Warden</div>
+                        {% if assigned_warden %}
+                            <div style="font-weight:700; color:var(--text); font-size:14px;">{{ assigned_warden.user.get_full_name|default:assigned_warden.user.username }}</div>
+                            <div style="font-size:12px; color:var(--accent);">Block {{ assigned_warden.hostel_block }}</div>
+                        {% else %}
+                            <div style="font-weight:600; color:var(--text2);">Not assigned</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="file-upload-wrapper" style="margin-top:20px;">
+                <div class="file-upload-btn" id="upload-btn-text">
+                    <i class="fa-solid fa-camera"></i> Change Photo
+                </div>
+                <input type="file" name="profile_picture" class="file-input" accept="image/*" onchange="document.getElementById('upload-btn-text').innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> Uploading...'; this.form.submit();">
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="profile-main">
+        <div class="profile-card" style="padding: 0;">
+            
+            <div class="profile-tabs">
+                <div class="profile-tab active">
+                    <i class="fa-regular fa-id-card" style="margin-right:6px;"></i> Personal Details
+                </div>
+            </div>
+
+            <div style="padding: 24px;">
+                <div class="form-row" style="display:flex; gap:20px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Father's Name</label>
+                        <input type="text" name="father_name" class="form-control" value="{{ student.father_name|default:'' }}">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Mother's Name</label>
+                        <input type="text" name="mother_name" class="form-control" value="{{ student.mother_name|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="form-row" style="display:flex; gap:20px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Parent's Phone Number</label>
+                        <input type="text" name="parent_phone" class="form-control" value="{{ student.parent_phone_number|default:'' }}">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Place / City</label>
+                        <input type="text" name="place" class="form-control" value="{{ student.place|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Full Address</label>
+                    <textarea name="address" class="form-control" rows="3">{{ student.address|default:'' }}</textarea>
+                </div>
+
+                <div style="margin-top: 32px; display:flex; justify-content:flex-end; align-items:center; gap: 12px;">
+                    <a href="{% url 'warden_student_portal' %}" class="btn-save" style="background: var(--surface2); color: var(--text); text-decoration: none; border: 1px solid var(--border);">
+                        <i class="fa fa-arrow-left"></i> Back to Search
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="fa fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+{% endblock %}

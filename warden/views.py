@@ -5,6 +5,8 @@ from accounts.models import Broadcast, Warden, Student ,Complaint
 from food.models import StudentDailyRecord
 from django.utils import timezone
 from datetime import date, timedelta
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 
 @login_required
@@ -20,14 +22,15 @@ def dashboard(request):
 
     # ================= TOP STAT CARDS =================
 
-    # Total students
-    total_students = Student.objects.count()
+    # Total students in this warden's block only
+    total_students = Student.objects.filter(hostel_block=warden.hostel_block).count()
 
     # Pending leave requests
     pending_leaves = LeaveRequest.objects.filter(status="pending").count()
 
-    # Today's attendance %
-    today_records = StudentDailyRecord.objects.filter(date=today)
+    # Today's attendance % (block-filtered)
+    block_student_ids = Student.objects.filter(hostel_block=warden.hostel_block).values_list('id', flat=True)
+    today_records = StudentDailyRecord.objects.filter(date=today, student__id__in=block_student_ids)
     total_today = today_records.count()
     present_today = today_records.filter(present=True).count()
 
@@ -53,6 +56,7 @@ def dashboard(request):
     # ================= RENDER =================
 
     return render(request, "warden/dashboard.html", {
+        "warden": warden,
         "total_students": total_students,
         "pending_count": pending_leaves,
         "attendance_percent": attendance_percent,
@@ -181,9 +185,10 @@ def warden_attendance(request):
         return redirect("login")
 
     today = date.today()
+    warden = Warden.objects.get(user=request.user)
 
-    # Alphabetical order
-    students = Student.objects.all().order_by("user__username")
+    # Only students in this warden's block
+    students = Student.objects.filter(hostel_block=warden.hostel_block).order_by("user__username")
 
     # ================= MARK ATTENDANCE =================
     if request.method == "POST" and request.POST.get("action") == "mark":
@@ -192,7 +197,11 @@ def warden_attendance(request):
         status = request.POST.get("status")
 
         if student_id and status:
-            student = Student.objects.filter(id=student_id).first()
+            student = Student.objects.filter(
+                Q(user__username=student_id) | 
+                Q(name__icontains=student_id) | 
+                Q(user__first_name__icontains=student_id)
+            ).first()
 
             if student:
                 record, created = StudentDailyRecord.objects.get_or_create(
@@ -227,9 +236,10 @@ def warden_attendance(request):
     if search_student_id and search_date:
         try:
             search_date_obj = date.fromisoformat(search_date)
-
             search_result = StudentDailyRecord.objects.filter(
-                student_id=search_student_id,
+                Q(student__user__username=search_student_id) | 
+                Q(student__name__icontains=search_student_id) | 
+                Q(student__user__first_name__icontains=search_student_id),
                 date=search_date_obj
             ).select_related("student")
 
@@ -254,7 +264,11 @@ def warden_attendance(request):
             calendar_student_id = request.GET.get("calendar_student_id")
 
             if calendar_student_id:
-                selected_student = Student.objects.filter(id=calendar_student_id).first()
+                selected_student = Student.objects.filter(
+                    Q(user__username=calendar_student_id) | 
+                    Q(name__icontains=calendar_student_id) | 
+                    Q(user__first_name__icontains=calendar_student_id)
+                ).first()
 
             if selected_student:
                 records = StudentDailyRecord.objects.filter(
@@ -314,10 +328,8 @@ def warden_mess(request):
 
     today = date.today()
 
-    # 🔹 Block-based students only
-    students = Student.objects.filter(
-        hostel_block=warden.hostel_block
-    ).order_by("user__username")
+    # Only students in this warden's block
+    students = Student.objects.filter(hostel_block=warden.hostel_block).order_by("user__username")
 
     selected_record = None
     selected_student_id = None
@@ -337,8 +349,12 @@ def warden_mess(request):
 
             selected_student_id = student_id
             selected_date_obj = date.fromisoformat(selected_date)
-
-            student = Student.objects.filter(id=student_id).first()
+            
+            student = Student.objects.filter(
+                Q(user__username=student_id) | 
+                Q(name__icontains=student_id) | 
+                Q(user__first_name__icontains=student_id)
+            ).first()
 
             if student:
 
@@ -373,7 +389,11 @@ def warden_mess(request):
 
     if selected_student_id and selected_date:
 
-        student = Student.objects.filter(id=selected_student_id).first()
+        student = Student.objects.filter(
+            Q(user__username=selected_student_id) | 
+            Q(name__icontains=selected_student_id) | 
+            Q(user__first_name__icontains=selected_student_id)
+        ).first()
         if student:
             selected_date_obj = date.fromisoformat(selected_date)
             # 🔒 Check approved leave
@@ -497,9 +517,94 @@ def resolve_complaint(request, complaint_id):
     complaint.status = "resolved"
     complaint.save()
 
-    messages.success(
-        request,
-        f'Complaint from {complaint.student.user.username} marked as resolved.'
-    )
-
     return redirect("warden_complaints")
+
+
+import time
+
+@login_required
+def warden_student_portal(request):
+    if request.user.role != "warden":
+        return redirect("login")
+
+    warden = Warden.objects.get(user=request.user)
+    
+    search_query = request.GET.get('search_query', '').strip()
+    search_time = request.GET.get('t', '0')
+
+    try:
+        search_time_float = float(search_time)
+    except ValueError:
+        search_time_float = 0
+
+    # 24 hours expiration (86400 seconds)
+    current_time = time.time()
+    if current_time - search_time_float > 86400:
+        search_query = ''
+
+    # Only students in this warden's block for the dropdown
+    all_students = Student.objects.filter(hostel_block=warden.hostel_block).select_related('user')
+    students = None
+
+    if search_query:
+        students = Student.objects.filter(hostel_block=warden.hostel_block).select_related('user')
+        students = students.filter(
+            Q(user__username__icontains=search_query) | 
+            Q(user__first_name__icontains=search_query) | 
+            Q(name__icontains=search_query)
+        )
+
+    return render(request, 'warden/student_portal_search.html', {
+        'students': students,
+        'all_students': all_students,
+        'warden': warden,
+        'search_query': search_query,
+        'current_time': int(current_time)
+    })
+
+@login_required
+def warden_view_student_profile(request, student_id):
+    if request.user.role != "warden":
+        return redirect("login")
+
+    warden = Warden.objects.get(user=request.user)
+    student = get_object_or_404(Student, id=student_id)
+
+    if request.method == "POST":
+        student.father_name = request.POST.get("father_name")
+        student.mother_name = request.POST.get("mother_name")
+        student.parent_phone_number = request.POST.get("parent_phone")
+        student.address = request.POST.get("address")
+        student.place = request.POST.get("place")
+        
+        if 'profile_picture' in request.FILES:
+            student.profile_picture = request.FILES['profile_picture']
+            
+        student.save()
+        messages.success(request, f"Profile for {student.user.username} updated successfully!")
+        return redirect('warden_view_student_profile', student_id=student.id)
+
+    # Find the assigned warden for this student's block
+    assigned_warden = Warden.objects.filter(hostel_block=student.hostel_block).first()
+
+    return render(request, 'warden/student_portal_edit.html', {
+        'student': student,
+        'warden': warden,
+        'assigned_warden': assigned_warden,
+    })
+
+@login_required
+def toggle_student_edit_profile(request, student_id):
+    if request.user.role != "warden":
+        return redirect("login")
+
+    warden = Warden.objects.get(user=request.user)
+    student = get_object_or_404(Student, id=student_id)
+
+    if request.method == "POST":
+        student.can_edit_profile = not student.can_edit_profile
+        student.save()
+        status_text = "enabled" if student.can_edit_profile else "disabled"
+        messages.success(request, f"Profile editing {status_text} for {student.user.username}.")
+        
+    return redirect('warden_student_portal')

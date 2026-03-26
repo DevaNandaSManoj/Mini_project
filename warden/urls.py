@@ -12,4 +12,7 @@ urlpatterns = [
     path("complaints/", views.warden_complaints, name="warden_complaints"),
     path("complaint/resolve/<int:complaint_id>/", views.resolve_complaint, name="resolve_complaint"),
     path("resolve-complaint/<int:complaint_id>/", views.resolve_complaint, name="resolve_complaint"),
+    path("student-portal/", views.warden_student_portal, name="warden_student_portal"),
+    path("student-portal/<int:student_id>/", views.warden_view_student_profile, name="warden_view_student_profile"),
+    path("student-portal/toggle-edit/<int:student_id>/", views.toggle_student_edit_profile, name="toggle_student_edit_profile"),
 ]

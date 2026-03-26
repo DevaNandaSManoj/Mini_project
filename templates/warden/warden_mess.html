@@ -69,16 +69,10 @@
 
         <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px;">
 
-            <select name="student_id" required
-                style="background:var(--surface2); border:none; padding:12px; border-radius:10px; color:var(--text); min-width:200px;">
-                <option value="">Select Student</option>
+            <select name="student_id" class="search-select" required style="min-width:300px;">
+                <option value="">Search by ID or Name...</option>
                 {% for student in students %}
-                    <option value="{{ student.id }}"
-                        {% if student.id|stringformat:"s" == selected_student_id %}
-                            selected
-                        {% endif %}>
-                        {{ student.user.get_full_name|default:student.user.username }}
-                    </option>
+                    <option value="{{ student.user.username }}" {% if student.user.username == selected_student_id %}selected{% endif %}>{{ student.user.username }} - {% if student.name %}{{ student.name }}{% elif student.user.first_name %}{{ student.user.first_name }}{% else %}Unknown Name{% endif %}</option>
                 {% endfor %}
             </select>
 

@@ -43,11 +43,30 @@ def manage_students(request):
         phone = request.POST.get("phone")
         department = request.POST.get("department")
         parent_email = request.POST.get("parent_email")
+        father_name = request.POST.get("father_name")
+        mother_name = request.POST.get("mother_name")
+        parent_phone = request.POST.get("parent_phone")
+        address = request.POST.get("address")
+        place = request.POST.get("place")
 
         if not username:
             return render(request, "admin/admin_students.html", {
                 "students": students,
                 "error": "Student ID cannot be empty."
+            })
+
+        # Validate all required fields
+        missing = []
+        if not full_name: missing.append("Full Name")
+        if not room: missing.append("Room No.")
+        if not block: missing.append("Block")
+        if not department: missing.append("Department")
+        if not phone: missing.append("Phone Number")
+
+        if missing:
+            return render(request, "admin/admin_students.html", {
+                "students": students,
+                "error": f"Please fill in: {', '.join(missing)}."
             })
 
         if User.objects.filter(username=username).exists():
@@ -72,7 +91,12 @@ def manage_students(request):
                 phone_number=phone,
                 department=department,
                 parent_email=parent_email,
-                name=full_name
+                name=full_name,
+                father_name=father_name,
+                mother_name=mother_name,
+                parent_phone_number=parent_phone,
+                address=address,
+                place=place
             )
         except IntegrityError:
             # If the user was just created but the student creation failed, delete the user.
@@ -106,20 +130,36 @@ def manage_students(request):
 
         student = get_object_or_404(Student, id=student_id)
 
+        full_name = request.POST.get("name", "").strip()
         student.room_no = request.POST.get("room")
         student.hostel_block = request.POST.get("block")
         student.phone_number = request.POST.get("phone")
         student.department = request.POST.get("department")
         student.parent_email = request.POST.get("parent_email")
-        student.name = request.POST.get("name")
-
+        student.name = full_name
+        student.father_name = request.POST.get("father_name")
+        student.mother_name = request.POST.get("mother_name")
+        student.parent_phone_number = request.POST.get("parent_phone")
+        student.address = request.POST.get("address")
+        student.place = request.POST.get("place")
         student.save()
+
+        # Also update the user's display name
+        student.user.first_name = full_name
+        student.user.save()
 
         return redirect('manage_students')
 
 
+    from accounts.models import Warden
+    wardens = Warden.objects.select_related('user').all()
+    # Build a dict: block_letter -> warden object for quick lookup in template
+    block_warden_map = {w.hostel_block: w for w in wardens}
+
     return render(request, 'admin/admin_students.html', {
-        "students": students
+        "students": students,
+        "wardens": wardens,
+        "block_warden_map": block_warden_map,
     })
 
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from .models import Complaint, Student, Broadcast
@@ -213,9 +213,13 @@ def student_complaint(request):
     if request.method == "POST":
         message = request.POST.get('message')
         if message:
+            from accounts.ml_classifier import classify_complaint
+            classification = classify_complaint(message)
             Complaint.objects.create(
                 student=student,
-                message=message
+                message=message,
+                complaint_type=classification['complaint_type'],
+                category=classification['category'],
             )
             return redirect('student_complaint')
 
@@ -224,6 +228,17 @@ def student_complaint(request):
     return render(request, 'student/complaint.html', {
         'complaints': complaints
     })
+
+
+@login_required
+def delete_complaint(request, complaint_id):
+    if request.user.role != 'student':
+        return redirect('login')
+    student = Student.objects.get(user=request.user)
+    complaint = get_object_or_404(Complaint, id=complaint_id, student=student)
+    if request.method == 'POST':
+        complaint.delete()
+    return redirect('student_complaint')
 
 @login_required
 def student_broadcast(request):

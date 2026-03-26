@@ -5,7 +5,7 @@
   <div class="page-header">
     <div class="breadcrumb"><span>Admin</span> › Leave Applications</div>
     <h1>Leave Applications</h1>
-    <p>Review and approve student leave requests.</p>
+    <p>View all student leave requests. Approval is handled by the assigned warden.</p>
   </div>
 
   <div class="tab-nav">
@@ -26,18 +26,10 @@
         <div class="leave-reason" style="margin-top:8px">{{ l.reason }}</div>
         
         <div class="leave-actions mt-16">
-          <form method="POST" action="{% url 'all_leaves' %}" style="display:inline;">
-             {% csrf_token %}
-             <input type="hidden" name="leave_id" value="{{ l.id }}">
-             <input type="hidden" name="action" value="approve">
-             <button type="submit" class="action-btn success sm"><i class="fa fa-check"></i> Approve</button>
-          </form>
-          <form method="POST" action="{% url 'all_leaves' %}" style="display:inline;">
-             {% csrf_token %}
-             <input type="hidden" name="leave_id" value="{{ l.id }}">
-             <input type="hidden" name="action" value="reject">
-             <button type="submit" class="action-btn danger sm"><i class="fa fa-times"></i> Reject</button>
-          </form>
+          <span style="font-size:0.8rem; color:var(--text2); display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-user-shield" style="color:#818cf8;"></i>
+            Awaiting approval from Block {{ l.student.hostel_block }} Warden
+          </span>
         </div>
       </div>
       {% endfor %}
@@ -60,6 +52,9 @@
         </div>
         <div class="leave-dates">📅 {{ l.from_date|date:"M d, Y" }} → {{ l.to_date|date:"M d, Y" }}</div>
         <div class="leave-reason" style="margin-top:8px">{{ l.reason }}</div>
+        <div style="margin-top:8px; font-size:0.8rem; color:var(--text2);">
+          <i class="fa-solid fa-user-shield" style="color:#818cf8;"></i> Block {{ l.student.hostel_block }} Warden
+        </div>
       </div>
       {% endfor %}
     {% else %}

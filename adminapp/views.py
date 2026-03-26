@@ -281,22 +281,9 @@ def manage_mess(request):
 
 # ================= LEAVE REQUESTS =================
 def all_leaves(request):
-
-    if request.method == "POST":
-        action = request.POST.get("action")
-        leave_id = request.POST.get("leave_id")
-        if leave_id and action in ['approve', 'reject']:
-            leave = get_object_or_404(LeaveRequest, id=leave_id)
-            if action == 'approve':
-                leave.status = 'approved'
-            elif action == 'reject':
-                leave.status = 'rejected'
-            leave.seen_by_student = False  # To re-notify the student
-            leave.save()
-            return redirect('all_leaves')
-
-    pending_leaves = LeaveRequest.objects.filter(status='pending').order_by('-applied_on')
-    processed_leaves = LeaveRequest.objects.exclude(status='pending').order_by('-applied_on')
+    # Admin can VIEW leaves only — approve/reject is handled by wardens
+    pending_leaves = LeaveRequest.objects.filter(status='pending').order_by('-applied_on').select_related('student__user')
+    processed_leaves = LeaveRequest.objects.exclude(status='pending').order_by('-applied_on').select_related('student__user')
 
     return render(request, 'admin/all_leaves.html', {
         "pending_leaves": pending_leaves,

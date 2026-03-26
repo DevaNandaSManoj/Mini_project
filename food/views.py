@@ -121,13 +121,50 @@ def food_history(request):
 
     student = Student.objects.get(user=request.user)
 
-    last_10_days = date.today() - timedelta(days=10)
+    filter_month = request.GET.get('month', '').strip()
+    filter_date  = request.GET.get('date', '').strip()
+    filter_type  = request.GET.get('filter_type', '').strip()  # 'date' or 'month'
 
-    records = StudentDailyRecord.objects.filter(
-        student=student,
-        date__gte=last_10_days
-    ).order_by('-date')
+    # If both are somehow submitted, use filter_type hint to decide winner
+    if filter_date and filter_month:
+        if filter_type == 'month':
+            filter_date = ''
+        else:
+            filter_month = ''
+
+    records = StudentDailyRecord.objects.filter(student=student)
+
+    if filter_date:
+        try:
+            from datetime import datetime as dt
+            parsed = dt.strptime(filter_date, '%Y-%m-%d').date()
+            records = records.filter(date=parsed)
+            filter_label = f"Results for {parsed.strftime('%d %b %Y')}"
+        except ValueError:
+            filter_date = ''
+            filter_label = ''
+    elif filter_month:
+        try:
+            year, month = map(int, filter_month.split('-'))
+            records = records.filter(date__year=year, date__month=month)
+            import calendar
+            filter_label = f"Results for {calendar.month_name[month]} {year}"
+        except (ValueError, AttributeError):
+            filter_month = ''
+            filter_label = ''
+    else:
+        # Default: last 10 days
+        last_10_days = date.today() - timedelta(days=10)
+        records = records.filter(date__gte=last_10_days)
+        filter_label = 'Last 10 days'
+
+    records = records.order_by('-date')
 
     return render(request, "student/food_history.html", {
-        "records": records
+        "records": records,
+        "filter_month": filter_month,
+        "filter_date": filter_date,
+        "filter_label": filter_label,
+        "today": date.today().strftime('%Y-%m-%d'),
+        "current_month": date.today().strftime('%Y-%m'),
     })

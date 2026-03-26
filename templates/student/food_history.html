@@ -4,7 +4,6 @@
 {% block content %}
 
 <style>
-
 .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -12,14 +11,78 @@
     padding: 20px;
 }
 
-.table-wrap {
-    overflow-x: auto;
+.search-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+.search-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 160px;
 }
+
+.search-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.search-group input {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.search-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.search-btn {
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.clear-btn {
+    padding: 9px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
 
 th, td {
     padding: 14px;
@@ -27,60 +90,82 @@ th, td {
     border-bottom: 1px solid var(--border);
 }
 
-th {
+th { color: var(--text2); font-weight: 600; }
+
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.badge-green { background: rgba(16,185,129,0.15); color: #10b981; }
+.badge-red   { background: rgba(239,68,68,0.15);  color: #ef4444; }
+
+.result-label {
+    font-size: 13px;
     color: var(--text2);
-    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.badge-green {
-    background: rgba(16,185,129,0.15);
-    color: #10b981;
-}
-
-.badge-red {
-    background: rgba(239,68,68,0.15);
-    color: #ef4444;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--text2);
-}
-
+.empty-state { text-align: center; padding: 40px; color: var(--text2); }
 </style>
 
 
-<h1 style="margin-bottom:8px;">Meal History</h1>
-<p style="color:var(--text2); margin-bottom:30px;">
-Your food selection history for the past 10 days.
-</p>
+<h1 style="margin-bottom:6px;">🍽️ Meal History</h1>
+<p style="color:var(--text2); margin-bottom:24px;">Search your food selection by date or month.</p>
 
+<!-- SEARCH BAR -->
+<form method="GET" action="" id="filterForm">
+    <input type="hidden" name="filter_type" id="filter_type" value="">
+    <div class="search-bar">
 
+        <div class="search-group">
+            <label>📅 Specific Date</label>
+            <input type="date" name="date" id="filterDate"
+                   value="{{ filter_date }}"
+                   max="{{ today }}"
+                   placeholder="Pick a date">
+        </div>
+
+        <div style="display:flex; align-items:center; color:var(--text2); font-size:13px; padding-bottom:10px;">or</div>
+
+        <div class="search-group">
+            <label>🗓️ Month</label>
+            <input type="month" name="month" id="filterMonth"
+                   value="{{ filter_month }}"
+                   max="{{ current_month }}"
+                   placeholder="Pick a month">
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:flex-end; padding-bottom:1px;">
+            <button type="submit" class="search-btn">🔍 Search</button>
+            <a href="{% url 'food_history' %}" class="clear-btn">✕ Clear</a>
+        </div>
+
+    </div>
+</form>
+
+<!-- RESULT LABEL -->
+<div class="result-label">
+    📊 Showing: <strong>{{ filter_label }}</strong>
+    &nbsp;·&nbsp; {{ records.count }} record{{ records.count|pluralize }}
+</div>
+
+<!-- TABLE -->
 <div class="card">
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
                     <th>Date</th>
-                    <th>Breakfast</th>
-                    <th>Lunch</th>
-                    <th>Dinner</th>
+                    <th>🌅 Breakfast</th>
+                    <th>☀️ Lunch</th>
+                    <th>🌙 Dinner</th>
                 </tr>
             </thead>
             <tbody>
-
                 {% if records %}
                     {% for record in records %}
                     <tr>
-                        <td>{{ record.date }}</td>
+                        <td style="font-weight:600;">{{ record.date|date:"D, d M Y" }}</td>
 
                         <td>
                             {% if record.breakfast %}
@@ -111,15 +196,48 @@ Your food selection history for the past 10 days.
                     <tr>
                         <td colspan="4">
                             <div class="empty-state">
-                                No food history available.
+                                <div style="font-size:2.5rem; margin-bottom:10px; opacity:0.4;">🍽️</div>
+                                No records found for this period.
                             </div>
                         </td>
                     </tr>
                 {% endif %}
-
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+const dateInput  = document.getElementById('filterDate');
+const monthInput = document.getElementById('filterMonth');
+const filterType = document.getElementById('filter_type');
+
+// Track which input the user last touched
+dateInput.addEventListener('focus', () => { filterType.value = 'date'; });
+monthInput.addEventListener('focus', () => { filterType.value = 'month'; });
+
+dateInput.addEventListener('input', () => {
+    if (dateInput.value) { monthInput.value = ''; filterType.value = 'date'; }
+});
+monthInput.addEventListener('input', () => {
+    if (monthInput.value) { dateInput.value = ''; filterType.value = 'month'; }
+});
+
+// Final safety on submit: ensure only one is active
+document.getElementById('filterForm').addEventListener('submit', function() {
+    if (filterType.value === 'month' || (monthInput.value && !dateInput.value)) {
+        dateInput.value = '';
+        filterType.value = 'month';
+    } else if (filterType.value === 'date' || (dateInput.value && !monthInput.value)) {
+        monthInput.value = '';
+        filterType.value = 'date';
+    }
+    // If both somehow still have values, month wins
+    if (dateInput.value && monthInput.value) {
+        if (filterType.value === 'month') dateInput.value = '';
+        else monthInput.value = '';
+    }
+});
+</script>
 
 {% endblock %}

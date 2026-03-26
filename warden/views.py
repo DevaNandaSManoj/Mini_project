@@ -25,8 +25,11 @@ def dashboard(request):
     # Total students in this warden's block only
     total_students = Student.objects.filter(hostel_block=warden.hostel_block).count()
 
-    # Pending leave requests
-    pending_leaves = LeaveRequest.objects.filter(status="pending").count()
+    # Pending leave requests — only from this warden's block
+    pending_leaves = LeaveRequest.objects.filter(
+        status="pending",
+        student__hostel_block=warden.hostel_block
+    ).count()
 
     # Today's attendance % (block-filtered)
     block_student_ids = Student.objects.filter(hostel_block=warden.hostel_block).values_list('id', flat=True)
@@ -74,13 +77,21 @@ def leave_requests(request):
 
     warden = Warden.objects.get(user=request.user)
 
-    pending_requests = LeaveRequest.objects.filter(status='pending').select_related('student__user')
-    processed_requests = LeaveRequest.objects.exclude(status='pending').select_related('student__user')
+    # Only show leave requests from students in this warden's block
+    pending_requests = LeaveRequest.objects.filter(
+        status='pending',
+        student__hostel_block=warden.hostel_block
+    ).select_related('student__user')
+
+    processed_requests = LeaveRequest.objects.filter(
+        student__hostel_block=warden.hostel_block
+    ).exclude(status='pending').select_related('student__user')
 
     return render(request, 'warden/leave_requests.html', {
         'pending_requests': pending_requests,
         'processed_requests': processed_requests,
         'pending_count': pending_requests.count(),
+        'warden': warden,
     })
 
 @login_required

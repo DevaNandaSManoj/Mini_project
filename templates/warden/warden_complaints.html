@@ -17,11 +17,23 @@
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0,0,0,0.06);
     }
+    /* Category colour coding */
+    .cat-badge { padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; display:inline-block; }
+    .cat-electrical { background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.25); }
+    .cat-plumbing   { background:rgba(56,189,248,0.12); color:#38bdf8; border:1px solid rgba(56,189,248,0.25); }
+    .cat-carpentry  { background:rgba(161,94,55,0.12);  color:#a15a28; border:1px solid rgba(161,94,55,0.25); }
+    .cat-cleaning   { background:rgba(129,140,248,0.12); color:#818cf8; border:1px solid rgba(129,140,248,0.25); }
+    .cat-network    { background:rgba(34,211,238,0.12); color:#22d3ee; border:1px solid rgba(34,211,238,0.25); }
+    .cat-food       { background:rgba(236,72,153,0.12); color:#ec4899; border:1px solid rgba(236,72,153,0.25); }
+    .cat-safety     { background:rgba(248,113,113,0.12); color:#f87171; border:1px solid rgba(248,113,113,0.25); }
+    .cat-general    { background:rgba(100,116,139,0.12); color:#94a3b8; border:1px solid rgba(100,116,139,0.25); }
+    .type-complaint { background:rgba(248,113,113,0.10); color:#f87171; border:1px solid rgba(248,113,113,0.2); padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .type-suggestion { background:rgba(52,211,153,0.10); color:#34d399; border:1px solid rgba(52,211,153,0.2); padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
 </style>
 
 <div class="dashboard-greeting animate-up" style="animation-delay: 0.1s; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(2ec4b6, 0.05) 100%); padding: 24px; border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.15); margin-bottom: 24px;">
-    <h1 style="color: var(--text); font-size: 28px; font-weight: 700; margin-bottom: 8px;">Student Complaints</h1>
-    <p style="color: var(--text2); font-size: 15px; font-weight: 500;">Manage and resolve hostel block complaints.</p>
+    <h1 style="color: var(--text); font-size: 28px; font-weight: 700; margin-bottom: 8px;">Complaints &amp; Suggestions</h1>
+    <p style="color: var(--text2); font-size: 15px; font-weight: 500;">Manage and resolve hostel block complaints. 🤖 AI auto-categorised.</p>
 </div>
 
 <!-- STATS -->
@@ -109,9 +121,27 @@
 
             </div>
 
-            <div style="margin-bottom:12px;">
-                {{ complaint.message }}
+            <!-- ML Type + Category badges -->
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                {% if complaint.complaint_type == 'suggestion' %}
+                    <span class="type-suggestion">💡 Suggestion</span>
+                {% else %}
+                    <span class="type-complaint">⚠️ Complaint</span>
+                {% endif %}
+
+                <span class="cat-badge cat-{{ complaint.category }}">
+                    {% if complaint.category == 'electrical' %}⚡ Electrical Work
+                    {% elif complaint.category == 'plumbing' %}🔧 Plumbing
+                    {% elif complaint.category == 'carpentry' %}🪵 Carpentry
+                    {% elif complaint.category == 'cleaning' %}🧹 Cleaning &amp; Hygiene
+                    {% elif complaint.category == 'network' %}📶 Network / Wi-Fi
+                    {% elif complaint.category == 'food' %}🍽️ Food &amp; Mess
+                    {% elif complaint.category == 'safety' %}🔒 Safety &amp; Security
+                    {% else %}📋 General{% endif %}
+                </span>
             </div>
+
+            <div style="margin-bottom:12px;">{{ complaint.message }}</div>
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
 

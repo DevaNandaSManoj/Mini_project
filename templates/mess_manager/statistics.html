@@ -1,0 +1,613 @@
+{% extends "mess_manager/base_mess_manager.html" %}
+
+{% block content %}
+
+<style>
+/* ── ANIMATIONS ─────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0);    }
+}
+@keyframes pulse-ring {
+    0%   { box-shadow:0 0 0 0 rgba(56,189,248,0.35); }
+    70%  { box-shadow:0 0 0 10px rgba(56,189,248,0);  }
+    100% { box-shadow:0 0 0 0 rgba(56,189,248,0);     }
+}
+@keyframes glow {
+    0%,100% { text-shadow:0 0 6px rgba(56,189,248,0.4); }
+    50%      { text-shadow:0 0 18px rgba(56,189,248,0.8); }
+}
+.au  { animation:fadeInUp 0.55s cubic-bezier(.2,.8,.2,1) both; }
+.au1 { animation-delay:.06s; }
+.au2 { animation-delay:.12s; }
+.au3 { animation-delay:.18s; }
+.au4 { animation-delay:.24s; }
+.au5 { animation-delay:.30s; }
+.au6 { animation-delay:.36s; }
+.au7 { animation-delay:.42s; }
+.au8 { animation-delay:.48s; }
+
+/* ── GLASSMORPHISM CARD ────────────────────────────────────────── */
+.glass-card {
+    background: rgba(15,23,42,0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(99,179,237,0.14);
+    border-radius: 18px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .22s ease, box-shadow .22s ease;
+}
+.glass-card::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    background:linear-gradient(135deg,rgba(56,189,248,.06) 0%,rgba(129,140,248,.03) 100%);
+    pointer-events:none;
+}
+.glass-card:hover {
+    transform:translateY(-4px);
+    box-shadow:0 12px 32px rgba(0,0,0,.35);
+}
+
+/* ── INSIGHT CARDS GRID ────────────────────────────────────────── */
+.insight-grid {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-bottom:22px;
+}
+@media(max-width:1100px){ .insight-grid{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:620px) { .insight-grid{grid-template-columns:1fr;} }
+
+.insight-card {
+    border-radius:16px;
+    padding:20px 22px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .2s, box-shadow .2s;
+    cursor:default;
+}
+.insight-card:hover { transform:translateY(-4px); box-shadow:0 10px 28px rgba(0,0,0,.3); }
+.insight-icon {
+    width:42px; height:42px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; margin-bottom:12px;
+}
+.insight-val   { font-size:22px; font-weight:800; margin-bottom:2px; }
+.insight-label { font-size:11px; letter-spacing:.8px; text-transform:uppercase; color:var(--text2); }
+
+/* ── CHART SECTION GRID ────────────────────────────────────────── */
+.chart-row { display:grid; gap:20px; margin-bottom:22px; }
+.chart-row-2 { grid-template-columns:1fr 1fr; }
+.chart-row-3 { grid-template-columns:1.2fr 1fr; }
+@media(max-width:900px){ .chart-row-2,.chart-row-3{ grid-template-columns:1fr; } }
+
+.chart-title {
+    font-size:15px; font-weight:700;
+    display:flex; align-items:center; gap:9px;
+    margin-bottom:18px;
+}
+.chart-title span { color:var(--text2); font-weight:400; font-size:12px; }
+.chart-wrap { position:relative; }
+
+/* ── DONUT CENTER TEXT ─────────────────────────────────────────── */
+.donut-wrap { position:relative; max-width:240px; margin:0 auto; }
+.donut-center {
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center; pointer-events:none;
+}
+.donut-center-val  { font-size:26px; font-weight:800; color:var(--text); animation:glow 3s ease infinite; }
+.donut-center-sub  { font-size:11px; color:var(--text2); margin-top:2px; }
+
+/* ── AI PREDICTION PANEL ───────────────────────────────────────── */
+.ai-panel {
+    border-radius:18px;
+    padding:28px;
+    background:linear-gradient(135deg,rgba(56,189,248,.08) 0%,rgba(129,140,248,.08) 100%);
+    border:1px solid rgba(56,189,248,.22);
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+}
+.ai-panel::after {
+    content:"🤖";
+    position:absolute;
+    right:20px; top:20px;
+    font-size:52px;
+    opacity:.12;
+}
+.ai-metrics { display:flex; gap:20px; flex-wrap:wrap; margin-top:18px; }
+.ai-metric {
+    flex:1; min-width:160px;
+    background:rgba(15,23,42,.6);
+    border:1px solid rgba(99,179,237,.15);
+    border-radius:14px;
+    padding:18px 22px;
+    text-align:center;
+}
+.ai-metric-val { font-size:32px; font-weight:900; }
+.ai-metric-label { font-size:11px; letter-spacing:.8px; text-transform:uppercase; color:var(--text2); margin-top:4px; }
+.ai-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(56,189,248,.12);
+    border:1px solid rgba(56,189,248,.25);
+    border-radius:30px;
+    padding:4px 12px; font-size:11px;
+    color:var(--accent);
+    margin-bottom:10px;
+    animation: pulse-ring 2.5s infinite;
+}
+
+/* ── ALERTS ────────────────────────────────────────────────────── */
+.alert-item {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:14px 16px; border-radius:12px;
+    margin-bottom:10px; font-size:13.5px;
+}
+.alert-warning{ background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3);  color:#fbbf24; }
+.alert-danger { background:rgba(239,68,68,.1);  border:1px solid rgba(239,68,68,.3);   color:#f87171; }
+.alert-info   { background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25); color:var(--accent); }
+.alert-msg    { color:var(--text); }
+.alert-item i { margin-top:2px; }
+
+/* ── LEGEND DOT ────────────────────────────────────────────────── */
+.leg { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text2); }
+.leg-dot { width:10px; height:10px; border-radius:50%; }
+
+/* ── STAT PILL ROW ─────────────────────────────────────────────── */
+.stat-pills { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+.stat-pill {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:30px;
+    padding:6px 16px;
+    font-size:12px;
+    display:flex; align-items:center; gap:6px;
+}
+</style>
+
+<!-- ═══════════════════ PAGE HEADER ═══════════════════ -->
+<div class="dashboard-greeting au au1"
+     style="background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(129,140,248,.05));
+            padding:24px;border-radius:16px;border:1px solid rgba(56,189,248,.15);margin-bottom:22px;">
+    <h1 style="font-size:26px;font-weight:800;margin:0 0 6px;">
+        📊 Meal Statistics <span style="color:var(--accent);">Dashboard</span>
+    </h1>
+    <p style="color:var(--text2);font-size:13px;margin:0;">
+        <i class="fa-regular fa-calendar" style="margin-right:6px;"></i>
+        {{ today|date:"l, F j, Y" }} &nbsp;·&nbsp; Advanced Analytics &amp; AI Insights
+    </p>
+</div>
+
+<!-- ═══════════════════ INSIGHT CARDS ═══════════════════ -->
+<div class="insight-grid au au2">
+
+    <!-- Peak Day -->
+    <div class="insight-card glass-card" style="border-top:3px solid #34d399;">
+        <div class="insight-icon" style="background:rgba(52,211,153,.15);color:#34d399;">
+            <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div class="insight-val" style="color:#34d399;">{{ peak_day_label }}</div>
+        <div class="insight-label">Peak Day</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">{{ peak_pct }}% participation</div>
+    </div>
+
+    <!-- Lowest Day -->
+    <div class="insight-card glass-card" style="border-top:3px solid #f87171;">
+        <div class="insight-icon" style="background:rgba(248,113,113,.15);color:#f87171;">
+            <i class="fa-solid fa-arrow-down"></i>
+        </div>
+        <div class="insight-val" style="color:#f87171;">{{ lowest_day_label }}</div>
+        <div class="insight-label">Lowest Day</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">{{ lowest_pct }}% participation</div>
+    </div>
+
+    <!-- Avg Participation -->
+    <div class="insight-card glass-card" style="border-top:3px solid #38bdf8;">
+        <div class="insight-icon" style="background:rgba(56,189,248,.15);color:#38bdf8;">
+            <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="insight-val" style="color:#38bdf8;">{{ avg_participation }}%</div>
+        <div class="insight-label">Avg Participation</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">7-day average</div>
+    </div>
+
+    <!-- Waste Trend -->
+    <div class="insight-card glass-card" style="border-top:3px solid {{ waste_color }};">
+        <div class="insight-icon" style="background:rgba(129,140,248,.15);color:{{ waste_color }};">
+            <i class="fa-solid fa-recycle"></i>
+        </div>
+        <div class="insight-val" style="color:{{ waste_color }};">{{ waste_trend }}</div>
+        <div class="insight-label">Waste Level</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">{{ total_waste_week }} skips this week</div>
+    </div>
+
+</div>
+
+<!-- ═══════════════════ ROW: DONUT + PARTICIPATION BAR ═══════════════════ -->
+<div class="chart-row chart-row-3 au au3">
+
+    <!-- TODAY DISTRIBUTION DONUT -->
+    <div class="glass-card">
+        <div class="chart-title">
+            <i class="fa-solid fa-circle-half-stroke" style="color:#38bdf8;"></i>
+            Today's Meal Distribution
+            <span>{{ today|date:"D, M j" }}</span>
+        </div>
+        <div class="donut-wrap">
+            <canvas id="donutChart" height="240"></canvas>
+            <div class="donut-center">
+                <div class="donut-center-val">
+                    {{ breakfast_count|add:lunch_count|add:dinner_count }}
+                </div>
+                <div class="donut-center-sub">Total Meals</div>
+            </div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:18px;margin-top:14px;flex-wrap:wrap;">
+            <div class="leg"><div class="leg-dot" style="background:#fbbf24;"></div>Breakfast ({{ breakfast_count }})</div>
+            <div class="leg"><div class="leg-dot" style="background:#38bdf8;"></div>Lunch ({{ lunch_count }})</div>
+            <div class="leg"><div class="leg-dot" style="background:#818cf8;"></div>Dinner ({{ dinner_count }})</div>
+        </div>
+    </div>
+
+    <!-- WEEKLY PARTICIPATION BAR -->
+    <div class="glass-card">
+        <div class="chart-title">
+            <i class="fa-solid fa-chart-bar" style="color:#818cf8;"></i>
+            Weekly Participation %
+            <span>Last 7 Days</span>
+        </div>
+        <div class="stat-pills">
+            <div class="stat-pill">
+                <i class="fa-solid fa-{{ trend_icon }}" style="color:{{ trend_color }};"></i>
+                <span style="color:{{ trend_color }};">{{ trend }}</span>
+            </div>
+            <div class="stat-pill">
+                <i class="fa-solid fa-users" style="color:var(--accent);"></i>
+                Avg {{ avg_participation }}%
+            </div>
+        </div>
+        <canvas id="barChart" height="200"></canvas>
+    </div>
+
+</div>
+
+<!-- ═══════════════════ ROW: LINE CHART + MONTHLY ═══════════════════ -->
+<div class="chart-row chart-row-2 au au4">
+
+    <!-- WEEKLY TREND LINE -->
+    <div class="glass-card">
+        <div class="chart-title">
+            <i class="fa-solid fa-chart-line" style="color:#34d399;"></i>
+            Weekly Trend — Students Opted
+            <span>Smooth Curve</span>
+        </div>
+        <canvas id="lineChart" height="200"></canvas>
+    </div>
+
+    <!-- MONTHLY MEALS BAR -->
+    <div class="glass-card">
+        <div class="chart-title">
+            <i class="fa-solid fa-calendar-days" style="color:#fbbf24;"></i>
+            Monthly Meal Totals
+            <span>Last 6 Months</span>
+        </div>
+        <canvas id="monthlyChart" height="200"></canvas>
+    </div>
+
+</div>
+
+<!-- ═══════════════════ WASTE CHART ═══════════════════ -->
+<div class="glass-card au au5" style="margin-bottom:22px;">
+    <div class="chart-title">
+        <i class="fa-solid fa-trash-can" style="color:#f87171;"></i>
+        Estimated Waste (Skipped Portions per Month)
+        <span>Last 3 Months</span>
+    </div>
+    <canvas id="wasteChart" height="120"></canvas>
+</div>
+
+<!-- ═══════════════════ AI PREDICTION PANEL ═══════════════════ -->
+<div class="ai-panel au au6">
+    <div class="ai-badge">
+        <i class="fa-solid fa-brain"></i>
+        AI Powered · Linear Regression
+    </div>
+    <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;">
+        Predictions for <span style="color:var(--accent);">Tomorrow</span>
+    </h3>
+    <p style="color:var(--text2);font-size:13px;margin:0;">
+        Trained on last 7 days of data using scikit-learn LinearRegression
+    </p>
+
+    <div class="ai-metrics">
+        <!-- Participation Prediction -->
+        <div class="ai-metric">
+            <div class="ai-metric-val" style="color:#38bdf8;">{{ predicted_participation }}%</div>
+            <div class="ai-metric-label">Predicted Participation</div>
+            <div style="margin-top:10px;">
+                <div style="background:rgba(56,189,248,.12);border-radius:30px;height:6px;overflow:hidden;">
+                    <div style="width:{{ predicted_participation }}%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);height:100%;border-radius:30px;transition:width 1s ease;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waste Prediction -->
+        <div class="ai-metric">
+            <div class="ai-metric-val" style="color:#f87171;">{{ predicted_waste }}</div>
+            <div class="ai-metric-label">Predicted Skips (Waste)</div>
+            <div style="margin-top:8px;color:var(--text2);font-size:11px;">
+                estimated skipped portions
+            </div>
+        </div>
+
+        <!-- Current 7-day avg -->
+        <div class="ai-metric">
+            <div class="ai-metric-val" style="color:#34d399;">{{ avg_participation }}%</div>
+            <div class="ai-metric-label">Current 7-Day Avg</div>
+            <div style="margin-top:8px;color:var(--text2);font-size:11px;">
+                {% if predicted_participation > avg_participation %}
+                    <span style="color:#34d399;"><i class="fa-solid fa-arrow-up"></i> Expecting improvement</span>
+                {% elif predicted_participation < avg_participation %}
+                    <span style="color:#f87171;"><i class="fa-solid fa-arrow-down"></i> Slight decline expected</span>
+                {% else %}
+                    <span style="color:#fbbf24;"><i class="fa-solid fa-minus"></i> Stable outlook</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ ALERTS ═══════════════════ -->
+<div class="glass-card au au7" style="margin-bottom:22px;">
+    <div class="chart-title">
+        <i class="fa-solid fa-bell" style="color:#fbbf24;"></i>
+        Smart Alerts
+    </div>
+
+    {% if alerts %}
+        {% for alert in alerts %}
+        <div class="alert-item alert-{{ alert.type }}">
+            <i class="fa-solid {{ alert.icon }}"></i>
+            <span class="alert-msg">{{ alert.message }}</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="padding:24px;text-align:center;background:var(--surface);border:1px dashed var(--border);border-radius:12px;">
+            <i class="fa-solid fa-circle-check" style="font-size:28px;color:#34d399;display:block;margin-bottom:10px;opacity:.7;"></i>
+            <span style="color:var(--text2);font-size:13px;">All systems healthy — no critical alerts.</span>
+        </div>
+    {% endif %}
+</div>
+
+<!-- ═══════════════════ ADD STATS LINK TO SIDEBAR ═══════════════════ -->
+<!-- Sidebar link is in base — see note below -->
+
+<!-- ══════════════════════════════════════════════════════════════════
+     Chart.js
+══════════════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+// ── DATA FROM DJANGO ─────────────────────────────────────────────
+const weekLabels      = {{ week_labels_json|safe }};
+const weekPart        = {{ week_participation_json|safe }};
+const weekOpted       = {{ week_opted_counts_json|safe }};
+const monthLabels     = {{ month_labels_json|safe }};
+const monthTotals     = {{ month_totals_json|safe }};
+const wasteLabels     = {{ waste_labels_json|safe }};
+const wasteCounts     = {{ waste_counts_json|safe }};
+const bfCount         = {{ breakfast_count }};
+const lnCount         = {{ lunch_count }};
+const dnCount         = {{ dinner_count }};
+
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+// ── HELPER: createGradient ────────────────────────────────────────
+function grad(ctx, colorTop, colorBot) {
+    const g = ctx.createLinearGradient(0,0,0,ctx.canvas.height);
+    g.addColorStop(0, colorTop);
+    g.addColorStop(1, colorBot);
+    return g;
+}
+
+// ══════════════════════════════════════
+// 1. DONUT CHART — Today's Distribution
+// ══════════════════════════════════════
+(function(){
+    const ctx = document.getElementById('donutChart').getContext('2d');
+    const total = bfCount + lnCount + dnCount;
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Breakfast','Lunch','Dinner'],
+            datasets:[{
+                data: total > 0 ? [bfCount, lnCount, dnCount] : [1,1,1],
+                backgroundColor: ['#f59e0b','#38bdf8','#818cf8'],
+                hoverBackgroundColor: ['#fbbf24','#7dd3fc','#a5b4fc'],
+                borderColor: 'transparent',
+                borderWidth: 0,
+                hoverOffset: 8,
+            }]
+        },
+        options: {
+            cutout: '72%',
+            animation: { animateRotate:true, duration:1200 },
+            plugins: {
+                legend: { display:false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.label}: ${ctx.raw} meals`
+                    }
+                }
+            }
+        }
+    });
+})();
+
+// ══════════════════════════════════════
+// 2. BAR CHART — Weekly Participation %
+// ══════════════════════════════════════
+(function(){
+    const ctx = document.getElementById('barChart').getContext('2d');
+    const bgColors = weekLabels.map((_,i) => {
+        const g = ctx.createLinearGradient(0,0,0,200);
+        g.addColorStop(0,'rgba(129,140,248,0.9)');
+        g.addColorStop(1,'rgba(56,189,248,0.6)');
+        return g;
+    });
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: weekLabels,
+            datasets:[{
+                label: 'Participation %',
+                data: weekPart,
+                backgroundColor: bgColors,
+                borderRadius: 10,
+                borderSkipped: false,
+                hoverBackgroundColor: 'rgba(56,189,248,0.9)',
+            }]
+        },
+        options: {
+            animation: { duration:1000, easing:'easeOutQuart' },
+            scales: {
+                x: { grid:{ color:'rgba(99,179,237,.08)' }, ticks:{ font:{size:11} } },
+                y: {
+                    grid:{ color:'rgba(99,179,237,.08)' },
+                    ticks:{ callback: v => v+'%', font:{size:11} },
+                    max: 100, beginAtZero:true
+                }
+            },
+            plugins: {
+                legend:{ display:false },
+                tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw}% participation` } }
+            }
+        }
+    });
+})();
+
+// ══════════════════════════════════════
+// 3. LINE CHART — Weekly Trend (Opted students)
+// ══════════════════════════════════════
+(function(){
+    const ctx = document.getElementById('lineChart').getContext('2d');
+    const areaGrad = ctx.createLinearGradient(0, 0, 0, 220);
+    areaGrad.addColorStop(0, 'rgba(52,211,153,0.35)');
+    areaGrad.addColorStop(1, 'rgba(52,211,153,0.00)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: weekLabels,
+            datasets:[{
+                label: 'Students Opted',
+                data: weekOpted,
+                borderColor: '#34d399',
+                borderWidth: 3,
+                pointBackgroundColor: '#34d399',
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                fill: true,
+                backgroundColor: areaGrad,
+                tension: 0.42,
+                shadowColor: 'rgba(52,211,153,0.5)',
+                shadowBlur: 12,
+            }]
+        },
+        options: {
+            animation: { duration:1200, easing:'easeInOutCubic' },
+            scales: {
+                x: { grid:{ color:'rgba(99,179,237,.06)' }, ticks:{ font:{size:11} } },
+                y: { grid:{ color:'rgba(99,179,237,.06)' }, beginAtZero:true, ticks:{ font:{size:11} } }
+            },
+            plugins: {
+                legend:{ display:false },
+                tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} students` } }
+            }
+        }
+    });
+})();
+
+// ══════════════════════════════════════
+// 4. MONTHLY BAR CHART
+// ══════════════════════════════════════
+(function(){
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    const g = ctx.createLinearGradient(0,0,0,220);
+    g.addColorStop(0,'rgba(251,191,36,0.9)');
+    g.addColorStop(1,'rgba(245,158,11,0.4)');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: monthLabels,
+            datasets:[{
+                label: 'Total Meals',
+                data: monthTotals,
+                backgroundColor: g,
+                borderRadius: 10,
+                borderSkipped: false,
+                hoverBackgroundColor: '#fbbf24',
+            }]
+        },
+        options: {
+            animation: { duration:1000, easing:'easeOutBounce' },
+            scales: {
+                x: { grid:{ color:'rgba(99,179,237,.06)' }, ticks:{ font:{size:11} } },
+                y: { grid:{ color:'rgba(99,179,237,.06)' }, beginAtZero:true, ticks:{ font:{size:11} } }
+            },
+            plugins: {
+                legend:{ display:false },
+                tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} meal servings` } }
+            }
+        }
+    });
+})();
+
+// ══════════════════════════════════════
+// 5. WASTE CHART — Line (glowing)
+// ══════════════════════════════════════
+(function(){
+    const ctx = document.getElementById('wasteChart').getContext('2d');
+    const areaGrad = ctx.createLinearGradient(0,0,0,120);
+    areaGrad.addColorStop(0,'rgba(248,113,113,0.3)');
+    areaGrad.addColorStop(1,'rgba(248,113,113,0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: wasteLabels,
+            datasets:[{
+                label: 'Skipped (Waste)',
+                data: wasteCounts,
+                borderColor: '#f87171',
+                borderWidth: 3,
+                pointBackgroundColor: '#f87171',
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                fill: true,
+                backgroundColor: areaGrad,
+                tension: 0.42,
+            }]
+        },
+        options: {
+            animation: { duration:1100, easing:'easeInOutQuart' },
+            scales: {
+                x: { grid:{ color:'rgba(99,179,237,.06)' }, ticks:{ font:{size:11} } },
+                y: { grid:{ color:'rgba(99,179,237,.06)' }, beginAtZero:true, ticks:{ font:{size:11} } }
+            },
+            plugins: {
+                legend:{ display:false },
+                tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} skipped portions` } }
+            }
+        }
+    });
+})();
+</script>
+
+{% endblock %}

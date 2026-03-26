@@ -1,0 +1,533 @@
+{% extends 'mess_manager/base_mess_manager.html' %}
+
+{% block content %}
+<style>
+    .ma-header-glow {
+        position: relative;
+        display: inline-block;
+    }
+
+    .ma-header-glow::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(56, 189, 248, 0.5);
+    }
+
+    .ma-filter-bar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 40px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ma-filter-bar::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, var(--accent), var(--accent2));
+    }
+
+    .ma-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ma-filter-group label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text2);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ma-filter-group label i {
+        color: var(--accent);
+    }
+
+    .ma-filter-input {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 16px;
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        outline: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .ma-filter-input:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .ma-filter-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    .ma-or-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--surface2);
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--text2);
+        border: 1px solid var(--border);
+    }
+
+    .ma-reset-btn {
+        background: var(--surface2);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .ma-reset-btn:hover {
+        background: var(--surface);
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .ma-cards-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+        .ma-cards-grid { grid-template-columns: 1fr; }
+        .ma-filter-bar { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+
+    .ma-stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 32px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .ma-stat-card:hover {
+        transform: translateY(-6px);
+    }
+
+    .ma-stat-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+        opacity: 0.12;
+        transform: translate(30%, -30%);
+        border-radius: 50%;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+    }
+
+    .ma-stat-card:hover::after {
+        opacity: 0.22;
+    }
+
+    .ma-selected-card { --glow-color: rgba(52, 211, 153, 0.8); }
+    .ma-selected-card:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2), 0 0 40px rgba(52,211,153,0.1);
+        border-color: rgba(52,211,153,0.2);
+    }
+
+    .ma-skipped-card { --glow-color: rgba(248, 113, 113, 0.8); }
+    .ma-skipped-card:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2), 0 0 40px rgba(248,113,113,0.1);
+        border-color: rgba(248,113,113,0.2);
+    }
+
+    .ma-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ma-title-wrap h3 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--text);
+        margin: 0 0 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ma-title-wrap p {
+        font-size: 0.85rem;
+        color: var(--text2);
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .ma-hero-metric {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: rgba(0,0,0,0.12);
+        border: 1px solid var(--border);
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 32px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ma-icon-box {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .ma-selected-card .ma-icon-box {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 8px 24px rgba(16,185,129,0.4);
+    }
+
+    .ma-skipped-card .ma-icon-box {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        box-shadow: 0 8px 24px rgba(239,68,68,0.4);
+    }
+
+    .ma-metric-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text2);
+        margin-bottom: 4px;
+    }
+
+    .ma-metric-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        line-height: 1;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .ma-selected-card .ma-metric-value span:first-child { color: var(--accent3); }
+    .ma-skipped-card .ma-metric-value span:first-child { color: #f87171; }
+
+    .ma-metric-sub {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text2);
+    }
+
+    .ma-chart-container {
+        height: 180px;
+        position: relative;
+        width: 100%;
+        z-index: 2;
+    }
+
+    .ma-breadcrumb {
+        font-size: 12px;
+        color: var(--text2);
+        margin-bottom: 6px;
+    }
+
+    .ma-breadcrumb span {
+        color: var(--accent);
+    }
+</style>
+
+<!-- Header -->
+<div class="dashboard-breadcrumb">
+    <span class="crumb-parent">Mess Manager</span>
+    <span class="crumb-sep">›</span>
+    <span class="crumb-active">Meal Analysis</span>
+</div>
+
+<div class="dashboard-greeting">
+    <h1 class="ma-header-glow">Meal Analysis</h1>
+    <p>Deep dive into campus dining preferences to reduce waste and optimize menus.</p>
+</div>
+
+<!-- Filter Bar -->
+<div class="ma-filter-bar">
+    <form method="GET" action="" style="display:flex; align-items:center; gap:32px; flex-wrap:wrap; width:100%;">
+
+        <div class="ma-filter-group">
+            <label for="date_filter"><i class="fa fa-calendar-day"></i> Specific Date</label>
+            <input type="date" id="date_filter" name="date" class="ma-filter-input"
+                value="{{ selected_date_str }}" onchange="this.form.submit()">
+        </div>
+
+        <div class="ma-or-divider">OR</div>
+
+        <div class="ma-filter-group">
+            <label for="month_filter"><i class="fa fa-calendar-alt"></i> Entire Month</label>
+            <input type="month" id="month_filter" name="month" class="ma-filter-input"
+                value="{{ selected_month_str }}" onchange="this.form.submit()">
+        </div>
+
+        <div style="margin-left: auto;">
+            <button type="button" class="ma-reset-btn"
+                onclick="window.location.href='{% url 'mess_meal_analysis' %}'">
+                <i class="fa fa-redo-alt" style="margin-right:6px; font-size:0.8rem;"></i> Reset View
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Cards -->
+<div class="ma-cards-grid">
+
+    <!-- Most Popular Card -->
+    <div class="ma-stat-card ma-selected-card">
+        <div class="ma-card-header">
+            <div class="ma-title-wrap">
+                <h3>🏆 Most Popular</h3>
+                <p>{{ period_text }}</p>
+            </div>
+        </div>
+
+        <div class="ma-hero-metric">
+            <div class="ma-icon-box">
+                <i class="fa fa-fire"></i>
+            </div>
+            <div>
+                <div class="ma-metric-label">Highest Engagement</div>
+                <div class="ma-metric-value">
+                    <span>{{ most_selected_meal }}</span>
+                    <span class="ma-metric-sub">• {{ most_selected_count }} selections</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ma-chart-container">
+            <canvas id="selectedChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Lowest Turnout Card -->
+    <div class="ma-stat-card ma-skipped-card">
+        <div class="ma-card-header">
+            <div class="ma-title-wrap">
+                <h3>📉 Lowest Turnout</h3>
+                <p>{{ period_text }}</p>
+            </div>
+        </div>
+
+        <div class="ma-hero-metric">
+            <div class="ma-icon-box">
+                <i class="fa fa-level-down-alt"></i>
+            </div>
+            <div>
+                <div class="ma-metric-label">Most Avoided</div>
+                <div class="ma-metric-value">
+                    <span>{{ most_skipped_meal }}</span>
+                    <span class="ma-metric-sub">• {{ most_skipped_count }} selections</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ma-chart-container">
+            <canvas id="skippedChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const bCount = parseInt("{{ breakfast_count|default:0 }}", 10) || 0;
+        const lCount = parseInt("{{ lunch_count|default:0 }}", 10) || 0;
+        const dCount = parseInt("{{ dinner_count|default:0 }}", 10) || 0;
+
+        const bSkip = parseInt("{{ breakfast_skip|default:0 }}", 10) || 0;
+        const lSkip = parseInt("{{ lunch_skip|default:0 }}", 10) || 0;
+        const dSkip = parseInt("{{ dinner_skip|default:0 }}", 10) || 0;
+
+        const labels = ['Breakfast', 'Lunch', 'Dinner'];
+        const vals = [bCount, lCount, dCount];
+        const skipVals = [bSkip, lSkip, dSkip];
+
+        const isLight = document.body.classList.contains('light');
+        const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+        const textColor = isLight ? '#64748b' : '#94a3b8';
+
+        const selPalette = [
+            ['#38bdf8', '#0284c7'],
+            ['#34d399', '#059669'],
+            ['#818cf8', '#4f46e5']
+        ];
+
+        const skipPalette = [
+            ['#fb7185', '#e11d48'],
+            ['#fbbf24', '#d97706'],
+            ['#f87171', '#dc2626']
+        ];
+
+        function renderInteractiveChart(canvasId, values, palettes) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const parent = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            let W, H;
+
+            function resize() {
+                W = parent.offsetWidth;
+                H = parent.offsetHeight;
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                canvas.style.width = `${W}px`;
+                canvas.style.height = `${H}px`;
+                ctx.scale(dpr, dpr);
+            }
+
+            resize();
+            window.addEventListener('resize', () => { resize(); draw(1); });
+
+            const bottomPad = 30, topPad = 20, barWidthRatio = 0.45;
+            const maxVal = Math.max(...values, 1);
+            const yMax = maxVal * 1.2;
+            let progress = 0;
+            let hoveredIndex = -1;
+
+            function draw(animProgress) {
+                ctx.clearRect(0, 0, W, H);
+                ctx.strokeStyle = gridColor;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let i = 0; i <= 2; i++) {
+                    const yPos = topPad + ((H - bottomPad - topPad) * (i / 2));
+                    ctx.moveTo(0, Math.round(yPos) + 0.5);
+                    ctx.lineTo(W, Math.round(yPos) + 0.5);
+                }
+                ctx.stroke();
+
+                const gap = W / labels.length;
+                const bW = Math.max(gap * barWidthRatio, 20);
+                const radius = 8;
+
+                labels.forEach((label, i) => {
+                    const x = (gap * i) + (gap / 2) - (bW / 2);
+                    const heightAvailable = H - bottomPad - topPad;
+                    const targetHeight = (values[i] / yMax) * heightAvailable;
+                    const delay = i * 0.15;
+                    let currentProg = Math.max(0, (animProgress - delay) / (1 - delay));
+                    currentProg = Math.min(1, currentProg);
+                    const easeOut = 1 - Math.pow(1 - currentProg, 3);
+                    const currentHeight = targetHeight * easeOut;
+                    const y = Math.round(H - bottomPad - currentHeight);
+                    const isHovered = hoveredIndex === i;
+                    const palette = palettes[i];
+
+                    const grad = ctx.createLinearGradient(0, y, 0, H - bottomPad);
+                    if (isHovered) {
+                        grad.addColorStop(0, '#ffffff');
+                        grad.addColorStop(0.2, palette[0]);
+                        grad.addColorStop(1, palette[1]);
+                        if (currentHeight > 5) {
+                            ctx.shadowColor = palette[0];
+                            ctx.shadowBlur = 20;
+                            ctx.shadowOffsetY = 10;
+                        }
+                    } else {
+                        const dimFactor = (hoveredIndex !== -1) ? '88' : 'ff';
+                        grad.addColorStop(0, palette[0] + dimFactor);
+                        grad.addColorStop(1, palette[1] + dimFactor);
+                        ctx.shadowBlur = 0;
+                    }
+
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.moveTo(x + radius, y);
+                    ctx.lineTo(x + bW - radius, y);
+                    ctx.quadraticCurveTo(x + bW, y, x + bW, y + radius);
+                    ctx.lineTo(x + bW, H - bottomPad);
+                    ctx.lineTo(x, H - bottomPad);
+                    ctx.lineTo(x, y + radius);
+                    ctx.quadraticCurveTo(x, y, x + radius, y);
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+
+                    if (currentHeight > 10 && easeOut > 0.8) {
+                        ctx.fillStyle = isHovered ? '#fff' : textColor;
+                        ctx.font = "bold 13px 'DM Sans', sans-serif";
+                        ctx.textAlign = "center";
+                        ctx.globalAlpha = (easeOut - 0.8) * 5;
+                        ctx.fillText(Math.round(values[i] * easeOut), x + (bW / 2), y - 10 - (isHovered ? 4 : 0));
+                        ctx.globalAlpha = 1;
+                    }
+
+                    ctx.fillStyle = isHovered ? (isLight ? '#0f172a' : '#fff') : textColor;
+                    ctx.font = isHovered ? "bold 12px 'DM Sans', sans-serif" : "600 12px 'DM Sans', sans-serif";
+                    ctx.fillText(label, x + (bW / 2), H - 10);
+                });
+            }
+
+            function animate() {
+                progress += 0.015;
+                if (progress < 1) {
+                    draw(progress);
+                    requestAnimationFrame(animate);
+                } else {
+                    draw(1);
+                }
+            }
+
+            setTimeout(() => { animate(); }, 100);
+        }
+
+        renderInteractiveChart('selectedChart', vals, selPalette);
+        renderInteractiveChart('skippedChart', skipVals, skipPalette);
+    });
+</script>
+{% endblock %}

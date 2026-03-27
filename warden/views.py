@@ -1,8 +1,9 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from leave.models import LeaveRequest
-from accounts.models import Broadcast, Warden, Student ,Complaint
+from accounts.models import Broadcast, Warden, Student, Complaint
 from food.models import StudentDailyRecord
+from food.views import send_absent_email, send_leave_email
 from django.utils import timezone
 from datetime import date, timedelta
 from django.db.models import Q
@@ -124,6 +125,9 @@ def approve_leave(request, leave_id):
 
         current_date += timedelta(days=1)
 
+    # Send ONE summary email covering the full leave period
+    send_leave_email(leave.student, from_date=leave.from_date, to_date=leave.to_date)
+
     return redirect('warden_leave_requests')
 
 
@@ -226,6 +230,10 @@ def warden_attendance(request):
                 record.marked_by = "warden"
 
                 record.save()
+
+                # Send absence email to parent if marked absent
+                if status == "absent":
+                    send_absent_email(student, absence_date=today)
 
         return redirect("warden_attendance")
 

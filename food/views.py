@@ -1,10 +1,122 @@
-from datetime import date, timedelta ,time
+from datetime import date, timedelta, time
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from accounts.models import Student
 from .models import DailyMenu, StudentDailyRecord
 from leave.models import LeaveRequest
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from django.conf import settings
+
+
+def send_absent_email(student, absence_date=None):
+    """Send an absence notification email to the student's parent via SendGrid."""
+    if not student.parent_email:
+        return
+    recipient = student.parent_email
+
+    if absence_date is None:
+        absence_date = date.today()
+
+    formatted_date = absence_date.strftime("%B %d, %Y")
+
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: auto;
+                border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
+        <div style="background: #1a1f36; padding: 24px; text-align: center;">
+            <h2 style="color: #38bdf8; margin: 0;">Optimess &mdash; Absence Alert</h2>
+        </div>
+        <div style="padding: 28px; background: #ffffff;">
+            <p style="color: #333; font-size: 15px;">Dear Parent / Guardian,</p>
+            <p style="color: #333; font-size: 15px;">
+                This is an automated notification to inform you that your ward
+                <strong>{student.name}</strong> was marked
+                <span style="color: #e53e3e; font-weight: bold;">ABSENT</span>
+                from the hostel on <strong>{formatted_date}</strong>.
+            </p>
+            <p style="color: #333; font-size: 15px;">
+                If you have any questions, please contact the hostel administration.
+            </p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #888; font-size: 12px; text-align: center;">
+                This is an automated message from the Optimess Hostel Management System.
+                Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+    """
+
+    message = Mail(
+        from_email=settings.SENDGRID_FROM_EMAIL,
+        to_emails=recipient,
+        subject=f'Absence Notification - {formatted_date} - Optimess',
+        html_content=html_content,
+    )
+
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg.send(message)
+    except Exception as e:
+        print(f"[Optimess] Error sending absence email for {student.name}: {e}")
+
+
+def send_leave_email(student, from_date, to_date):
+    """Send a single leave approval notification email to the student's parent."""
+    if not student.parent_email:
+        return
+    recipient = student.parent_email
+
+    fmt_from = from_date.strftime("%B %d, %Y")
+    fmt_to   = to_date.strftime("%B %d, %Y")
+
+    # Single-day leave vs. multi-day leave
+    if from_date == to_date:
+        date_text = f"on <strong>{fmt_from}</strong>"
+        subject_suffix = fmt_from
+    else:
+        date_text = f"from <strong>{fmt_from}</strong> to <strong>{fmt_to}</strong>"
+        subject_suffix = f"{fmt_from} to {fmt_to}"
+
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: auto;
+                border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
+        <div style="background: #1a1f36; padding: 24px; text-align: center;">
+            <h2 style="color: #38bdf8; margin: 0;">Optimess &mdash; Leave Approved</h2>
+        </div>
+        <div style="padding: 28px; background: #ffffff;">
+            <p style="color: #333; font-size: 15px;">Dear Parent / Guardian,</p>
+            <p style="color: #333; font-size: 15px;">
+                This is to inform you that the leave request for your ward
+                <strong>{student.name}</strong> has been
+                <span style="color: #2563eb; font-weight: bold;">APPROVED</span>
+                {date_text}.
+            </p>
+            <p style="color: #333; font-size: 15px;">
+                Their attendance will be marked absent and meals will be cancelled
+                for this period.
+            </p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #888; font-size: 12px; text-align: center;">
+                This is an automated message from the Optimess Hostel Management System.
+                Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+    """
+
+    message = Mail(
+        from_email=settings.SENDGRID_FROM_EMAIL,
+        to_emails=recipient,
+        subject=f'Leave Approved: {subject_suffix} - Optimess',
+        html_content=html_content,
+    )
+
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg.send(message)
+    except Exception as e:
+        print(f"[Optimess] Error sending leave email for {student.name}: {e}")
 
 def get_client_ip(request):                   #currently not used
     return request.META.get('REMOTE_ADDR')   
@@ -93,6 +205,10 @@ def student_food_attendance(request):
                 attendance_record.marked_by = "student"
                 attendance_record.save()
 
+                # Send absent email if student marked themselves absent
+                if not attendance_record.present:
+                    send_absent_email(student, absence_date=today)
+
         return redirect('student_food_attendance')
 
     food_submitted = (
@@ -121,13 +237,50 @@ def food_history(request):
 
     student = Student.objects.get(user=request.user)
 
-    last_10_days = date.today() - timedelta(days=10)
+    filter_month = request.GET.get('month', '').strip()
+    filter_date  = request.GET.get('date', '').strip()
+    filter_type  = request.GET.get('filter_type', '').strip()  # 'date' or 'month'
 
-    records = StudentDailyRecord.objects.filter(
-        student=student,
-        date__gte=last_10_days
-    ).order_by('-date')
+    # If both are somehow submitted, use filter_type hint to decide winner
+    if filter_date and filter_month:
+        if filter_type == 'month':
+            filter_date = ''
+        else:
+            filter_month = ''
+
+    records = StudentDailyRecord.objects.filter(student=student)
+
+    if filter_date:
+        try:
+            from datetime import datetime as dt
+            parsed = dt.strptime(filter_date, '%Y-%m-%d').date()
+            records = records.filter(date=parsed)
+            filter_label = f"Results for {parsed.strftime('%d %b %Y')}"
+        except ValueError:
+            filter_date = ''
+            filter_label = ''
+    elif filter_month:
+        try:
+            year, month = map(int, filter_month.split('-'))
+            records = records.filter(date__year=year, date__month=month)
+            import calendar
+            filter_label = f"Results for {calendar.month_name[month]} {year}"
+        except (ValueError, AttributeError):
+            filter_month = ''
+            filter_label = ''
+    else:
+        # Default: last 10 days
+        last_10_days = date.today() - timedelta(days=10)
+        records = records.filter(date__gte=last_10_days)
+        filter_label = 'Last 10 days'
+
+    records = records.order_by('-date')
 
     return render(request, "student/food_history.html", {
-        "records": records
+        "records": records,
+        "filter_month": filter_month,
+        "filter_date": filter_date,
+        "filter_label": filter_label,
+        "today": date.today().strftime('%Y-%m-%d'),
+        "current_month": date.today().strftime('%Y-%m'),
     })

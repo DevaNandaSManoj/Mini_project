@@ -54,8 +54,37 @@ class Complaint(models.Model):
         ("resolved", "Resolved"),
     )
 
+    TYPE_CHOICES = (
+        ("complaint", "Complaint"),
+        ("suggestion", "Suggestion"),
+    )
+
+    CATEGORY_CHOICES = (
+        ("electrical", "Electrical Work"),
+        ("plumbing", "Plumbing"),
+        ("carpentry", "Carpentry"),
+        ("cleaning", "Cleaning & Hygiene"),
+        ("network", "Network / Wi-Fi"),
+        ("food", "Food & Mess"),
+        ("safety", "Safety & Security"),
+        ("general", "General"),
+    )
+
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.TextField()
+
+    complaint_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default="complaint"
+    )
+
+    category = models.CharField(
+        max_length=30,
+        choices=CATEGORY_CHOICES,
+        default="general",
+        blank=True
+    )
 
     status = models.CharField(
         max_length=20,
@@ -68,7 +97,7 @@ class Complaint(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.student.user.username} - {self.status}"
+        return f"{self.student.user.username} [{self.get_complaint_type_display()}] [{self.get_category_display()}] - {self.status}"
 
         
 BROADCAST_ROLE_CHOICES = (

@@ -4,22 +4,11 @@
 {% block content %}
 
 <style>
-
-/* MATCHING LEAVE HISTORY STYLE */
-
 .stat-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 20px;
-    margin-bottom: 30px;
-}
-
-.form-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 20px;
-    border-radius: 12px;
     margin-bottom: 30px;
 }
 
@@ -31,16 +20,20 @@ textarea {
     background: var(--surface2);
     color: var(--text);
     resize: none;
+    font-family: inherit;
+    font-size: 14px;
 }
 
 .submit-btn {
     margin-top: 10px;
-    padding: 10px 16px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 6px;
-    background: var(--accent);
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: white;
     cursor: pointer;
+    font-weight: 700;
+    font-family: inherit;
 }
 
 .complaint-card {
@@ -57,55 +50,116 @@ textarea {
     margin-top: 6px;
 }
 
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--text2);
+.badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-block;
 }
 
+/* Type badges */
+.type-complaint { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+.type-suggestion { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+
+/* Category badge colours */
+.cat-electrical { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
+.cat-plumbing   { background: rgba(56,189,248,0.12); color: #38bdf8; border: 1px solid rgba(56,189,248,0.25); }
+.cat-carpentry  { background: rgba(161,94,55,0.12);  color: #a15a28; border: 1px solid rgba(161,94,55,0.25); }
+.cat-cleaning   { background: rgba(129,140,248,0.12); color: #818cf8; border: 1px solid rgba(129,140,248,0.25); }
+.cat-network    { background: rgba(34,211,238,0.12); color: #22d3ee; border: 1px solid rgba(34,211,238,0.25); }
+.cat-food       { background: rgba(236,72,153,0.12); color: #ec4899; border: 1px solid rgba(236,72,153,0.25); }
+.cat-safety     { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+.cat-general    { background: rgba(100,116,139,0.12); color: #94a3b8; border: 1px solid rgba(100,116,139,0.25); }
+
+/* Status */
+.status-pending  { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.status-resolved { background: rgba(52,211,153,0.15); color: #34d399; }
+
+.cat-icon { margin-right: 4px; }
 </style>
 
-
-<!-- TOP CARD LIKE LEAVE HISTORY -->
+<!-- SUBMIT FORM -->
 <div class="stat-card">
-    <h3 style="margin-bottom:10px;">Submit a Complaint / Suggestion</h3>
+    <h3 style="margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-comment-dots" style="color:var(--accent);"></i>
+        Submit a Complaint or Suggestion
+    </h3>
+    <p style="font-size:13px; color:var(--text2); margin-bottom:14px;">
+        🤖 Our AI automatically categorises your message into the right department.
+    </p>
     <form method="POST">
         {% csrf_token %}
         <textarea name="message" rows="4"
-            placeholder="Write your complaint or suggestion..." required></textarea>
-        <button type="submit" class="submit-btn">Submit</button>
+            placeholder="Write your complaint or suggestion here..." required></textarea>
+        <button type="submit" class="submit-btn">
+            <i class="fa fa-paper-plane"></i> Submit
+        </button>
     </form>
 </div>
 
-
-<!-- HISTORY SECTION -->
-<h3 style="margin-bottom:20px;">Your Complaints</h3>
+<!-- HISTORY -->
+<h3 style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+    <i class="fa-solid fa-clock-rotate-left" style="color:var(--accent2);"></i>
+    Your History
+</h3>
 
 {% if complaints %}
-    {% for complaint in complaints %}
-        <div class="complaint-card">
+    {% for c in complaints %}
+    <div class="complaint-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+            <div style="flex:1;">
+                <!-- Type + Category badges -->
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+                    {% if c.complaint_type == "suggestion" %}
+                        <span class="badge type-suggestion">💡 Suggestion</span>
+                    {% else %}
+                        <span class="badge type-complaint">⚠️ Complaint</span>
+                    {% endif %}
 
-            <div style="display:flex; justify-content:space-between;">
-                
-                <div>{{ complaint.message }}</div>
+                    <span class="badge cat-{{ c.category }}">
+                        {% if c.category == "electrical" %}⚡ Electrical Work
+                        {% elif c.category == "plumbing" %}🔧 Plumbing
+                        {% elif c.category == "carpentry" %}🪵 Carpentry
+                        {% elif c.category == "cleaning" %}🧹 Cleaning & Hygiene
+                        {% elif c.category == "network" %}📶 Network / Wi-Fi
+                        {% elif c.category == "food" %}🍽️ Food & Mess
+                        {% elif c.category == "safety" %}🔒 Safety & Security
+                        {% else %}📋 General{% endif %}
+                    </span>
+                </div>
 
-                {% if complaint.status == "pending" %}
-                    <span class="badge pending">PENDING</span>
-                {% else %}
-                    <span class="badge approved">RESOLVED</span>
-                {% endif %}
-
+                <div style="font-size:14px; line-height:1.6;">{{ c.message }}</div>
             </div>
 
-            <div class="complaint-date">
-                {{ complaint.created_at }}
-            </div>
-
+            <span class="badge {% if c.status == 'pending' %}status-pending{% else %}status-resolved{% endif %}">
+                {{ c.status|upper }}
+            </span>
         </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+            <div class="complaint-date">
+                🕐 {{ c.created_at|date:"M d, Y H:i" }}
+            </div>
+            {% if c.status == 'pending' %}
+            <form method="POST" action="{% url 'delete_complaint' c.id %}"
+                  onsubmit="return confirm('🗑️ Delete this {{ c.complaint_type }}? This cannot be undone.');">
+                {% csrf_token %}
+                <button type="submit"
+                        style="background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); border-radius:8px; cursor:pointer; color:#f87171; font-size:12px; padding:5px 12px; font-family:inherit; font-weight:600; transition:background 0.2s;"
+                        onmouseover="this.style.background='rgba(248,113,113,0.22)'"
+                        onmouseout="this.style.background='rgba(248,113,113,0.1)'">
+                    🗑️ Delete
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
     {% endfor %}
 {% else %}
-    <div class="empty-state">
-        No complaints submitted yet.
+    <div class="empty-state" style="text-align:center; padding:40px; color:var(--text2);">
+        <div style="font-size:3rem; margin-bottom:12px; opacity:0.5;">💬</div>
+        No complaints or suggestions submitted yet.
     </div>
 {% endif %}
 

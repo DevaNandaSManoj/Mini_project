@@ -1,8 +1,9 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from leave.models import LeaveRequest
-from accounts.models import Broadcast, Warden, Student ,Complaint
+from accounts.models import Broadcast, Warden, Student, Complaint
 from food.models import StudentDailyRecord
+from food.views import send_absent_email, send_leave_email
 from django.utils import timezone
 from datetime import date, timedelta
 from django.db.models import Q
@@ -25,8 +26,11 @@ def dashboard(request):
     # Total students in this warden's block only
     total_students = Student.objects.filter(hostel_block=warden.hostel_block).count()
 
-    # Pending leave requests
-    pending_leaves = LeaveRequest.objects.filter(status="pending").count()
+    # Pending leave requests — only from this warden's block
+    pending_leaves = LeaveRequest.objects.filter(
+        status="pending",
+        student__hostel_block=warden.hostel_block
+    ).count()
 
     # Today's attendance % (block-filtered)
     block_student_ids = Student.objects.filter(hostel_block=warden.hostel_block).values_list('id', flat=True)
@@ -74,13 +78,21 @@ def leave_requests(request):
 
     warden = Warden.objects.get(user=request.user)
 
-    pending_requests = LeaveRequest.objects.filter(status='pending').select_related('student__user')
-    processed_requests = LeaveRequest.objects.exclude(status='pending').select_related('student__user')
+    # Only show leave requests from students in this warden's block
+    pending_requests = LeaveRequest.objects.filter(
+        status='pending',
+        student__hostel_block=warden.hostel_block
+    ).select_related('student__user')
+
+    processed_requests = LeaveRequest.objects.filter(
+        student__hostel_block=warden.hostel_block
+    ).exclude(status='pending').select_related('student__user')
 
     return render(request, 'warden/leave_requests.html', {
         'pending_requests': pending_requests,
         'processed_requests': processed_requests,
         'pending_count': pending_requests.count(),
+        'warden': warden,
     })
 
 @login_required
@@ -112,6 +124,9 @@ def approve_leave(request, leave_id):
         record.save()
 
         current_date += timedelta(days=1)
+
+    # Send ONE summary email covering the full leave period
+    send_leave_email(leave.student, from_date=leave.from_date, to_date=leave.to_date)
 
     return redirect('warden_leave_requests')
 
@@ -215,6 +230,10 @@ def warden_attendance(request):
                 record.marked_by = "warden"
 
                 record.save()
+
+                # Send absence email to parent if marked absent
+                if status == "absent":
+                    send_absent_email(student, absence_date=today)
 
         return redirect("warden_attendance")
 

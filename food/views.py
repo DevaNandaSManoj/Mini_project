@@ -1,5 +1,7 @@
+import math
 from datetime import date, timedelta, time
 from django.utils import timezone
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from accounts.models import Student
@@ -119,10 +121,55 @@ def send_leave_email(student, from_date, to_date):
         print(f"[Optimess] Error sending leave email for {student.name}: {e}")
 
 def get_client_ip(request):                   #currently not used
-    return request.META.get('REMOTE_ADDR')   
+    return request.META.get('REMOTE_ADDR')
 
 def verify_college_network(ip):                 #currently not used
     return ip.startswith("192.168.")  # example
+
+
+# ── Location validation constants ─────────────────────────────────────────────
+COLLEGE_LAT        = 9.728714
+COLLEGE_LNG        = 76.727813
+ALLOWED_RADIUS_KM  = 0.35   # 350 m
+
+
+def _haversine(lat1, lon1, lat2, lon2):
+    """Return great-circle distance in km between two GPS points."""
+    R = 6371.0
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi  = math.radians(lat2 - lat1)
+    dlam  = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+@login_required
+def verify_location(request):
+    """Guard endpoint: checks GPS coords before attendance is marked.
+    Accepts POST with lat & lng. Returns JSON {status, message}.
+    Does NOT read or write any attendance/food records.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+    try:
+        lat = float(request.POST.get('lat', ''))
+        lng = float(request.POST.get('lng', ''))
+    except (TypeError, ValueError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid coordinates received.'}, status=400)
+
+    distance_km = _haversine(lat, lng, COLLEGE_LAT, COLLEGE_LNG)
+
+    if distance_km <= ALLOWED_RADIUS_KM:
+        return JsonResponse({
+            'status': 'allowed',
+            'message': 'You are inside the college area.',
+        })
+    else:
+        return JsonResponse({
+            'status': 'blocked',
+            'message': 'You are not in the college area. Attendance cannot be marked.',
+        })
 
 @login_required
 def student_food_attendance(request):
@@ -130,7 +177,7 @@ def student_food_attendance(request):
     student = Student.objects.get(user=request.user)
 
     now = timezone.localtime()
-    student_deadline = time(20, 0)  # 8 PM
+    student_deadline = time(22, 0)  # 10 PM
     warden_deadline = time(22, 0)   # 10 PM
 
     student_locked = now.time() > student_deadline

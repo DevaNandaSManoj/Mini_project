@@ -298,10 +298,13 @@ def broadcasts(request):
         message = request.POST.get("message")
         target_role = request.POST.get("target_role")
         if message and target_role:
+            from accounts.broadcast_classifier import classify_broadcast
+            category = classify_broadcast(message)
             Broadcast.objects.create(
                 sender=request.user,
                 message=message,
-                target_role=target_role
+                target_role=target_role,
+                category=category
             )
             return redirect('broadcasts')
 

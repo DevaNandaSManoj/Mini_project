@@ -6,452 +6,521 @@
 
 /* ================= HEADER ================= */
 
-.page-header{
-    margin-bottom:28px;
+.page-header {
+    margin-bottom: 28px;
 }
 
-.breadcrumb{
-    font-size:12px;
-    display:flex;
-    gap:6px;
-    margin-bottom:8px;
+.breadcrumb {
+    font-size: 12px;
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
 }
 
-.breadcrumb .parent{ color:var(--accent); }
-.breadcrumb .sep{ color:var(--text2); }
-.breadcrumb .active{ font-weight:500; }
+.breadcrumb .parent { color: var(--accent); }
+.breadcrumb .sep    { color: var(--text2); }
+.breadcrumb .active { font-weight: 500; }
 
-.page-title{
-    font-family:'Inter',sans-serif;
-    font-size:32px;
-    font-weight:800;
-    margin-bottom:6px;
+.page-title-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
 }
 
-.page-sub{
-    font-size:14px;
-    color:var(--text2);
+.page-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
 }
 
 /* ================= MENU CARDS ================= */
 
-.menu-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:18px;
-    margin-bottom:28px;
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
-.menu-card{
-    border-radius:16px;
-    padding:22px;
-    position:relative;
-    overflow:hidden;
-    transition:all 0.25s ease;
-
-    /* SAME AS STUDENT DETAILS CARD */
-    background:linear-gradient(135deg, 
-        rgba(56,189,248,0.05), 
+.menu-card {
+    border-radius: 16px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    background: linear-gradient(135deg,
+        rgba(56,189,248,0.05),
         rgba(129,140,248,0.05)
     );
-
-    border:1px solid rgba(56,189,248,0.15);
-}
-.menu-card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 14px 32px rgba(24, 43, 70, 0.45);
+    border: 1px solid rgba(56,189,248,0.15);
 }
 
-.menu-card::after{
-    content:"";
-    position:absolute;
-    width:150px;
-    height:150px;
-    border-radius:50%;
-    top:-55px;
-    right:-55px;
-    opacity:0.7;
+.menu-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px rgba(24, 43, 70, 0.45);
 }
 
-/* Breakfast - Green */
-.menu-card.breakfast::after{
-    background:rgba(52,211,153,0.22);
+/* Decorative food icon top-right */
+.menu-card-icon {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 38px;
+    opacity: 0.18;
+    pointer-events: none;
+    line-height: 1;
 }
 
-/* Lunch - Blue */
-.menu-card.lunch::after{
-    background:rgba(56,189,248,0.22);
+/* Subtle blob */
+.menu-card::after {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    top: -45px;
+    right: -45px;
+    opacity: 0.6;
 }
 
-/* Dinner - Purple */
-.menu-card.dinner::after{
-    background:rgba(139,92,246,0.22);
+.menu-card.breakfast::after { background: rgba(52,211,153,0.2); }
+.menu-card.lunch::after     { background: rgba(56,189,248,0.2); }
+.menu-card.dinner::after    { background: rgba(139,92,246,0.2); }
+
+.menu-meal-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
 
-.menu-title{
-    font-weight:700;
-    margin-bottom:10px;
+.menu-time {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 10px;
 }
 
-.menu-time{
-    font-size:12px;
-    color:var(--text2);
-    margin-bottom:12px;
+.menu-items {
+    font-size: 14px;
+    color: var(--text);
 }
 
-.menu-items{
-    font-size:14px;
-}
+/* ================= SELECTION SECTION ================= */
 
-/* ================= SELECTION ================= */
-
-/* ================= SELECTION OUTER BOX ================= */
-
-.selection-box{
-    background:linear-gradient(135deg, 
-        rgba(56,189,248,0.05), 
+.section-card {
+    background: linear-gradient(135deg,
+        rgba(56,189,248,0.05),
         rgba(129,140,248,0.05)
     );
-    border:1px solid rgba(56,189,248,0.18);
-    border-radius:20px;
-    padding:28px;
-    margin-bottom:40px;
-    position:relative;
-    overflow:hidden;
+    border: 1px solid rgba(56,189,248,0.15);
+    border-radius: 18px;
+    padding: 22px 24px;
+    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
 }
 
-/* subtle corner glow */
-.selection-box::after{
-    content:"";
-    position:absolute;
-    width:180px;
-    height:180px;
-    border-radius:50%;
-    background:rgba(56,189,248,0.06);
-    top:-60px;
-    right:-60px;
+.section-card::after {
+    content: "";
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.05);
+    top: -60px;
+    right: -60px;
 }
 
-.selection-wrapper{
-    margin-top:10px;
-    margin-bottom:40px;
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
 }
 
-.selection-title{
-    font-weight:700;
-    margin-bottom:16px;
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.selection-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:18px;
-    margin-bottom:22px;
+/* ================= MEAL SELECTION GRID ================= */
+
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
 }
 
-.selection-card{
-    padding:20px;
-    border-radius:16px;
-    transition:all 0.25s ease;
-
-    background:linear-gradient(135deg, 
-        rgba(56,189,248,0.05), 
-        rgba(129,140,248,0.05)
-    );
-
-    border:1px solid rgba(56,189,248,0.15);
+.selection-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    transition: all 0.2s ease;
 }
 
-.selection-card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 14px 32px rgba(24, 43, 70, 0.45);
+.selection-card:hover {
+    border-color: rgba(56,189,248,0.3);
 }
 
-.selection-card h4{
-    margin-bottom:6px;
+.sel-meal-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
 }
 
-.selection-card small{
-    color:var(--text2);
-    font-size:12px;
-    display:block;
-    margin-bottom:14px;
+.sel-meal-time {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 14px;
 }
 
-.radio-group{
-    display:flex;
-    gap:18px;
-    font-size:14px;
+/* Pill toggle buttons */
+.pill-group {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-radius: 30px;
+    padding: 3px;
+    border: 1px solid var(--border);
 }
 
-/* OUTER BOX LIKE CLAUDE */
-
-.selection-box{
-    background:linear-gradient(135deg, 
-        rgba(56,189,248,0.05), 
-        rgba(129,140,248,0.05)
-    );
-    border:1px solid rgba(56,189,248,0.18);
-    border-radius:20px;
-    padding:28px;
-    margin-bottom:40px;
-    position:relative;
-    overflow:hidden;
+.pill-group input[type="radio"] {
+    display: none;
 }
 
-.selection-box::after{
-    content:"";
-    position:absolute;
-    width:180px;
-    height:180px;
-    border-radius:50%;
-    background:rgba(56,189,248,0.06);
-    top:-60px;
-    right:-60px;
+.pill-label {
+    flex: 1;
+    text-align: center;
+    padding: 7px 18px;
+    border-radius: 26px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
-/* ================= BUTTON ================= */
-
-.primary-btn{
-    background:linear-gradient(135deg,#34d399,#10b981);
-    border:none;
-    padding:10px 20px;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-    color:white;
-    transition:all 0.2s ease;
+/* Opt-in selected */
+input[type="radio"].opt-in:checked + .pill-label {
+    background: #10b981;
+    color: white;
+    box-shadow: 0 2px 8px rgba(16,185,129,0.35);
 }
 
-.primary-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(16,185,129,0.4);
-}
-/* ================= PREMIUM ATTENDANCE CARD ================= */
-
-.attendance-card{
-    padding:28px;
-    border-radius:20px;
-    margin-bottom:32px;
-    position:relative;
-    overflow:hidden;
-
-    background:linear-gradient(135deg, 
-        rgba(56,189,248,0.05), 
-        rgba(129,140,248,0.05)
-    );
-
-    border:1px solid rgba(56,189,248,0.18);
-    transition:all 0.25s ease;
+/* Opt-out selected */
+input[type="radio"].opt-out:checked + .pill-label {
+    background: var(--surface2);
+    color: var(--text);
 }
 
-.attendance-card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 14px 30px rgba(0,0,0,0.35);
+/* ================= SAVE BUTTON ================= */
+
+.save-btn {
+    background: linear-gradient(135deg, #34d399, #10b981);
+    border: none;
+    padding: 9px 22px;
+    border-radius: 22px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
-.attendance-card::after{
-    content:"";
-    position:absolute;
-    width:170px;
-    height:170px;
-    border-radius:50%;
-    background:rgba(56,189,248,0.08);
-    top:-60px;
-    right:-60px;
-    opacity:0.7;
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16,185,129,0.4);
 }
 
-.attendance-card h3{
-    font-size:20px;
-    font-weight:700;
-    margin-bottom:20px;
+/* ================= ATTENDANCE SECTION ================= */
+
+.attendance-section {
+    position: relative;
+    overflow: hidden;
 }
 
-/* ================= STATUS BOX ================= */
-
-.attendance-status-box{
-    margin-top:15px;
-    padding:14px 18px;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-weight:600;
-    font-size:15px;
-    width:fit-content;
-    animation:fadeSlideIn 0.5s ease forwards;
+/* Lock overlay */
+.lock-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    background: rgba(7, 14, 28, 0.55);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 5;
 }
 
-/* Present */
-.attendance-status-box.present{
-    background:rgba(52,211,153,0.12);
-    color:#34d399;
-    border:1px solid rgba(52,211,153,0.4);
+.lock-icon {
+    font-size: 32px;
+    opacity: 0.7;
 }
 
-/* Absent */
-.attendance-status-box.absent{
-    background:rgba(248,113,113,0.12);
-    color:#f87171;
-    border:1px solid rgba(248,113,113,0.4);
+.lock-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    text-align: center;
+    max-width: 240px;
+    line-height: 1.5;
 }
 
-/* Leave */
-.attendance-status-box.leave{
-    background:rgba(251,191,36,0.12);
-    color:#fbbf24;
-    border:1px solid rgba(251,191,36,0.45);
+/* ================= ATTENDANCE STATUS ================= */
+
+.attendance-status-box {
+    margin-top: 15px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    width: fit-content;
 }
 
-/* Locked */
-.attendance-status-box.locked{
-    background:rgba(148,163,184,0.08);
-    color:var(--text2);
-    border:1px solid rgba(148,163,184,0.25);
+.attendance-status-box.present {
+    background: rgba(52,211,153,0.12);
+    color: #34d399;
+    border: 1px solid rgba(52,211,153,0.4);
 }
 
-/* Icon */
-.status-icon{
-    font-size:16px;
-    animation:pulseIcon 1.4s ease infinite;
+.attendance-status-box.absent {
+    background: rgba(248,113,113,0.12);
+    color: #f87171;
+    border: 1px solid rgba(248,113,113,0.4);
 }
 
-/* ================= RADIO OPTIONS ================= */
-
-.attendance-options{
-    display:flex;
-    gap:18px;
-    margin:15px 0 20px 0;
+.attendance-status-box.leave {
+    background: rgba(251,191,36,0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(251,191,36,0.45);
 }
 
-.attendance-options input[type="radio"]{
-    display:none;
+/* ================= RADIO OPTIONS (attendance) ================= */
+
+.attendance-options {
+    display: flex;
+    gap: 18px;
+    margin: 16px 0 20px;
 }
 
-.option{
-    padding:10px 22px;
-    border-radius:12px;
-    font-weight:600;
-    cursor:pointer;
-    transition:all 0.25s ease;
-    border:1px solid rgba(56,189,248,0.25);
-    background:rgba(255,255,255,0.02);
+.attendance-options input[type="radio"] {
+    display: none;
 }
 
-.present-option{ color:#34d399; }
-.absent-option{ color:#f87171; }
-
-#present:checked + .present-option{
-    background:rgba(52,211,153,0.15);
-    border:1px solid rgba(52,211,153,0.6);
-    box-shadow:0 0 12px rgba(52,211,153,0.5);
-    transform:scale(1.05);
+.option {
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(56,189,248,0.25);
+    background: rgba(255,255,255,0.02);
 }
 
-#absent:checked + .absent-option{
-    background:rgba(248,113,113,0.15);
-    border:1px solid rgba(248,113,113,0.6);
-    box-shadow:0 0 12px rgba(248,113,113,0.5);
-    transform:scale(1.05);
+.present-option { color: #34d399; }
+.absent-option  { color: #f87171; }
+
+#present:checked + .present-option {
+    background: rgba(52,211,153,0.15);
+    border: 1px solid rgba(52,211,153,0.6);
+    box-shadow: 0 0 12px rgba(52,211,153,0.5);
+    transform: scale(1.05);
 }
 
-/* ================= BUTTON ================= */
-
-.attendance-btn{
-    background:linear-gradient(135deg,#38bdf8,#6366f1);
-    border:none;
-    padding:10px 22px;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-    color:white;
-    transition:all 0.2s ease;
+#absent:checked + .absent-option {
+    background: rgba(248,113,113,0.15);
+    border: 1px solid rgba(248,113,113,0.6);
+    box-shadow: 0 0 12px rgba(248,113,113,0.5);
+    transform: scale(1.05);
 }
 
-.attendance-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(99,102,241,0.4);
+.attendance-btn {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
 }
 
-/* Animations */
-
-@keyframes fadeSlideIn{
-    from{ opacity:0; transform:translateY(10px); }
-    to{ opacity:1; transform:translateY(0); }
-}
-
-@keyframes pulseIcon{
-    0%{ transform:scale(1); }
-    50%{ transform:scale(1.15); }
-    100%{ transform:scale(1); }
+.attendance-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
 }
 
 /* ================= TIMER ================= */
 
-.timer-card{
-    margin-top:28px;
-    padding:30px 32px;
-    border-radius:18px;
-    background:linear-gradient(135deg, rgba(56,189,248,0.05), rgba(129,140,248,0.05));
-    border:1px solid rgba(56,189,248,0.15);
-    text-align:center;
-    position:relative;
-    overflow:hidden;
+.timer-card {
+    margin-top: 22px;
+    padding: 30px 32px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(56,189,248,0.05), rgba(129,140,248,0.05));
+    border: 1px solid rgba(56,189,248,0.15);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.timer-card::after{
-    content:"";
-    position:absolute;
-    width:150px;
-    height:150px;
-    border-radius:50%;
-    background:rgba(56,189,248,0.06);
-    top:-50px;
-    right:-50px;
+.timer-card::after {
+    content: "";
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.06);
+    top: -50px;
+    right: -50px;
 }
 
-.timer-title{
-    font-size:13px;
-    letter-spacing:1.6px;
-    text-transform:uppercase;
-    color:var(--text2);
-    font-weight:600;
-    margin-bottom:22px;
+.timer-title {
+    font-size: 13px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--text2);
+    font-weight: 600;
+    margin-bottom: 22px;
 }
 
-.timer-display{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:18px;
+.timer-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
 }
 
-.timer-block{
-    background:var(--surface);
-    padding:16px 26px;
-    border-radius:14px;
-    min-width:95px;
-    border:1px solid rgba(56,189,248,0.25);
+.timer-block {
+    background: var(--surface);
+    padding: 16px 26px;
+    border-radius: 14px;
+    min-width: 95px;
+    border: 1px solid rgba(56,189,248,0.25);
 }
 
-.timer-num{
-    font-size:30px;
-    font-weight:800;
-    color:#38bdf8;
+.timer-num {
+    font-size: 30px;
+    font-weight: 800;
+    color: #38bdf8;
 }
 
-.timer-unit{
-    margin-top:4px;
-    font-size:11px;
-    letter-spacing:1px;
-    color:var(--text2);
+.timer-unit {
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text2);
 }
 
-.timer-sep{
-    font-size:24px;
-    font-weight:600;
-    color:var(--text2);
+.timer-sep {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text2);
+}
+
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= 8 PM POPUP ================= */
+
+.time-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-modal-overlay.active {
+    display: flex;
+    animation: fadeSlideIn 0.25s ease;
+}
+
+.time-modal {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border: 1px solid rgba(239,68,68,0.35);
+    border-radius: 22px;
+    padding: 38px 40px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6), 0 0 40px rgba(239,68,68,0.1);
+    position: relative;
+    animation: fadeSlideIn 0.3s ease;
+}
+
+.time-modal-icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.time-modal-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #f87171;
+    margin-bottom: 12px;
+}
+
+.time-modal-body {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+.time-modal-body strong {
+    color: var(--text);
+}
+
+.time-modal-close {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    border: none;
+    padding: 10px 32px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.time-modal-close:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(239,68,68,0.45);
 }
 
 </style>
@@ -462,11 +531,13 @@
     <div class="breadcrumb">
         <span class="parent">Student</span>
         <span class="sep">›</span>
-        <span class="active">Menu & Selection</span>
+        <span class="active">Menu &amp; Selection</span>
     </div>
 
-    <div class="page-title">Tomorrow's Menu</div>
-    <div class="page-sub">📅 {{ tomorrow }} </div>
+    <div class="page-title-row">
+        <div class="page-title">Tomorrow's Menu</div>
+        <div class="date-badge">📅 {{ tomorrow }}</div>
+    </div>
 </div>
 
 
@@ -475,20 +546,23 @@
 <div class="menu-grid">
 
     <div class="menu-card breakfast">
-        <div class="menu-title">🌅 Breakfast</div>
-        <div class="menu-time">7:00 – 9:00 AM</div>
+        <div class="menu-card-icon">🍳</div>
+        <div class="menu-meal-title">🌅 Breakfast</div>
+        <div class="menu-time">7:00 - 9:00 AM</div>
         <div class="menu-items">{{ menu.breakfast }}</div>
     </div>
 
     <div class="menu-card lunch">
-        <div class="menu-title">☀️ Lunch</div>
-        <div class="menu-time">12:30 – 2:30 PM</div>
+        <div class="menu-card-icon">🍱</div>
+        <div class="menu-meal-title">☀️ Lunch</div>
+        <div class="menu-time">12:30 - 2:30 PM</div>
         <div class="menu-items">{{ menu.lunch }}</div>
     </div>
 
     <div class="menu-card dinner">
-        <div class="menu-title">🌙 Dinner</div>
-        <div class="menu-time">7:30 – 9:30 PM</div>
+        <div class="menu-card-icon">🍛</div>
+        <div class="menu-meal-title">🌙 Dinner</div>
+        <div class="menu-time">7:30 - 9:30 PM</div>
         <div class="menu-items">{{ menu.dinner }}</div>
     </div>
 
@@ -497,79 +571,78 @@
 
 <!-- ================= FOOD SELECTION ================= -->
 
-{% if not leave_blocked %}
-<div class="selection-wrapper selection-box">
+<!-- ================= 8 PM RESTRICTION POPUP ================= -->
+<div class="time-modal-overlay" id="timeLockModal">
+    <div class="time-modal">
+        <div class="time-modal-icon">🌙</div>
+        <div class="time-modal-title">Selection Closed</div>
+        <div class="time-modal-body">
+            Food selection is only available <strong>before 8:00 PM</strong>.<br>
+            Please make your choices earlier in the day.
+        </div>
+        <button class="time-modal-close" onclick="closeTimeLockModal()">Got it</button>
+    </div>
+</div>
 
-    <div class="selection-title">✅ Select Your Meals</div>
+{% if not leave_blocked %}
+<div class="section-card">
 
     <form method="post" action="{% url 'student_food_attendance' %}">
         {% csrf_token %}
+
+        <div class="section-header">
+            <div class="section-title">✅ Select Your Meals</div>
+            <button type="submit" class="save-btn">Save My Selection</button>
+        </div>
 
         <div class="selection-grid">
 
             <!-- Breakfast -->
             <div class="selection-card">
-                <h4>🌅Breakfast</h4>
-                <small>7:00 – 9:00 AM</small>
-
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" name="breakfast" value="yes"
+                <div class="sel-meal-title">🌅 Breakfast</div>
+                <div class="sel-meal-time">7:00 - 9:00 AM</div>
+                <div class="pill-group">
+                    <input type="radio" class="opt-in" name="breakfast" id="b_in" value="yes"
                         {% if food_record.breakfast == True %}checked{% endif %}>
-                        Opt-in
-                    </label>
+                    <label for="b_in" class="pill-label">Opt-in</label>
 
-                    <label>
-                        <input type="radio" name="breakfast" value="no"
+                    <input type="radio" class="opt-out" name="breakfast" id="b_out" value="no"
                         {% if food_record.breakfast == False %}checked{% endif %}>
-                        Opt-out
-                    </label>
+                    <label for="b_out" class="pill-label">Opt-out</label>
                 </div>
             </div>
 
             <!-- Lunch -->
             <div class="selection-card">
-                <h4>☀️Lunch</h4>
-                <small>12:30 – 2:30 PM</small>
-
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" name="lunch" value="yes"
+                <div class="sel-meal-title">☀️ Lunch</div>
+                <div class="sel-meal-time">12:30 - 2:30 PM</div>
+                <div class="pill-group">
+                    <input type="radio" class="opt-in" name="lunch" id="l_in" value="yes"
                         {% if food_record.lunch == True %}checked{% endif %}>
-                        Opt-in
-                    </label>
+                    <label for="l_in" class="pill-label">Opt-in</label>
 
-                    <label>
-                        <input type="radio" name="lunch" value="no"
+                    <input type="radio" class="opt-out" name="lunch" id="l_out" value="no"
                         {% if food_record.lunch == False %}checked{% endif %}>
-                        Opt-out
-                    </label>
+                    <label for="l_out" class="pill-label">Opt-out</label>
                 </div>
             </div>
 
             <!-- Dinner -->
             <div class="selection-card">
-                <h4>🌙Dinner</h4>
-                <small>7:30 – 9:30 PM</small>
-
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" name="dinner" value="yes"
+                <div class="sel-meal-title">🌙 Dinner</div>
+                <div class="sel-meal-time">7:30 - 9:30 PM</div>
+                <div class="pill-group">
+                    <input type="radio" class="opt-in" name="dinner" id="d_in" value="yes"
                         {% if food_record.dinner == True %}checked{% endif %}>
-                        Opt-in
-                    </label>
+                    <label for="d_in" class="pill-label">Opt-in</label>
 
-                    <label>
-                        <input type="radio" name="dinner" value="no"
+                    <input type="radio" class="opt-out" name="dinner" id="d_out" value="no"
                         {% if food_record.dinner == False %}checked{% endif %}>
-                        Opt-out
-                    </label>
+                    <label for="d_out" class="pill-label">Opt-out</label>
                 </div>
             </div>
 
         </div>
-
-        <button type="submit" class="primary-btn"> ✔Save My Selection</button>
 
     </form>
 
@@ -579,53 +652,34 @@
 
 <!-- ================= ATTENDANCE ================= -->
 
-<div class="attendance-card">
+<div class="section-card attendance-section">
 
-    <h3>🗓️ Today's Attendance ({{ today }})</h3>
+    <div class="section-title" style="margin-bottom: 16px;">📅 Today's Attendance ({{ today }})</div>
 
     {% if leave_today %}
 
         <div class="attendance-status-box leave">
-            <span class="status-icon">⚠</span>
-            <span>
-                You are on approved leave today.
-            </span>
+            <span>⚠</span>
+            <span>You are on approved leave today.</span>
         </div>
 
     {% elif attendance_record.present is not None %}
 
-        <div class="attendance-status-box 
-            {% if attendance_record.present %}
-                present
-            {% else %}
-                absent
-            {% endif %}
-        ">
-            <span class="status-icon">
-                {% if attendance_record.present %}
-                    ✔
-                {% else %}
-                    ✖
-                {% endif %}
-            </span>
-
+        <div class="attendance-status-box {% if attendance_record.present %}present{% else %}absent{% endif %}">
+            <span>{% if attendance_record.present %}✔{% else %}✖{% endif %}</span>
             <span>
                 Attendance Marked:
-                {% if attendance_record.present %}
-                    Present
-                {% else %}
-                    Absent
-                {% endif %}
+                {% if attendance_record.present %}Present{% else %}Absent{% endif %}
             </span>
         </div>
 
     {% elif not food_submitted and not leave_blocked %}
 
-        <div class="attendance-status-box locked">
-            <span class="status-icon">🔒</span>
-            <span>
-                Submit tomorrow's food to unlock attendance.
-            </span>
+        <!-- Lock overlay shown when food not submitted -->
+        <div style="min-height: 100px;"></div>
+        <div class="lock-overlay">
+            <div class="lock-icon">🔒</div>
+            <div class="lock-text">Please submit tomorrow's food selection to unlock attendance.</div>
         </div>
 
     {% else %}
@@ -661,10 +715,7 @@
 <!-- ================= TIMER ================= -->
 
 <div class="timer-card">
-
-    <div class="timer-title">
-        ⏱ YOUR MEAL SELECTION ENDS IN
-    </div>
+    <div class="timer-title">⏱ YOUR MEAL SELECTION ENDS IN</div>
 
     <div class="timer-display">
 
@@ -688,24 +739,81 @@
         </div>
 
     </div>
-
 </div>
 
 
 <script>
-let totalSeconds = 24 * 60 * 60;
+// ---- 8 PM restriction helpers ----
+function isAfter8PM() {
+    const now = new Date();
+    return now.getHours() >= 20;
+}
 
-setInterval(() => {
-    let hrs = Math.floor(totalSeconds / 3600);
+function openTimeLockModal() {
+    document.getElementById('timeLockModal').classList.add('active');
+}
+
+function closeTimeLockModal() {
+    document.getElementById('timeLockModal').classList.remove('active');
+}
+
+// Block pill label clicks after 8 PM
+document.querySelectorAll('.pill-label').forEach(label => {
+    label.addEventListener('click', function(e) {
+        if (isAfter8PM()) {
+            e.preventDefault();
+            openTimeLockModal();
+        }
+    });
+});
+
+// Block form submit after 8 PM
+const foodForm = document.querySelector('form[action]');
+if (foodForm) {
+    foodForm.addEventListener('submit', function(e) {
+        if (isAfter8PM()) {
+            e.preventDefault();
+            openTimeLockModal();
+        }
+    });
+}
+
+// Close modal on overlay click
+document.getElementById('timeLockModal').addEventListener('click', function(e) {
+    if (e.target === this) closeTimeLockModal();
+});
+
+// ---- Countdown timer to 8 PM ----
+function calcSecondsTo8PM() {
+    const now = new Date();
+    const target = new Date(now);
+    target.setHours(20, 0, 0, 0);
+    if (now >= target) return 0;  // already past 8 PM
+    return Math.floor((target - now) / 1000);
+}
+
+let totalSeconds = calcSecondsTo8PM();
+
+function updateTimer() {
+    if (totalSeconds <= 0) {
+        document.getElementById('hours').innerText   = '00';
+        document.getElementById('minutes').innerText = '00';
+        document.getElementById('seconds').innerText = '00';
+        return;
+    }
+    let hrs  = Math.floor(totalSeconds / 3600);
     let mins = Math.floor((totalSeconds % 3600) / 60);
     let secs = totalSeconds % 60;
 
-    document.getElementById("hours").innerText = String(hrs).padStart(2,'0');
-    document.getElementById("minutes").innerText = String(mins).padStart(2,'0');
-    document.getElementById("seconds").innerText = String(secs).padStart(2,'0');
+    document.getElementById('hours').innerText   = String(hrs).padStart(2,'0');
+    document.getElementById('minutes').innerText = String(mins).padStart(2,'0');
+    document.getElementById('seconds').innerText = String(secs).padStart(2,'0');
 
-    if (totalSeconds > 0) totalSeconds--;
-},1000);
+    totalSeconds--;
+}
+
+updateTimer();
+setInterval(updateTimer, 1000);
 </script>
 
 {% endblock %}

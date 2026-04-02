@@ -485,8 +485,18 @@ body.light .hover-card:hover {
 
 <!-- ================= BROADCAST ================= -->
 <div class="broadcast-wrapper hover-card animate-up" style="animation-delay: 0.7s;">
-    <div class="broadcast-title">
-        <i class="fa-solid fa-bell"></i> Important Broadcasts
+    <div class="broadcast-title" style="justify-content: space-between;">
+        <span><i class="fa-solid fa-bell"></i> Important Broadcasts</span>
+        <a href="{% url 'student_broadcast' %}"
+           style="font-size:13px; font-weight:600; padding:7px 16px; border-radius:20px;
+                  background:rgba(251,191,36,0.12); color:#fbbf24;
+                  border:1px solid rgba(251,191,36,0.3); text-decoration:none;
+                  display:flex; align-items:center; gap:6px; transition:.2s;"
+           onmouseover="this.style.background='rgba(251,191,36,0.22)'"
+           onmouseout="this.style.background='rgba(251,191,36,0.12)'">
+            <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i>
+            View All
+        </a>
     </div>
 
     {% if active_broadcasts %}
@@ -561,20 +571,37 @@ body.light .hover-card:hover {
     document.getElementById("greeting").innerHTML =
         `<span class="greet-text">${greetingText}, {{ student.user.first_name|default:student.user.username }}!</span> <span style="display:inline-block; animation:pulse 2s infinite;">👋</span>`;
 
-    // Premium Countdown Timer
-    let totalSeconds = 24 * 60 * 60; // 24 hours just as a demo, replace with real logic if needed
+    // Countdown timer to 8 PM
+    function calcSecondsTo8PM() {
+        const now = new Date();
+        const target = new Date(now);
+        target.setHours(20, 0, 0, 0);
+        if (now >= target) return 0;
+        return Math.floor((target - now) / 1000);
+    }
 
-    setInterval(() => {
-        let hrs = Math.floor(totalSeconds / 3600);
+    let totalSeconds = calcSecondsTo8PM();
+
+    function updateTimer() {
+        if (totalSeconds <= 0) {
+            document.getElementById("hours").innerText   = "00";
+            document.getElementById("minutes").innerText = "00";
+            document.getElementById("seconds").innerText = "00";
+            return;
+        }
+        let hrs  = Math.floor(totalSeconds / 3600);
         let mins = Math.floor((totalSeconds % 3600) / 60);
         let secs = totalSeconds % 60;
 
-        document.getElementById("hours").innerText = String(hrs).padStart(2,'0');
+        document.getElementById("hours").innerText   = String(hrs).padStart(2,'0');
         document.getElementById("minutes").innerText = String(mins).padStart(2,'0');
         document.getElementById("seconds").innerText = String(secs).padStart(2,'0');
 
-        if (totalSeconds > 0) totalSeconds--;
-    }, 1000);
+        totalSeconds--;
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
 </script>
 
 {% endblock %}

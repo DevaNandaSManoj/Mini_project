@@ -2,258 +2,364 @@
 {% block page_title %}Attendance History{% endblock %}
 
 {% block content %}
-
 <style>
+/* ─── Page wrapper ────────────────────────────────────────────── */
+.att-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
-/* ================= PANEL ================= */
-
-.calendar-panel{
-    background: linear-gradient(135deg,#0b1c33,#091427);
-    padding: 28px;
-    border-radius: 18px;
+/* ─── Header card ─────────────────────────────────────────────── */
+.att-header-card {
+    background: linear-gradient(135deg, #0d1e36 0%, #0a1628 100%);
     border: 1px solid rgba(56,189,248,0.18);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.45);
-    animation: fadeInUp .45s ease;
+    border-radius: 18px;
+    padding: 26px 28px 22px;
+}
+.att-header-card h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.att-form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.att-select {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 9px 14px;
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+.att-select option { background: #0d1e36; }
+.att-select:focus  { border-color: #60a5fa; }
+.att-btn {
+    background: linear-gradient(135deg, #60a5fa, #818cf8);
+    border: none;
+    padding: 9px 22px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .2s;
+}
+.att-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+
+/* ─── Stat cards row ──────────────────────────────────────────── */
+.att-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+@media(max-width:700px) { .att-stats-row { grid-template-columns: 1fr; } }
+
+.att-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.att-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.icon-blue   { background: rgba(96,165,250,0.15); }
+.icon-green  { background: rgba(52,211,153,0.15); }
+.icon-orange { background: rgba(251,146,60,0.15); }
+.att-stat-body label {
+    font-size: 12px;
+    color: var(--text2);
+    display: block;
+    margin-bottom: 4px;
+}
+.att-stat-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+}
+.star-row { color: #f59e0b; font-size: 16px; margin-top: 2px; }
+
+/* ─── Main body: calendar + sidebar ──────────────────────────── */
+.att-body {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 20px;
+    align-items: start;
+}
+@media(max-width:820px) { .att-body { grid-template-columns: 1fr; } }
+
+/* ─── Calendar card ───────────────────────────────────────────── */
+.att-cal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
 }
 
-/* ================= TITLE ================= */
-
-.page-title{
-    font-size:26px;
-    font-weight:700;
-    margin-bottom:18px;
-    display:flex;
-    align-items:center;
-    gap:10px;
+/* Day-of-week header */
+.cal-dow-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+}
+.cal-dow {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text2);
+    padding: 6px 0;
 }
 
-/* ================= FORM ================= */
+/* Calendar grid */
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.cal-cell {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    padding: 6px 2px;
+    transition: .2s;
+}
+.cal-cell.has-data { color: var(--text); }
+.cal-cell.empty-cell { background: transparent; border-color: transparent; }
+.cal-cell:not(.empty-cell):hover { border-color: var(--primary); }
 
-.calendar-form{
-    display:flex;
-    gap:14px;
-    flex-wrap:wrap;
-    margin-bottom:22px;
+.status-icon { font-size: 20px; }
+/* present = green ✅, absent = red ❌, unmarked = amber ⚠ */
+
+/* ─── Sidebar ─────────────────────────────────────────────────── */
+.att-sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.sidebar-stat { display: flex; flex-direction: column; gap: 2px; }
+.sidebar-stat label { font-size: 12px; color: var(--text2); }
+.sidebar-stat .val { font-size: 1.4rem; font-weight: 800; }
+.val-green { color: #34d399; }
+.val-red   { color: #f87171; }
+
+/* Donut chart */
+.donut-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+.donut-wrap label { font-size: 12px; color: var(--text2); align-self: flex-start; }
+.donut-svg { width: 110px; height: 110px; }
+.donut-pct-text {
+    font-size: 16px;
+    font-weight: 800;
+    fill: var(--text, #e2e8f0);
+    dominant-baseline: middle;
+    text-anchor: middle;
 }
 
-.calendar-form select{
-    background:#12213a;
-    border:none;
-    padding:10px 14px;
-    border-radius:10px;
-    color:white;
+@keyframes fadeInUp {
+    0%  { opacity:0; transform:translateY(12px); }
+    100%{ opacity:1; transform:translateY(0); }
 }
-
-/* ================= BUTTON ================= */
-
-.view-btn{
-    background:linear-gradient(135deg,#60a5fa,#818cf8);
-    border:none;
-    padding:10px 20px;
-    border-radius:10px;
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-    transition:.2s;
-}
-
-.view-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 18px rgba(0,0,0,0.45);
-}
-
-/* ================= STUDENT NAME ================= */
-
-.student-name{
-    font-size:18px;
-    font-weight:600;
-    margin-bottom:14px;
-}
-
-/* ================= GRID ================= */
-
-.calendar-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
-    gap:16px;
-}
-
-/* ================= DAY CARD ================= */
-
-.day-card{
-    background:linear-gradient(145deg,#0f1b2e,#0c1626);
-    border:1px solid rgba(56,189,248,0.25);
-    border-radius:14px;
-    padding:16px 10px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    transition:0.25s;
-}
-
-.day-card:hover{
-    transform:translateY(-4px);
-    box-shadow:0 6px 18px rgba(0,0,0,0.45);
-}
-
-/* ================= DAY NUMBER ================= */
-
-.day-number{
-    font-size:22px;
-    font-weight:700;
-    color:#d1e7ff;
-}
-
-/* ================= STATUS PILL ================= */
-
-.status-pill{
-    font-size:11px;
-    padding:5px 10px;
-    border-radius:20px;
-    font-weight:600;
-}
-
-/* PRESENT */
-
-.present{
-    background:rgba(16,185,129,0.15);
-    color:#34d399;
-}
-
-/* ABSENT */
-
-.absent{
-    background:rgba(239,68,68,0.15);
-    color:#f87171;
-}
-
-/* EMPTY */
-
-.empty{
-    color:#94a3b8;
-    font-size:12px;
-}
-
-/* ================= ANIMATION ================= */
-
-@keyframes fadeInUp{
-    0%{opacity:0; transform:translateY(10px)}
-    100%{opacity:1; transform:translateY(0)}
-}
-
+.att-wrap > * { animation: fadeInUp .4s ease both; }
+.att-wrap > *:nth-child(2) { animation-delay:.05s; }
+.att-wrap > *:nth-child(3) { animation-delay:.10s; }
 </style>
 
+<div class="att-wrap">
 
+<!-- ── HEADER ──────────────────────────────────────────────────── -->
+<div class="att-header-card">
+    <h2>📅 Monthly Attendance</h2>
+    <form method="GET" class="att-form-row">
+        <select name="month" class="att-select" required>
+            <option value="">Month</option>
+            {% for m,n in months %}
+            <option value="{{ m }}" {% if selected_month|stringformat:"s" == m|stringformat:"s" %}selected{% endif %}>{{ n }}</option>
+            {% endfor %}
+        </select>
 
-<div class="calendar-panel">
+        <select name="year" class="att-select" required>
+            <option value="">Year</option>
+            {% for y in years %}
+            <option value="{{ y }}" {% if selected_year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
 
-<div class="page-title">
-📅 Monthly Attendance
+        <button class="att-btn" type="submit">View Calendar</button>
+    </form>
 </div>
-
-
-<form method="GET" class="calendar-form">
-
-<select name="month" required>
-<option value="">Month</option>
-
-{% for m,n in months %}
-<option value="{{m}}">{{n}}</option>
-{% endfor %}
-
-</select>
-
-
-<select name="year" required>
-<option value="">Year</option>
-
-{% for y in years %}
-<option value="{{y}}">{{y}}</option>
-{% endfor %}
-
-</select>
-
-
-<button class="view-btn">
-View Calendar
-</button>
-
-</form>
-
-
 
 {% if monthly_calendar %}
 
-<div class="student-name">
+<!-- ── STAT CARDS ──────────────────────────────────────────────── -->
+<div class="att-stats-row">
 
-{{ request.user.get_full_name|default:request.user.username }}
+    <div class="att-stat-card">
+        <div class="att-stat-icon icon-blue">📈</div>
+        <div class="att-stat-body">
+            <label>Average Daily Attendance</label>
+            <div class="att-stat-val">{{ avg_daily_pct }}%</div>
+        </div>
+    </div>
 
-{% if selected_month and selected_year %}
-<span style="
-margin-left:10px;
-font-size:16px;
-font-weight:500;
-color:#d3c654;
-">
+    <div class="att-stat-card">
+        <div class="att-stat-icon icon-green">🕐</div>
+        <div class="att-stat-body">
+            <label>Punctuality Rating</label>
+            <div class="att-stat-val">{{ punctuality }}/5</div>
+            <div class="star-row">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= punctuality|floatformat:"0" %}⭐{% else %}☆{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
-• 
-{% for m,n in months %}
-    {% if m|stringformat:"s" == selected_month|stringformat:"s" %}
-        {{ n }}
-    {% endif %}
-{% endfor %}
+    <div class="att-stat-card">
+        <div class="att-stat-icon icon-orange">🔥</div>
+        <div class="att-stat-body">
+            <label>Consecutive Present Days</label>
+            <div class="att-stat-val">{{ consecutive_days }} days</div>
+        </div>
+    </div>
 
-{{ selected_year }}
+</div>
 
-</span>
+<!-- ── CALENDAR + SIDEBAR ──────────────────────────────────────── -->
+<div class="att-body">
+
+    <!-- Calendar -->
+    <div class="att-cal-card">
+
+        <!-- Day-of-week headers -->
+        <div class="cal-dow-row">
+            <div class="cal-dow">Sun</div>
+            <div class="cal-dow">Mon</div>
+            <div class="cal-dow">Tue</div>
+            <div class="cal-dow">Wed</div>
+            <div class="cal-dow">Thu</div>
+            <div class="cal-dow">Fri</div>
+            <div class="cal-dow">Sat</div>
+        </div>
+
+        <!-- Grid cells -->
+        <div class="cal-grid">
+
+            <!-- Blank offset cells for the first week -->
+            {% for i in start_weekday_range %}
+            <div class="cal-cell empty-cell"></div>
+            {% endfor %}
+
+            <!-- Actual day cells -->
+            {% for day in monthly_calendar %}
+            <div class="cal-cell {% if day.record %}has-data{% endif %}">
+                <span>{{ day.day }}</span>
+                {% if day.record %}
+                    {% if day.record.present %}
+                        <span class="status-icon">✅</span>
+                    {% else %}
+                        <span class="status-icon">❌</span>
+                    {% endif %}
+                {% else %}
+                    <span class="status-icon" style="font-size:16px;color:var(--text2)">—</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="att-sidebar">
+
+        <div class="sidebar-stat">
+            <label>Total Present Days:</label>
+            <div class="val val-green">{{ total_present }}</div>
+        </div>
+
+        <div class="sidebar-stat">
+            <label>Total Absent Days:</label>
+            <div class="val val-red">{{ total_absent }}</div>
+        </div>
+
+        <div class="sidebar-stat">
+            <label>Overall Percentage:</label>
+        </div>
+
+        <!-- Donut -->
+        <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 110 110">
+                <circle cx="55" cy="55" r="40" fill="none"
+                    stroke="rgba(255,255,255,0.08)" stroke-width="12"/>
+                <circle cx="55" cy="55" r="40" fill="none"
+                    stroke="#60a5fa" stroke-width="12"
+                    stroke-linecap="round"
+                    stroke-dasharray="{{ overall_pct|floatformat:0 }} 100"
+                    transform="rotate(-90 55 55)"
+                    id="donutArc"
+                    style="transition: stroke-dasharray 0.8s ease;"/>
+                <text x="55" y="55" class="donut-pct-text">{{ overall_pct }}%</text>
+            </svg>
+        </div>
+
+    </div>
+
+</div>
 
 {% endif %}
 
-</div>
+</div><!-- .att-wrap -->
 
-
-<div class="calendar-grid">
-
-{% for day in monthly_calendar %}
-
-<div class="day-card">
-
-<div class="day-number">
-{{ day.day }}
-</div>
-
-{% if day.record %}
-
-    {% if day.record.present %}
-
-        <span class="status-pill present">
-        Present
-        </span>
-
-    {% else %}
-
-        <span class="status-pill absent">
-        Absent
-        </span>
-
-    {% endif %}
-
-{% else %}
-
-<span class="empty">—</span>
-
-{% endif %}
-
-</div>
-
-{% endfor %}
-
-</div>
-
-{% endif %}
-
-</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var arc = document.getElementById('donutArc');
+    if (!arc) return;
+    var pct  = {{ overall_pct|default:0 }};
+    var r    = 40;
+    var circ = 2 * Math.PI * r;   // ≈ 251.3
+    var dash = (pct / 100) * circ;
+    arc.setAttribute('stroke-dasharray', dash.toFixed(1) + ' ' + circ.toFixed(1));
+});
+</script>
 
 {% endblock %}

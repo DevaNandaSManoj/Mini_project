@@ -153,10 +153,13 @@ def warden_broadcast(request):
         message = request.POST.get("message")
 
         if message:
+            from accounts.broadcast_classifier import classify_broadcast
+            category = classify_broadcast(message)
             Broadcast.objects.create(
                 sender=request.user,
                 message=message,
-                target_role="student"
+                target_role="student",
+                category=category
             )
             return redirect("warden_broadcast")
 

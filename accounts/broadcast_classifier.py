@@ -19,6 +19,9 @@ BROADCAST_SEED = {
         "immediate attention required ASAP right now crisis disaster",
         "power outage water main burst dangerous do not leave hostel",
         "urgent notice compulsory mandatory all students must assemble now",
+        "assemble immediately parlour ground floor common area within minutes",
+        "come now report immediately rush everyone gather urgently fast",
+        "within 10 minutes within 5 minutes right now this instant",
     ],
     "meeting": [
         "meeting schedule gathering assembly seminar session warden meeting",
@@ -54,6 +57,8 @@ KEYWORD_MAP = {
         "fire", "lockdown", "crisis", "critical", "hazard", "threat",
         "ambulance", "police", "evacuation", "disaster", "compulsory now",
         "right now", "asap", "do not leave",
+        "assemble", "within 10 minutes", "within 5 minutes", "come now",
+        "report immediately", "gather now", "parlour", "ground floor now",
     ],
     "meeting": [
         "meeting", "assembly", "attend", "gather", "seminar", "session",
@@ -81,7 +86,7 @@ def _keyword_score(text: str, keywords: list) -> int:
     return sum(1 for kw in keywords if kw in text_lower)
 
 
-MIN_CONFIDENCE = 0.05
+MIN_CONFIDENCE = 0.03
 
 
 def classify_broadcast(message: str) -> str:

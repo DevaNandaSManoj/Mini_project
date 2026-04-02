@@ -519,6 +519,12 @@
                     <span>Broadcast to Students</span>
                 </a>
 
+                <a href="{% url 'warden_broadcast_history' %}"
+                   class="{% if request.resolver_match.url_name == 'warden_broadcast_history' %}active{% endif %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Broadcast History</span>
+                </a>
+
                 <a href="{% url 'warden_leave_requests' %}"
                    class="{% if request.resolver_match.url_name == 'warden_leave_requests' %}active{% endif %}">
                     <i class="fa-solid fa-file-signature"></i>

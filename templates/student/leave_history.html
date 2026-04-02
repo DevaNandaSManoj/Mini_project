@@ -44,22 +44,45 @@
 
 /* Approved — Blue gradient */
 .stat-card-lh.approved-card {
-    background: linear-gradient(135deg, #1a6fa8 0%, #1e3a6e 100%);
-    border-color: rgba(56,189,248,0.3);
+    background: linear-gradient(135deg, rgba(30,35,55,0.9) 0%, rgba(20,25,45,0.9) 100%);
+    border-color: rgba(56,189,248,0.15);
+    backdrop-filter: blur(4px);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 /* Rejected — Dark */
 .stat-card-lh.rejected-card {
     background: linear-gradient(135deg, rgba(30,30,50,0.9) 0%, rgba(20,20,40,0.9) 100%);
-    border-color: rgba(248,113,113,0.2);
+    border-color: rgba(248,113,113,0.1);
     backdrop-filter: blur(4px);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 /* Pending — Dark-grey */
 .stat-card-lh.pending-card {
     background: linear-gradient(135deg, rgba(30,35,55,0.9) 0%, rgba(20,25,45,0.9) 100%);
-    border-color: rgba(251,191,36,0.2);
+    border-color: rgba(251,191,36,0.1);
     backdrop-filter: blur(4px);
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Active/highlighted variants */
+.stat-card-lh.approved-card.card-active {
+    background: linear-gradient(135deg, #1a6fa8 0%, #1e3a6e 100%);
+    border-color: rgba(56,189,248,0.4);
+    box-shadow: 0 8px 24px rgba(56,189,248,0.2);
+}
+
+.stat-card-lh.rejected-card.card-active {
+    background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+    border-color: rgba(248,113,113,0.45);
+    box-shadow: 0 8px 24px rgba(248,113,113,0.2);
+}
+
+.stat-card-lh.pending-card.card-active {
+    background: linear-gradient(135deg, #78350f 0%, #3d1b02 100%);
+    border-color: rgba(251,191,36,0.45);
+    box-shadow: 0 8px 24px rgba(251,191,36,0.15);
 }
 
 .stat-card-top {
@@ -259,7 +282,7 @@
 <div class="stat-grid">
 
     <!-- Approved -->
-    <div class="stat-card-lh approved-card">
+    <div id="card-approved" class="stat-card-lh approved-card card-active">
         <div class="stat-card-top">
             <div class="stat-card-label">Approved</div>
             <div class="stat-card-icon"><i class="fa-solid fa-check"></i></div>
@@ -272,7 +295,7 @@
     </div>
 
     <!-- Rejected -->
-    <div class="stat-card-lh rejected-card">
+    <div id="card-rejected" class="stat-card-lh rejected-card">
         <div class="stat-card-top">
             <div class="stat-card-label">Rejected</div>
             <div class="stat-card-icon"><i class="fa-solid fa-xmark"></i></div>
@@ -284,7 +307,7 @@
     </div>
 
     <!-- Pending -->
-    <div class="stat-card-lh pending-card">
+    <div id="card-pending" class="stat-card-lh pending-card">
         <div class="stat-card-top">
             <div class="stat-card-label">Pending</div>
             <div class="stat-card-icon"><i class="fa-regular fa-clock"></i></div>
@@ -360,6 +383,12 @@
                             {% if leave.from_date != leave.to_date %} → {{ leave.to_date|date:"d-m-Y" }}{% endif %}
                         </div>
                         <div class="leave-row-reason">{{ leave.reason }}</div>
+                        {% if leave.rejection_reason %}
+                            <div style="margin-top:4px; font-size:12px; color:#f87171; display:flex; align-items:center; gap:4px;">
+                                <i class="fa-solid fa-circle-xmark" style="font-size:11px;"></i>
+                                Reason: {{ leave.rejection_reason }}
+                            </div>
+                        {% endif %}
                     </div>
                     <span class="lh-badge rejected">Rejected</span>
                 </div>
@@ -422,12 +451,14 @@
     document.getElementById('lh-datetime').textContent = now.toLocaleDateString('en-GB').replace(/\//g,'-') + ', ' + now.getFullYear() + ', ' + now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true}) + ' IST';
 })();
 
-// Tab switching
+// Tab switching — also highlights the matching stat card
 function switchTab(tab, btn) {
     ['approved','rejected','pending'].forEach(t => {
         document.getElementById('tab-' + t).style.display = 'none';
+        document.getElementById('card-' + t).classList.remove('card-active');
     });
     document.getElementById('tab-' + tab).style.display = 'block';
+    document.getElementById('card-' + tab).classList.add('card-active');
     document.querySelectorAll('.tab-btn-lh').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 }

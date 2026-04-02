@@ -43,8 +43,17 @@ def dashboard(request):
         attendance_percent = round((present_today / total_today) * 100, 1)
 
     # ================= ATTENDANCE SUMMARY =================
-
     absent_today = total_today - present_today
+
+    # Students marked absent today
+    absent_student_ids = today_records.filter(present=False).values_list('student_id', flat=True)
+    absent_students = Student.objects.filter(id__in=absent_student_ids).select_related('user')
+
+    # Students with no record yet (unmarked)
+    marked_student_ids = today_records.values_list('student_id', flat=True)
+    unmarked_students = Student.objects.filter(
+        hostel_block=warden.hostel_block
+    ).exclude(id__in=marked_student_ids).select_related('user')
 
     # ================= ADMIN → WARDEN BROADCAST (LAST 24 HRS) =================
 
@@ -66,6 +75,8 @@ def dashboard(request):
         "attendance_percent": attendance_percent,
         "present_today": present_today,
         "absent_today": absent_today,
+        "absent_students": absent_students,
+        "unmarked_students": unmarked_students,
         "admin_broadcast_count": admin_broadcast_count,
         "active_admin_broadcasts": active_admin_broadcasts,
     })
@@ -97,45 +108,57 @@ def leave_requests(request):
 
 @login_required
 def approve_leave(request, leave_id):
-   
+    if request.user.role != "warden":
+        return redirect("login")
+    if request.method != "POST":
+        return redirect("warden_leave_requests")
 
-    leave = LeaveRequest.objects.get(id=leave_id)
+    warden = Warden.objects.get(user=request.user)
+    leave = LeaveRequest.objects.filter(
+        id=leave_id,
+        student__hostel_block=warden.hostel_block
+    ).first()
+    if not leave:
+        return redirect("warden_leave_requests")
 
     leave.status = 'approved'
     leave.save()
 
-    # 🔹 Auto update food & attendance for all leave dates
     current_date = leave.from_date
-
     while current_date <= leave.to_date:
         record, _ = StudentDailyRecord.objects.get_or_create(
             student=leave.student,
             date=current_date
         )
-
-        # Override any existing food selection
         record.breakfast = False
         record.lunch = False
         record.dinner = False
-
-        # Mark attendance absent
         record.present = False
         record.marked_by = "auto"
         record.save()
-
         current_date += timedelta(days=1)
 
-    # Send ONE summary email covering the full leave period
     send_leave_email(leave.student, from_date=leave.from_date, to_date=leave.to_date)
-
     return redirect('warden_leave_requests')
-
 
 
 @login_required
 def reject_leave(request, leave_id):
-    leave = LeaveRequest.objects.get(id=leave_id)
+    if request.user.role != "warden":
+        return redirect("login")
+    if request.method != "POST":
+        return redirect("warden_leave_requests")
+
+    warden = Warden.objects.get(user=request.user)
+    leave = LeaveRequest.objects.filter(
+        id=leave_id,
+        student__hostel_block=warden.hostel_block
+    ).first()
+    if not leave:
+        return redirect("warden_leave_requests")
+
     leave.status = 'rejected'
+    leave.rejection_reason = request.POST.get("rejection_reason", "").strip() or None
     leave.save()
     return redirect('warden_leave_requests')
 
@@ -255,8 +278,10 @@ def warden_attendance(request):
 
         if student_id and status:
             student = Student.objects.filter(
-                Q(user__username=student_id) | 
-                Q(name__icontains=student_id) | 
+                hostel_block=warden.hostel_block
+            ).filter(
+                Q(user__username=student_id) |
+                Q(name__icontains=student_id) |
                 Q(user__first_name__icontains=student_id)
             ).first()
 
@@ -280,7 +305,10 @@ def warden_attendance(request):
         return redirect("warden_attendance")
 
     # ================= TODAY SUMMARY =================
-    today_records = StudentDailyRecord.objects.filter(date=today)
+    today_records = StudentDailyRecord.objects.filter(
+        date=today,
+        student__hostel_block=warden.hostel_block
+    )
 
     total_students = students.count()
     present_count = today_records.filter(present=True).count()
@@ -412,8 +440,10 @@ def warden_mess(request):
             selected_date_obj = date.fromisoformat(selected_date)
             
             student = Student.objects.filter(
-                Q(user__username=student_id) | 
-                Q(name__icontains=student_id) | 
+                hostel_block=warden.hostel_block
+            ).filter(
+                Q(user__username=student_id) |
+                Q(name__icontains=student_id) |
                 Q(user__first_name__icontains=student_id)
             ).first()
 
@@ -480,7 +510,10 @@ def warden_mess(request):
     except:
         selected_date_obj = today
 
-    daily_records = StudentDailyRecord.objects.filter(date=selected_date_obj)
+    daily_records = StudentDailyRecord.objects.filter(
+        date=selected_date_obj,
+        student__hostel_block=warden.hostel_block
+    )
 
     breakfast_count = daily_records.filter(breakfast=True).count()
     lunch_count = daily_records.filter(lunch=True).count()
@@ -501,22 +534,13 @@ def warden_mess(request):
     })
 
 from accounts.models import Complaint
+from django.contrib import messages
 
 @login_required
 def warden_complaints(request):
 
     if request.user.role != "warden":
         return redirect("login")
-
-    if request.method == "POST":
-        complaint_id = request.POST.get("complaint_id")
-
-        complaint = Complaint.objects.get(id=complaint_id)
-
-        complaint.status = "resolved"
-        complaint.save()
-
-        return redirect("warden_complaints")
 
     warden = Warden.objects.get(user=request.user)
 
@@ -526,7 +550,6 @@ def warden_complaints(request):
 
     # 🔹 Filtering logic
     status_filter = request.GET.get("status")
-
     if status_filter in ["pending", "resolved"]:
         complaints = complaints.filter(status=status_filter)
 
@@ -543,7 +566,6 @@ def warden_complaints(request):
     ).count()
 
     resolved_count = total_count - pending_complaints_count
-    
     pending_count = LeaveRequest.objects.filter(status="pending").count()
 
     return render(request, "warden/warden_complaints.html", {
@@ -554,29 +576,24 @@ def warden_complaints(request):
         "active_filter": status_filter,
         "pending_count": pending_count,
     })
-@login_required    
-def resolve_complaint(request, complaint_id):
 
-    if request.user.role != "warden":
-        return redirect("login")
-
-    complaint = Complaint.objects.filter(id=complaint_id).first()
-
-    if complaint:
-        complaint.status = "resolved"
-        complaint.save()
-
-    return redirect("warden_complaints")
-
-from django.contrib import messages
 
 @login_required
 def resolve_complaint(request, complaint_id):
+    """Single canonical resolve view — role-checked, block-scoped, POST-only."""
+    if request.user.role != "warden":
+        return redirect("login")
+    if request.method != "POST":
+        return redirect("warden_complaints")
 
-    complaint = Complaint.objects.get(id=complaint_id)
-
-    complaint.status = "resolved"
-    complaint.save()
+    warden = Warden.objects.get(user=request.user)
+    complaint = Complaint.objects.filter(
+        id=complaint_id,
+        student__hostel_block=warden.hostel_block
+    ).first()
+    if complaint:
+        complaint.status = "resolved"
+        complaint.save()
 
     return redirect("warden_complaints")
 
@@ -629,7 +646,8 @@ def warden_view_student_profile(request, student_id):
         return redirect("login")
 
     warden = Warden.objects.get(user=request.user)
-    student = get_object_or_404(Student, id=student_id)
+    # Block-scoped: warden can only view/edit students in their own block
+    student = get_object_or_404(Student, id=student_id, hostel_block=warden.hostel_block)
 
     if request.method == "POST":
         student.father_name = request.POST.get("father_name")
@@ -637,15 +655,17 @@ def warden_view_student_profile(request, student_id):
         student.parent_phone_number = request.POST.get("parent_phone")
         student.address = request.POST.get("address")
         student.place = request.POST.get("place")
-        
+
         if 'profile_picture' in request.FILES:
-            student.profile_picture = request.FILES['profile_picture']
-            
+            f = request.FILES['profile_picture']
+            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+            if f.content_type in allowed_types and f.size <= 5 * 1024 * 1024:
+                student.profile_picture = f
+
         student.save()
         messages.success(request, f"Profile for {student.user.username} updated successfully!")
         return redirect('warden_view_student_profile', student_id=student.id)
 
-    # Find the assigned warden for this student's block
     assigned_warden = Warden.objects.filter(hostel_block=student.hostel_block).first()
 
     return render(request, 'warden/student_portal_edit.html', {

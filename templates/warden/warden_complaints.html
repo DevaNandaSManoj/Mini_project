@@ -76,27 +76,6 @@
 
 </div>
 
-<!-- OPTIONAL DROPDOWN FILTER -->
-<div class="animate-up" style="animation-delay: 0.55s; margin-bottom:20px;">
-    <form method="GET">
-        <select name="status"
-                onchange="this.form.submit()"
-                style="padding:8px 14px;
-                       background:var(--surface2);
-                       color:var(--text);
-                       border:none;
-                       border-radius:8px;">
-
-            <option value="">Filter by Status</option>
-            <option value="pending" {% if active_filter == "pending" %}selected{% endif %}>
-                Pending
-            </option>
-            <option value="resolved" {% if active_filter == "resolved" %}selected{% endif %}>
-                Resolved
-            </option>
-        </select>
-    </form>
-</div>
 
 <!-- COMPLAINT LIST -->
 <div style="display:flex; flex-direction:column; gap:18px;">
@@ -150,10 +129,10 @@
                 </div>
 
                 {% if complaint.status == "pending" %}
-                    <a href="{% url 'resolve_complaint' complaint.id %}"
-                       class="approve-btn">
-                        Mark Resolved
-                    </a>
+                    <form method="post" action="{% url 'resolve_complaint' complaint.id %}" style="display:inline;" onsubmit="return confirm('Mark this as resolved?')">
+                        {% csrf_token %}
+                        <button type="submit" class="approve-btn">Mark Resolved</button>
+                    </form>
                 {% endif %}
 
             </div>

@@ -1,126 +1,298 @@
 {% extends "student/base_student.html" %}
 
-{% block page_title %}
-Broadcast
-{% endblock %}
+{% block page_title %}Broadcast{% endblock %}
 
 {% block content %}
 
 <style>
+/* ─── Page header ─────────────────────────────────────────────── */
+.bc-header {
+    margin-bottom: 28px;
+}
+.bc-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--text);
+}
 
-.broadcast-card {
+/* ─── Search ─────────────────────────────────────────────────── */
+.bc-search-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.bc-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+    max-width: 460px;
+}
+.bc-search-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text2);
+    font-size: 13px;
+}
+.bc-search-input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+}
+.bc-search-input::placeholder { color: var(--text2); }
+.bc-search-input:focus { border-color: var(--primary); }
+
+/* ─── Filter tabs ─────────────────────────────────────────────── */
+.bc-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.bc-tab {
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all 0.2s;
+}
+.bc-tab:hover { border-color: var(--primary); color: var(--primary); }
+.bc-tab.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+/* Per-category active colours */
+.bc-tab[data-cat="urgent"].active        { background:#ef4444; border-color:#ef4444; }
+.bc-tab[data-cat="announcement"].active  { background:#3b82f6; border-color:#3b82f6; }
+.bc-tab[data-cat="meeting"].active       { background:#f59e0b; border-color:#f59e0b; }
+.bc-tab[data-cat="general"].active       { background:#6b7280; border-color:#6b7280; }
+
+/* ─── Content row ─────────────────────────────────────────────── */
+.bc-content-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 14px;
+}
+
+/* Left card ──────────────────────────────────────────────────── */
+.bc-left {
+    flex: 1;
+    min-width: 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
+    padding: 14px 18px;
+    transition: box-shadow 0.2s;
 }
+.bc-left:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
 
-.broadcast-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
-.broadcast-message {
+.bc-msg-title {
     font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
-
-.broadcast-meta {
+.bc-date-top {
+    font-size: 11.5px;
+    color: var(--text2);
+    font-weight: 400;
+    margin-left: auto;
+}
+.bc-date-sub {
     font-size: 12px;
     color: var(--text2);
+    margin-top: 2px;
 }
 
-.badge-admin {
-    font-size: 11px;
-    padding: 4px 10px;
+/* Category badge inside card */
+.cat-badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 9px;
     border-radius: 20px;
-    background: rgba(168,85,247,0.15);
-    color: #c084fc;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
 }
+.cat-urgent        { background: rgba(239,68,68,0.15);  color: #ef4444; }
+.cat-announcement  { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.cat-meeting       { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.cat-general       { background: rgba(107,114,128,0.15);color: #9ca3af; }
 
-.badge-warden {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: rgba(190, 123, 30, 0.15);
-    color: #f67b2f;
+/* Timeline ───────────────────────────────────────────────────── */
+.bc-timeline {
+    width: 36px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
 }
-
-.badge-mess {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: rgba(34,197,94,0.15);
-    color: #22c55e;
+.bc-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--surface);
+    z-index: 1;
+    margin-top: 20px;
 }
-
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--text2);
+.bc-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    min-height: 30px;
 }
+/* hide line on the last item */
+.bc-content-row:last-child .bc-line { display: none; }
 
+/* Right badge ────────────────────────────────────────────────── */
+.bc-right {
+    width: 72px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 16px;
+    justify-content: flex-end;
+}
 .sender-badge {
     font-size: 11px;
+    font-weight: 700;
     padding: 4px 10px;
     border-radius: 20px;
-    background: rgba(56,189,248,0.15);
-    color: #38bdf8;
 }
+.sender-admin  { background: rgba(168,85,247,0.15); color: #c084fc; }
+.sender-warden { background: rgba(190,123,30,0.15); color: #f67b2f; }
+.sender-mess   { background: rgba(34,197,94,0.15);  color: #22c55e; }
 
-.empty-state {
+/* ─── Empty state ─────────────────────────────────────────────── */
+.bc-empty {
     text-align: center;
-    padding: 40px;
+    padding: 60px 20px;
     color: var(--text2);
 }
-
+.bc-empty-icon { font-size: 40px; margin-bottom: 12px; }
 </style>
 
+<div class="bc-header">
+    <h2>All Broadcast Messages</h2>
 
-<h2 style="margin-bottom:25px;">All Broadcast Messages</h2>
+    <!-- Search + Tabs row -->
+    <div class="bc-search-row">
+        <div class="bc-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+                class="bc-search-input"
+                id="bcSearch"
+                type="text"
+                placeholder="Search Messages"
+                oninput="filterBroadcasts()"
+            />
+        </div>
 
+        <div class="bc-tabs">
+            <a class="bc-tab {% if selected_category == 'all' %}active{% endif %}"
+               data-cat="all" href="?category=all">All</a>
+            <a class="bc-tab {% if selected_category == 'urgent' %}active{% endif %}"
+               data-cat="urgent" href="?category=urgent">Urgent</a>
+            <a class="bc-tab {% if selected_category == 'announcement' %}active{% endif %}"
+               data-cat="announcement" href="?category=announcement">Announcements</a>
+            <a class="bc-tab {% if selected_category == 'meeting' %}active{% endif %}"
+               data-cat="meeting" href="?category=meeting">Meetings</a>
+            <a class="bc-tab {% if selected_category == 'general' %}active{% endif %}"
+               data-cat="general" href="?category=general">General</a>
+        </div>
+    </div>
+</div>
+
+<!-- Timeline list -->
+<div id="bcList">
 
 {% if broadcasts %}
-
     {% for broadcast in broadcasts %}
 
-        <div class="broadcast-card">
+    <div class="bc-content-row" data-msg="{{ broadcast.message|lower }}">
 
-            <div class="broadcast-header">
+        <!-- Left: message card -->
+        <div class="bc-left">
+            <div class="bc-msg-title">
+                <span>{{ broadcast.message|truncatewords:12 }}</span>
 
-                <div class="broadcast-message">
-                    {{ broadcast.message }}
-                </div>
-
-                {% if broadcast.sender.role == "admin" %}
-                    <span class="badge-admin">Admin</span>
-
-                {% elif broadcast.sender.role == "warden" %}
-                    <span class="badge-warden">Warden</span>
-
-                {% elif broadcast.sender.role == "mess" %}
-                    <span class="badge-mess">Mess Manager</span>
-
+                {% if broadcast.category == 'urgent' %}
+                    <span class="cat-badge cat-urgent">Urgent</span>
+                {% elif broadcast.category == 'announcement' %}
+                    <span class="cat-badge cat-announcement">Announcement</span>
+                {% elif broadcast.category == 'meeting' %}
+                    <span class="cat-badge cat-meeting">Meeting</span>
+                {% else %}
+                    <span class="cat-badge cat-general">General</span>
                 {% endif %}
 
+                <span class="bc-date-top">Sent on {{ broadcast.created_at|date:"F j, Y, g:i a" }}</span>
             </div>
-
-            <div class="broadcast-meta">
-                Sent on {{ broadcast.created_at|date:"F j, Y, g:i a" }}
-            </div>
-
+            <div class="bc-date-sub">{{ broadcast.created_at|date:"F j, Y, g:i a" }}</div>
         </div>
+
+        <!-- Centre: timeline -->
+        <div class="bc-timeline">
+            <div class="bc-dot"></div>
+            <div class="bc-line"></div>
+        </div>
+
+        <!-- Right: sender badge -->
+        <div class="bc-right">
+            {% if broadcast.sender.role == 'admin' %}
+                <span class="sender-badge sender-admin">Admin</span>
+            {% elif broadcast.sender.role == 'warden' %}
+                <span class="sender-badge sender-warden">Warden</span>
+            {% elif broadcast.sender.role == 'mess' %}
+                <span class="sender-badge sender-mess">Mess</span>
+            {% endif %}
+        </div>
+
+    </div>
 
     {% endfor %}
 
 {% else %}
-
-    <div class="empty-state">
-        No broadcast messages yet.
+    <div class="bc-empty">
+        <div class="bc-empty-icon">📢</div>
+        <div>No broadcast messages
+            {% if selected_category != 'all' %}in this category{% endif %}
+            yet.
+        </div>
     </div>
-
 {% endif %}
+
+</div><!-- #bcList -->
+
+<script>
+function filterBroadcasts() {
+    const q = document.getElementById('bcSearch').value.toLowerCase();
+    document.querySelectorAll('#bcList .bc-content-row').forEach(row => {
+        const msg = row.dataset.msg || '';
+        row.style.display = msg.includes(q) ? '' : 'none';
+    });
+}
+</script>
 
 {% endblock %}

@@ -94,15 +94,25 @@ def student_dashboard(request):
 
     # ================= BROADCAST (24 HOUR ACTIVE) =================
 
-
     now = timezone.now()
     last_24_hours = now - timedelta(hours=24)
 
+    # Get IDs of wardens in this student's block
+    from accounts.models import Warden
+    from django.db.models import Q
+    block_warden_ids = Warden.objects.filter(
+        hostel_block=student.hostel_block
+    ).values_list('user_id', flat=True)
+
+    # Admin/mess broadcasts → visible to all students
+    # Warden broadcasts → only visible to students in that warden's block
     active_broadcasts = Broadcast.objects.filter(
         target_role="student",
         created_at__gte=last_24_hours
+    ).filter(
+        Q(sender__role__in=['admin', 'mess']) |
+        Q(sender__role='warden', sender__id__in=block_warden_ids)
     ).order_by('-created_at')
-     
 
     # Auto mark active broadcasts as read
     for broadcast in active_broadcasts:
@@ -133,14 +143,21 @@ def student_attendance_month(request):
     student = Student.objects.get(user=request.user)
 
     month = request.GET.get("month")
-    year = request.GET.get("year")
+    year  = request.GET.get("year")
 
-    monthly_calendar = None
+    monthly_calendar  = None
+    total_present     = 0
+    total_absent      = 0
+    overall_pct       = 0
+    avg_daily_pct     = 0
+    consecutive_days  = 0
+    punctuality       = 0.0
+    start_weekday     = 0   # 0=Sun offset for the calendar grid
+    start_weekday_range = []
 
     if month and year:
-
         month = int(month)
-        year = int(year)
+        year  = int(year)
 
         days_in_month = calendar.monthrange(year, month)[1]
 
@@ -150,29 +167,50 @@ def student_attendance_month(request):
             date__year=year
         )
 
-        record_dict = {
-            record.date.day: record
-            for record in records
-        }
+        record_dict = {record.date.day: record for record in records}
 
         monthly_calendar = []
-
         today = date.today()
 
         for day in range(1, days_in_month + 1):
-
-            record = record_dict.get(day)
-
+            record   = record_dict.get(day)
             day_date = date(year, month, day)
 
-            # Future days should show "-"
             if day_date > today:
                 record = None
 
             monthly_calendar.append({
-                "day": day,
-                "record": record
+                "day":    day,
+                "record": record,
             })
+
+        # ── Stats ──────────────────────────────────────────────────────
+        recorded_days = [d for d in monthly_calendar if d["record"] is not None]
+        total_present = sum(1 for d in recorded_days if d["record"].present)
+        total_absent  = sum(1 for d in recorded_days if not d["record"].present)
+        total_recorded = len(recorded_days)
+
+        if total_recorded > 0:
+            overall_pct   = round((total_present / total_recorded) * 100)
+            avg_daily_pct = overall_pct   # same for month view
+
+        # Consecutive present streak (up to today)
+        streak = 0
+        for d in reversed(recorded_days):
+            if d["record"].present:
+                streak += 1
+            else:
+                break
+        consecutive_days = streak
+
+        # Punctuality rating: 5 * (present/recorded), max 5
+        if total_recorded > 0:
+            punctuality = round(5 * total_present / total_recorded, 1)
+
+        # Calendar weekday offset: Python weekday() gives Mon=0; we want Sun=0
+        first_weekday_py = date(year, month, 1).weekday()   # 0=Mon
+        start_weekday = (first_weekday_py + 1) % 7          # 0=Sun
+        start_weekday_range = list(range(start_weekday))     # for template iteration
 
     months = [
         (1,"January"),(2,"February"),(3,"March"),(4,"April"),
@@ -180,14 +218,23 @@ def student_attendance_month(request):
         (9,"September"),(10,"October"),(11,"November"),(12,"December")
     ]
 
-    years = list(range(2023,2031))
+    years = list(range(2023, 2031))
 
     return render(request, "student/attendance_history.html", {
         "monthly_calendar": monthly_calendar,
-        "months": months,
-        "years": years,
-        "selected_month": month,
-        "selected_year": year
+        "months":           months,
+        "years":            years,
+        "selected_month":   month,
+        "selected_year":    year,
+        # stats
+        "total_present":    total_present,
+        "total_absent":     total_absent,
+        "overall_pct":      overall_pct,
+        "avg_daily_pct":    avg_daily_pct,
+        "consecutive_days": consecutive_days,
+        "punctuality":      punctuality,
+        "start_weekday":       start_weekday,
+        "start_weekday_range": start_weekday_range,
     })
 
 
@@ -242,10 +289,30 @@ def delete_complaint(request, complaint_id):
 
 @login_required
 def student_broadcast(request):
-    broadcasts = Broadcast.objects.all().order_by('-created_at')
+    category_filter = request.GET.get('category', 'all')
+
+    student = Student.objects.get(user=request.user)
+
+    # Block-scoped: warden broadcasts only from the student's own block warden
+    from accounts.models import Warden
+    from django.db.models import Q
+    block_warden_ids = Warden.objects.filter(
+        hostel_block=student.hostel_block
+    ).values_list('user_id', flat=True)
+
+    broadcasts = Broadcast.objects.filter(
+        target_role="student"
+    ).filter(
+        Q(sender__role__in=['admin', 'mess']) |
+        Q(sender__role='warden', sender__id__in=block_warden_ids)
+    ).order_by('-created_at')
+
+    if category_filter and category_filter != 'all':
+        broadcasts = broadcasts.filter(category=category_filter)
 
     return render(request, 'student/broadcast.html', {
-        'broadcasts': broadcasts
+        'broadcasts': broadcasts,
+        'selected_category': category_filter,
     })
 
 @login_required

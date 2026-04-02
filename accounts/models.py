@@ -105,7 +105,14 @@ BROADCAST_ROLE_CHOICES = (
     ('warden', 'Warden'),
     ('mess', 'Mess Manager'),
 )
-        
+
+BROADCAST_CATEGORY_CHOICES = (
+    ('general', 'General'),
+    ('announcement', 'Announcement'),
+    ('urgent', 'Urgent'),
+    ('meeting', 'Meeting'),
+)
+
 class Broadcast(models.Model):
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -120,6 +127,12 @@ class Broadcast(models.Model):
         choices=BROADCAST_ROLE_CHOICES
     )
 
+    category = models.CharField(
+        max_length=20,
+        choices=BROADCAST_CATEGORY_CHOICES,
+        default='general'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     # IMPORTANT CHANGE: track read for all users
@@ -130,7 +143,7 @@ class Broadcast(models.Model):
     )
 
     def __str__(self):
-        return f"{self.sender.username} → {self.target_role}"
+        return f"{self.sender.username} → {self.target_role} [{self.category}]"
 
     def read_count(self):
         return self.read_by.count()

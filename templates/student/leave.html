@@ -6,215 +6,287 @@
 
 /* ================= HEADER ================= */
 
-.page-header{
-    margin-bottom:28px;
+.breadcrumb {
+    font-size: 12px;
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.breadcrumb .parent { color: var(--accent); }
+.breadcrumb .sep    { color: var(--text2); }
+.breadcrumb .active { font-weight: 500; }
+
+.page-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    margin-top: 4px;
 }
 
-.breadcrumb{
-    font-size:12px;
-    display:flex;
-    gap:6px;
-    margin-bottom:8px;
+.page-sub {
+    font-size: 14px;
+    color: var(--text2);
+    margin-bottom: 28px;
 }
 
-.breadcrumb .parent{ color:var(--accent); }
-.breadcrumb .sep{ color:var(--text2); }
-.breadcrumb .active{ font-weight:500; }
+/* ================= TWO-COLUMN LAYOUT ================= */
 
-.page-title{
-    font-family:'Inter',sans-serif;
-    font-size:32px;
-    font-weight:800;
-    margin-bottom:6px;
+.leave-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 22px;
+    align-items: start;
 }
 
-.page-sub{
-    font-size:14px;
-    color:var(--text2);
-}
+/* ================= PANEL CARD ================= */
 
-/* ================= CARD BASE ================= */
-
-.leave-card{
-    padding:28px;
-    border-radius:20px;
-    margin-bottom:32px;
-    position:relative;
-    overflow:hidden;
-
-    background:linear-gradient(135deg, 
-        rgba(56,189,248,0.05), 
+.leave-panel {
+    background: linear-gradient(135deg,
+        rgba(56,189,248,0.05),
         rgba(129,140,248,0.05)
     );
-
-    border:1px solid rgba(56,189,248,0.18);
-    transition:all 0.25s ease;
+    border: 1px solid rgba(56,189,248,0.15);
+    border-radius: 18px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
 }
 
-.leave-card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 14px 30px rgba(0,0,0,0.35);
-}
-
-.leave-card::after{
-    content:"";
-    position:absolute;
-    width:190px;
-    height:190px;
-    border-radius:50%;
-    top:-70px;
-    right:-70px;
-    opacity:0.6;
-
-    background:radial-gradient(circle at center,
-        rgba(110, 71, 200, 0.25),   /* purple */
-        rgba(56,189,248,0.18),   /* blue */
-        rgba(16,185,129,0.12)    /* teal */
+.leave-panel::after {
+    content: "";
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    top: -60px;
+    right: -60px;
+    opacity: 0.6;
+    background: radial-gradient(circle at center,
+        rgba(110,71,200,0.2),
+        rgba(56,189,248,0.12),
+        rgba(16,185,129,0.08)
     );
 }
-/* ================= FORM ================= */
 
-.form-group{
-    margin-bottom:18px;
+.panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
 }
 
-.form-group label{
-    font-size:13px;
-    font-weight:600;
-    display:block;
-    margin-bottom:6px;
+/* ================= FORM ================= */
+
+.form-group {
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text);
 }
 
 .form-group input,
-.form-group textarea{
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    border:1px solid rgba(56,189,248,0.25);
-    background:var(--surface);
-    color:var(--text);
-    transition:all 0.2s ease;
+.form-group textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(56,189,248,0.25);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .form-group input:focus,
-.form-group textarea:focus{
-    outline:none;
-    border:1px solid #38bdf8;
-    box-shadow:0 0 10px rgba(56,189,248,0.4);
+.form-group textarea:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56,189,248,0.3);
 }
 
-.form-group textarea{
-    min-height:110px;
-    resize:vertical;
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
 }
 
-/* ================= BUTTON ================= */
-
-.primary-btn{
-    background:linear-gradient(135deg,#38bdf8,#6366f1);
-    border:none;
-    padding:10px 22px;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-    color:white;
-    transition:all 0.2s ease;
+.form-group textarea::placeholder,
+.form-group input::placeholder {
+    color: var(--text2);
+    opacity: 0.7;
+    font-size: 13px;
 }
 
-.primary-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(99,102,241,0.4);
+/* ================= SUBMIT BUTTON ================= */
+
+.submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    border: none;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
 }
 
-/* ================= ERRORS ================= */
-
-.error-box{
-    background:rgba(248,113,113,0.08);
-    border:1px solid rgba(248,113,113,0.4);
-    color:#f87171;
-    padding:10px 14px;
-    border-radius:10px;
-    margin-bottom:16px;
-    font-size:14px;
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
 }
 
-/* ================= STATUS CARD ================= */
+/* ================= ERROR BOX ================= */
 
-.application-item{
-    padding:22px;
-    border-radius:16px;
-    position:relative;
-    margin-bottom:16px;
-    transition:all 0.25s ease;
-
-    background:linear-gradient(135deg, 
-        rgba(56,189,248,0.05), 
-        rgba(129,140,248,0.05)
-    );
-
-    border:1px solid rgba(56,189,248,0.18);
+.error-box {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.35);
+    color: #f87171;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    position: relative;
+    z-index: 1;
 }
 
-.application-item:hover{
-    transform:translateY(-3px);
-    box-shadow:0 14px 32px rgba(24, 43, 70, 0.45);
+/* ================= TABLE ================= */
+
+.apps-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    position: relative;
+    z-index: 1;
 }
 
-.status-badge{
-    position:absolute;
-    top:18px;
-    right:18px;
-    padding:6px 14px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:700;
+.apps-table thead th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--text2);
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
 }
 
-.badge-approved{
-    background:rgba(52,211,153,0.12);
-    color:#34d399;
-    border:1px solid rgba(52,211,153,0.5);
+.apps-table tbody tr {
+    border-bottom: 1px solid rgba(99,179,237,0.08);
+    transition: background 0.2s;
 }
 
-.badge-pending{
-    background:rgba(251,191,36,0.12);
-    color:#fbbf24;
-    border:1px solid rgba(251,191,36,0.5);
+.apps-table tbody tr:last-child {
+    border-bottom: none;
 }
 
-.badge-rejected{
-    background:rgba(248,113,113,0.12);
-    color:#f87171;
-    border:1px solid rgba(248,113,113,0.5);
+.apps-table tbody tr:hover {
+    background: rgba(56,189,248,0.04);
 }
 
-.cancel-btn{
-    margin-top:14px;
-    padding:6px 14px;
-    border:none;
-    border-radius:8px;
-    background:#ef4444;
-    color:white;
-    font-size:13px;
-    cursor:pointer;
-    transition:0.2s ease;
+.apps-table td {
+    padding: 12px 12px;
+    color: var(--text);
+    vertical-align: middle;
 }
 
-.cancel-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 8px 18px rgba(239,68,68,0.4);
+/* ================= STATUS BADGES ================= */
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
-/* Placeholder styling */
-.form-group textarea::placeholder{
-    color:var(--text2);
-    opacity:0.7;
-    font-size:14px;
+.badge-approved {
+    background: rgba(52,211,153,0.15);
+    color: #34d399;
+    border: 1px solid rgba(52,211,153,0.4);
 }
 
-.form-group input::placeholder{
-    color:var(--text2);
-    opacity:0.7;
+.badge-pending {
+    background: rgba(251,191,36,0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251,191,36,0.4);
+}
+
+.badge-rejected {
+    background: rgba(248,113,113,0.15);
+    color: #f87171;
+    border: 1px solid rgba(248,113,113,0.4);
+}
+
+/* ================= REASON TEXT ================= */
+
+.reason-text {
+    color: var(--text2);
+    font-size: 12px;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* ================= ACTION BUTTONS ================= */
+
+.cancel-btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s ease;
+    color: white;
+    background: #ef4444;
+}
+
+.cancel-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(239,68,68,0.35);
+}
+
+/* ================= EMPTY STATE ================= */
+
+.empty-state {
+    text-align: center;
+    padding: 32px 0 16px;
+    color: var(--text2);
+    position: relative;
+    z-index: 1;
+}
+
+.empty-state i {
+    font-size: 28px;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .leave-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 </style>
@@ -222,117 +294,121 @@
 
 <!-- ================= HEADER ================= -->
 
-<div class="page-header">
-    <div class="breadcrumb">
-        <span class="parent">Student</span>
-        <span class="sep">›</span>
-        <span class="active">Leave Application</span>
-    </div>
-
-    <div class="page-title">Leave Applications</div>
-    <div class="page-sub">Apply for long leave. Warden approval required.</div>
+<div class="breadcrumb">
+    <span class="parent">Student</span>
+    <span class="sep">›</span>
+    <span class="active">Leave Application</span>
 </div>
 
-
-<!-- ================= APPLY LEAVE (TOP) ================= -->
-
-<div class="leave-card">
-
-    <h3 style="margin-bottom:20px;">📝 Apply for Leave</h3>
-
-    {% if error %}
-        <div class="error-box">
-            {{ error }}
-        </div>
-    {% endif %}
-
-    <form method="post">
-        {% csrf_token %}
-
-        <div class="form-group">
-            <label>From Date</label>
-            <input type="date" name="from_date" required>
-        </div>
-
-        <div class="form-group">
-            <label>To Date</label>
-            <input type="date" name="to_date" required>
-        </div>
-
-        <div class="form-group">
-            <label>Reason</label>
-            <textarea 
-                name="reason" 
-                required 
-                placeholder="Explain your reason for leave..."
-            ></textarea>
-        </div>
-
-         <button type="submit" class="primary-btn">
-             <i class="fa fa-paper-plane"></i> Submit Application
-         </button>
-    </form>
-
-</div>
+<div class="page-title">Leave Application</div>
+<div class="page-sub">Apply for long leave. Warden approval required.</div>
 
 
-<!-- ================= STATUS (BOTTOM) ================= -->
+<!-- ================= TWO-COLUMN LAYOUT ================= -->
 
-<div class="leave-card">
+<div class="leave-layout">
 
-    <h3 style="margin-bottom:20px;">📄 My Applications</h3>
+    <!-- LEFT: APPLY FORM -->
+    <div class="leave-panel">
+        <div class="panel-title">📅 Apply for Leave</div>
 
-    {% if leave %}
+        {% if error %}
+            <div class="error-box">{{ error }}</div>
+        {% endif %}
 
-        <div class="application-item">
+        <form method="post">
+            {% csrf_token %}
 
-            <div class="status-badge
-                {% if leave.status == 'approved' %}
-                    badge-approved
-                {% elif leave.status == 'pending' %}
-                    badge-pending
-                {% else %}
-                    badge-rejected
-                {% endif %}
-            ">
-                {{ leave.status|upper }}
+            <div class="form-group">
+                <label>From Date</label>
+                <input type="date" name="from_date" required>
             </div>
 
-            <p><strong>{{ leave.from_date }} → {{ leave.to_date }}</strong></p>
-            <p style="margin-top:8px;">{{ leave.reason }}</p>
+            <div class="form-group">
+                <label>To Date</label>
+                <input type="date" name="to_date" required>
+            </div>
 
-            {% if leave.status == "approved" %}
-                <p style="margin-top:10px; color:#34d399; font-size:13px;">
-                    ✔ Approved by Warden
-                </p>
-            {% endif %}
+            <div class="form-group">
+                <label>Reason</label>
+                <textarea
+                    name="reason"
+                    required
+                    placeholder="Explain your reason for leave..."
+                ></textarea>
+            </div>
 
-            {% if leave.status == "pending" or leave.status == "approved" %}
-                <form method="post" action="{% url 'modify_leave' leave.id %}">
+            <button type="submit" class="submit-btn">
+                <i class="fa fa-paper-plane"></i> Submit Application
+            </button>
+        </form>
+    </div>
+
+    <!-- RIGHT: CURRENT APPLICATION TABLE -->
+    <div class="leave-panel">
+        <div class="panel-title">My Applications</div>
+
+        {% if leave %}
+            <table class="apps-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            {{ leave.from_date|date:"d-m-Y" }}
+                            {% if leave.from_date != leave.to_date %}
+                                → {{ leave.to_date|date:"d-m-Y" }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if leave.status == 'approved' %}badge-approved
+                                {% elif leave.status == 'pending' %}badge-pending
+                                {% else %}badge-rejected{% endif %}">
+                                {{ leave.status|capfirst }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="reason-text" title="{{ leave.reason }}">{{ leave.reason }}</span>
+                        </td>
+                        <td>
+                            {% if leave.status == 'pending' or leave.status == 'approved' %}
+                                <form method="post" action="{% url 'modify_leave' leave.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="cancel">
+                                    <button type="submit" class="cancel-btn">Cancel</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            {% if leave.status == 'approved' %}
+                <form method="post" action="{% url 'modify_leave' leave.id %}" style="margin-top: 16px; position: relative; z-index: 1;">
                     {% csrf_token %}
-                    <input type="hidden" name="action" value="cancel">
-                    <button type="submit" class="cancel-btn">
-                        Cancel
-                    </button>
+                    <div class="form-group" style="display:flex; align-items:center; gap:10px; margin-bottom:0;">
+                        <label style="white-space:nowrap; margin-bottom:0; font-size:13px;">Change End Date:</label>
+                        <input type="date" name="new_end_date" required style="flex:1;">
+                        <button type="submit" class="submit-btn" style="width:auto; padding:9px 16px; white-space:nowrap;">Update</button>
+                    </div>
                 </form>
             {% endif %}
 
-            {% if leave.status == "approved" %}
-                <form method="post" action="{% url 'modify_leave' leave.id %}" style="margin-top:14px;">
-                    {% csrf_token %}
-                    <label style="font-size:13px;">Change End Date:</label>
-                    <input type="date" name="new_end_date" required style="margin-left:10px;">
-                    <button type="submit" class="primary-btn" style="padding:6px 14px; margin-left:10px;">
-                        Update
-                    </button>
-                </form>
-            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                <p>No leave requests yet.</p>
+            </div>
+        {% endif %}
 
-        </div>
-
-    {% else %}
-        <p style="color:var(--text2);">No leave requests yet.</p>
-    {% endif %}
+    </div>
 
 </div>
 

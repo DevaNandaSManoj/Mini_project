@@ -825,7 +825,7 @@ input[type="radio"].opt-out:checked + .pill-label {
 <!-- ================= TIMER ================= -->
 
 <div class="timer-card">
-    <div class="timer-title">⏱ YOUR MEAL SELECTION ENDS IN</div>
+    <div class="timer-title" id="timerTitle">⏱ YOUR MEAL SELECTION ENDS IN</div>
 
     <div class="timer-display">
 
@@ -856,7 +856,7 @@ input[type="radio"].opt-out:checked + .pill-label {
 // ---- 8 PM restriction helpers ----
 function isAfter8PM() {
     const now = new Date();
-    return now.getHours() >= 22;
+    return now.getHours() >= 20;
 }
 
 function openTimeLockModal() {
@@ -893,22 +893,47 @@ document.getElementById('timeLockModal').addEventListener('click', function(e) {
     if (e.target === this) closeTimeLockModal();
 });
 
-// ---- Countdown timer to 8 PM ----
-function calcSecondsTo8PM() {
+// ---- Countdown timer — switches mode at 8 PM ----
+function calcTimerSeconds() {
     const now = new Date();
-    const target = new Date(now);
-    target.setHours(20, 0, 0, 0);
-    if (now >= target) return 0;  // already past 8 PM
-    return Math.floor((target - now) / 1000);
+    const deadline = new Date(now);
+    deadline.setHours(20, 0, 0, 0); // 8 PM today
+
+    if (now < deadline) {
+        // Before 8 PM: count down to 8 PM
+        return { secs: Math.floor((deadline - now) / 1000), mode: 'before' };
+    } else {
+        // After 8 PM: count down to midnight (next day selection opens)
+        const midnight = new Date(now);
+        midnight.setDate(midnight.getDate() + 1);
+        midnight.setHours(0, 0, 0, 0);
+        return { secs: Math.floor((midnight - now) / 1000), mode: 'after' };
+    }
 }
 
-let totalSeconds = calcSecondsTo8PM();
+let timerState = calcTimerSeconds();
+let totalSeconds = timerState.secs;
+let timerMode = timerState.mode;
+
+function applyTimerMode(mode) {
+    const title = document.getElementById('timerTitle');
+    if (mode === 'before') {
+        title.textContent = '⏱ YOUR MEAL SELECTION ENDS IN';
+    } else {
+        title.textContent = '🕐 NEXT SELECTION OPENS IN';
+    }
+}
+
+// Set initial title
+applyTimerMode(timerMode);
 
 function updateTimer() {
     if (totalSeconds <= 0) {
-        document.getElementById('hours').innerText   = '00';
-        document.getElementById('minutes').innerText = '00';
-        document.getElementById('seconds').innerText = '00';
+        // Recalculate — mode may have just flipped from before→after
+        const state = calcTimerSeconds();
+        totalSeconds = state.secs;
+        timerMode = state.mode;
+        applyTimerMode(timerMode);
         return;
     }
     let hrs  = Math.floor(totalSeconds / 3600);

@@ -184,4 +184,73 @@
 
 </div>
 
+<!-- ================= TIMER ================= -->
+<div class="card hover-card animate-up" style="animation-delay:0.9s; margin-top:24px; padding:32px; text-align:center; background:linear-gradient(135deg,rgba(56,189,248,0.06) 0%,rgba(129,140,248,0.06) 100%); border:1px solid rgba(56,189,248,0.18);">
+    <div style="font-size:13px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:var(--text); margin-bottom:22px; display:flex; align-items:center; justify-content:center; gap:8px;" id="messTimerTitle">
+        <i class="fa-solid fa-hourglass-half" style="color:var(--accent);"></i> Submission Window Closes In
+    </div>
+    <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
+        <div style="background:var(--surface2); border:1px solid rgba(56,189,248,0.3); padding:18px 24px; border-radius:16px; min-width:90px; box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+            <div style="font-size:36px; font-weight:800; color:var(--accent); line-height:1; font-family:'Inter',sans-serif;" id="m-hours">00</div>
+            <div style="margin-top:6px; font-size:12px; letter-spacing:1.5px; color:var(--text2); font-weight:600;">HOURS</div>
+        </div>
+        <div style="font-size:28px; font-weight:800; color:var(--text2);">:</div>
+        <div style="background:var(--surface2); border:1px solid rgba(56,189,248,0.3); padding:18px 24px; border-radius:16px; min-width:90px; box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+            <div style="font-size:36px; font-weight:800; color:var(--accent); line-height:1; font-family:'Inter',sans-serif;" id="m-minutes">00</div>
+            <div style="margin-top:6px; font-size:12px; letter-spacing:1.5px; color:var(--text2); font-weight:600;">MINS</div>
+        </div>
+        <div style="font-size:28px; font-weight:800; color:var(--text2);">:</div>
+        <div style="background:var(--surface2); border:1px solid rgba(56,189,248,0.3); padding:18px 24px; border-radius:16px; min-width:90px; box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+            <div style="font-size:36px; font-weight:800; color:var(--accent); line-height:1; font-family:'Inter',sans-serif;" id="m-seconds">00</div>
+            <div style="margin-top:6px; font-size:12px; letter-spacing:1.5px; color:var(--text2); font-weight:600;">SECS</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calcMessTimer() {
+    const now = new Date();
+    const deadline = new Date(now);
+    deadline.setHours(22, 0, 0, 0); // 10 PM warden deadline
+    if (now < deadline) {
+        return { secs: Math.floor((deadline - now) / 1000), mode: 'before' };
+    } else {
+        const midnight = new Date(now);
+        midnight.setDate(midnight.getDate() + 1);
+        midnight.setHours(0, 0, 0, 0);
+        return { secs: Math.floor((midnight - now) / 1000), mode: 'after' };
+    }
+}
+
+let mState = calcMessTimer();
+let mSecs = mState.secs;
+let mMode = mState.mode;
+
+function applyMessMode(mode) {
+    const t = document.getElementById('messTimerTitle');
+    t.innerHTML = mode === 'before'
+        ? '<i class="fa-solid fa-hourglass-half" style="color:var(--accent);"></i> Submission Window Closes In'
+        : '🕐 Next Window Opens In';
+}
+applyMessMode(mMode);
+
+function updateMessTimer() {
+    if (mSecs <= 0) {
+        const s = calcMessTimer();
+        mSecs = s.secs; mMode = s.mode;
+        applyMessMode(mMode);
+        return;
+    }
+    const hrs  = Math.floor(mSecs / 3600);
+    const mins = Math.floor((mSecs % 3600) / 60);
+    const secs = mSecs % 60;
+    document.getElementById('m-hours').innerText   = String(hrs).padStart(2,'0');
+    document.getElementById('m-minutes').innerText = String(mins).padStart(2,'0');
+    document.getElementById('m-seconds').innerText = String(secs).padStart(2,'0');
+    mSecs--;
+}
+updateMessTimer();
+setInterval(updateMessTimer, 1000);
+</script>
+
 {% endblock %}

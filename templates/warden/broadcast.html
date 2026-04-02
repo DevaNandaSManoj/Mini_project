@@ -17,6 +17,23 @@
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0,0,0,0.06);
     }
+    .dlt-btn {
+        background: none;
+        border: 1px solid rgba(248,113,113,0.35);
+        color: #f87171;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 8px;
+    }
+    .dlt-btn:hover {
+        background: rgba(248,113,113,0.12);
+        border-color: #f87171;
+        transform: translateY(-1px) !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <div class="dashboard-breadcrumb animate-up" style="animation-delay: 0.1s;">
@@ -79,6 +96,11 @@
             <div class="message-date">
                 {{ item.broadcast.created_at|date:"d M Y" }}
             </div>
+
+            <form method="post" action="{% url 'delete_broadcast' item.broadcast.id %}" onsubmit="return confirm('Delete this broadcast?')">
+                {% csrf_token %}
+                <button type="submit" class="dlt-btn"><i class="fa-solid fa-trash-can"></i> Delete</button>
+            </form>
 
         </div>
         {% empty %}

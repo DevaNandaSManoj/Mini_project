@@ -163,7 +163,7 @@ def warden_broadcast(request):
             )
             return redirect("warden_broadcast")
 
-    # 🔥 NEW: Last 24 Hours Filter
+    # 🔥 Last 24 Hours Filter
     last_24_hours = timezone.now() - timedelta(hours=24)
 
     # 🔹 Only this warden's broadcasts to students (LAST 24 HOURS ONLY)
@@ -195,6 +195,45 @@ def warden_broadcast(request):
         "broadcast_data": broadcast_data,
         "pending_count": pending_count,
     })
+
+
+@login_required
+def warden_broadcast_history(request):
+    if request.user.role != "warden":
+        return redirect("login")
+
+    selected_category = request.GET.get("category", "all")
+
+    broadcasts = Broadcast.objects.filter(
+        sender=request.user,
+        target_role="student",
+    ).order_by("-created_at")
+
+    if selected_category != "all":
+        broadcasts = broadcasts.filter(category=selected_category)
+
+    pending_count = LeaveRequest.objects.filter(status="pending").count()
+
+    return render(request, "warden/broadcast_history.html", {
+        "broadcasts": broadcasts,
+        "selected_category": selected_category,
+        "pending_count": pending_count,
+    })
+
+
+@login_required
+def delete_broadcast(request, broadcast_id):
+    if request.user.role != "warden":
+        return redirect("login")
+    if request.method == "POST":
+        broadcast = Broadcast.objects.filter(id=broadcast_id, sender=request.user).first()
+        if broadcast:
+            broadcast.delete()
+    # Go back to wherever the user came from (history or broadcast page)
+    referer = request.META.get("HTTP_REFERER", "")
+    if "history" in referer:
+        return redirect("warden_broadcast_history")
+    return redirect("warden_broadcast")
 
 # ================= WARDEN ATTENDANCE =================
 @login_required

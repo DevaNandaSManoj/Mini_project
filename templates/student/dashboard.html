@@ -514,7 +514,7 @@ body.light .hover-card:hover {
                         {% endif %}
                     </div>
                     <div class="broadcast-sender">
-                        By {{ broadcast.sender.user.username }}
+                        By {{ broadcast.sender.username }}
                     </div>
                 </div>
                 <div class="broadcast-message">
@@ -535,7 +535,7 @@ body.light .hover-card:hover {
 
 <!-- ================= PREMIUM TIMER ================= -->
 <div class="timer-card hover-card animate-up" style="animation-delay: 0.8s;">
-    <div class="timer-title">
+    <div class="timer-title" id="dashTimerTitle">
         <i class="fa-solid fa-hourglass-half"></i> Meal Selection Ends In
     </div>
 
@@ -571,22 +571,39 @@ body.light .hover-card:hover {
     document.getElementById("greeting").innerHTML =
         `<span class="greet-text">${greetingText}, {{ student.user.first_name|default:student.user.username }}!</span> <span style="display:inline-block; animation:pulse 2s infinite;">👋</span>`;
 
-    // Countdown timer to 8 PM
-    function calcSecondsTo8PM() {
+    // Countdown timer — switches mode at 8 PM
+    function calcDashTimer() {
         const now = new Date();
-        const target = new Date(now);
-        target.setHours(20, 0, 0, 0);
-        if (now >= target) return 0;
-        return Math.floor((target - now) / 1000);
+        const deadline = new Date(now);
+        deadline.setHours(20, 0, 0, 0);
+        if (now < deadline) {
+            return { secs: Math.floor((deadline - now) / 1000), mode: 'before' };
+        } else {
+            const midnight = new Date(now);
+            midnight.setDate(midnight.getDate() + 1);
+            midnight.setHours(0, 0, 0, 0);
+            return { secs: Math.floor((midnight - now) / 1000), mode: 'after' };
+        }
     }
 
-    let totalSeconds = calcSecondsTo8PM();
+    let dashState = calcDashTimer();
+    let totalSeconds = dashState.secs;
+    let dashMode = dashState.mode;
+
+    function applyDashMode(mode) {
+        const t = document.getElementById('dashTimerTitle');
+        t.innerHTML = mode === 'before'
+            ? '<i class="fa-solid fa-hourglass-half"></i> Meal Selection Ends In'
+            : '🕐 Next Selection Opens In';
+    }
+    applyDashMode(dashMode);
 
     function updateTimer() {
         if (totalSeconds <= 0) {
-            document.getElementById("hours").innerText   = "00";
-            document.getElementById("minutes").innerText = "00";
-            document.getElementById("seconds").innerText = "00";
+            const state = calcDashTimer();
+            totalSeconds = state.secs;
+            dashMode = state.mode;
+            applyDashMode(dashMode);
             return;
         }
         let hrs  = Math.floor(totalSeconds / 3600);

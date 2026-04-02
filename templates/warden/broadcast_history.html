@@ -1,0 +1,201 @@
+{% extends "warden/base_warden.html" %}
+{% block content %}
+
+<style>
+/* ─── Page header ───────────────────────────────────────────── */
+.bc-header { margin-bottom: 28px; }
+.bc-header h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 18px; color: var(--text); }
+
+/* ─── Search ─────────────────────────────────────────────────── */
+.bc-search-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.bc-search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 460px; }
+.bc-search-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text2); font-size: 13px; }
+.bc-search-input {
+    width: 100%; padding: 10px 14px 10px 38px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 14px; outline: none;
+}
+.bc-search-input::placeholder { color: var(--text2); }
+.bc-search-input:focus { border-color: var(--accent); }
+
+/* ─── Filter tabs ───────────────────────────────────────────── */
+.bc-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.bc-tab {
+    padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    cursor: pointer; text-decoration: none; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text2); transition: all 0.2s;
+}
+.bc-tab:hover { border-color: var(--accent); color: var(--accent); }
+.bc-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.bc-tab[data-cat="urgent"].active       { background:#ef4444; border-color:#ef4444; }
+.bc-tab[data-cat="announcement"].active { background:#3b82f6; border-color:#3b82f6; }
+.bc-tab[data-cat="meeting"].active      { background:#f59e0b; border-color:#f59e0b; }
+.bc-tab[data-cat="general"].active      { background:#6b7280; border-color:#6b7280; }
+
+/* ─── Timeline row ──────────────────────────────────────────── */
+.bc-content-row { display: flex; align-items: flex-start; gap: 0; margin-bottom: 14px; }
+
+.bc-left {
+    flex: 1; min-width: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; transition: box-shadow 0.2s;
+}
+.bc-left:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+
+.bc-msg-title {
+    font-size: 15px; font-weight: 600; color: var(--text);
+    margin-bottom: 4px; display: flex; align-items: center;
+    gap: 8px; flex-wrap: wrap;
+}
+.bc-date-top { font-size: 11.5px; color: var(--text2); font-weight: 400; margin-left: auto; }
+.bc-date-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+.dlt-btn {
+    background: none;
+    border: 1px solid rgba(248,113,113,0.35);
+    color: #f87171;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+.dlt-btn:hover {
+    background: rgba(248,113,113,0.12);
+    border-color: #f87171;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Category badges */
+.cat-badge {
+    display: inline-block; font-size: 10.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px; letter-spacing: 0.4px; text-transform: uppercase;
+}
+.cat-urgent       { background: rgba(239,68,68,0.15);  color: #ef4444; }
+.cat-announcement { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.cat-meeting      { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.cat-general      { background: rgba(107,114,128,0.15);color: #9ca3af; }
+
+/* ─── Timeline connector ────────────────────────────────────── */
+.bc-timeline {
+    width: 36px; flex-shrink: 0; display: flex;
+    flex-direction: column; align-items: center; position: relative;
+}
+.bc-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--surface);
+    z-index: 1; margin-top: 20px;
+}
+.bc-line { width: 2px; flex: 1; background: var(--border); min-height: 30px; }
+.bc-content-row:last-child .bc-line { display: none; }
+
+/* ─── Read-count badge ──────────────────────────────────────── */
+.bc-right {
+    width: 80px; flex-shrink: 0; display: flex;
+    align-items: flex-start; padding-top: 16px; justify-content: flex-end;
+}
+.read-badge {
+    font-size: 11px; font-weight: 700; padding: 4px 10px;
+    border-radius: 20px; background: rgba(56,189,248,0.12);
+    color: var(--accent); white-space: nowrap;
+}
+
+/* ─── Empty state ───────────────────────────────────────────── */
+.bc-empty { text-align: center; padding: 60px 20px; color: var(--text2); }
+.bc-empty-icon { font-size: 40px; margin-bottom: 12px; }
+</style>
+
+<div class="bc-header">
+    <h2>Broadcast History</h2>
+
+    <div class="bc-search-row">
+        <div class="bc-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input class="bc-search-input" id="bcSearch" type="text"
+                   placeholder="Search messages…" oninput="filterBroadcasts()">
+        </div>
+
+        <div class="bc-tabs">
+            <a class="bc-tab {% if selected_category == 'all' %}active{% endif %}"
+               data-cat="all" href="?category=all">All</a>
+            <a class="bc-tab {% if selected_category == 'urgent' %}active{% endif %}"
+               data-cat="urgent" href="?category=urgent">Urgent</a>
+            <a class="bc-tab {% if selected_category == 'announcement' %}active{% endif %}"
+               data-cat="announcement" href="?category=announcement">Announcements</a>
+            <a class="bc-tab {% if selected_category == 'meeting' %}active{% endif %}"
+               data-cat="meeting" href="?category=meeting">Meetings</a>
+            <a class="bc-tab {% if selected_category == 'general' %}active{% endif %}"
+               data-cat="general" href="?category=general">General</a>
+        </div>
+    </div>
+</div>
+
+<!-- Timeline list -->
+<div id="bcList">
+
+{% if broadcasts %}
+    {% for broadcast in broadcasts %}
+
+    <div class="bc-content-row" data-msg="{{ broadcast.message|lower }}">
+
+        <!-- Left: message card -->
+        <div class="bc-left">
+            <div class="bc-msg-title">
+                <span>{{ broadcast.message|truncatewords:12 }}</span>
+
+                {% if broadcast.category == 'urgent' %}
+                    <span class="cat-badge cat-urgent">Urgent</span>
+                {% elif broadcast.category == 'announcement' %}
+                    <span class="cat-badge cat-announcement">Announcement</span>
+                {% elif broadcast.category == 'meeting' %}
+                    <span class="cat-badge cat-meeting">Meeting</span>
+                {% else %}
+                    <span class="cat-badge cat-general">General</span>
+                {% endif %}
+
+                <span class="bc-date-top">{{ broadcast.created_at|date:"F j, Y, g:i a" }}</span>
+            </div>
+            <div class="bc-date-sub">{{ broadcast.message }}</div>
+
+            <form method="post" action="{% url 'delete_broadcast' broadcast.id %}" onsubmit="return confirm('Delete this broadcast?')">
+                {% csrf_token %}
+                <button type="submit" class="dlt-btn"><i class="fa-solid fa-trash-can"></i> Delete</button>
+            </form>
+        </div>
+
+        <!-- Centre: timeline -->
+        <div class="bc-timeline">
+            <div class="bc-dot"></div>
+            <div class="bc-line"></div>
+        </div>
+
+        <!-- Right: read count -->
+        <div class="bc-right">
+            <span class="read-badge">{{ broadcast.read_by.count }} read</span>
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+    <div class="bc-empty">
+        <div class="bc-empty-icon">📢</div>
+        <div>No broadcasts sent{% if selected_category != 'all' %} in this category{% endif %} yet.</div>
+    </div>
+{% endif %}
+
+</div><!-- #bcList -->
+
+<script>
+function filterBroadcasts() {
+    const q = document.getElementById('bcSearch').value.toLowerCase();
+    document.querySelectorAll('#bcList .bc-content-row').forEach(row => {
+        row.style.display = (row.dataset.msg || '').includes(q) ? '' : 'none';
+    });
+}
+</script>
+
+{% endblock %}

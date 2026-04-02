@@ -177,7 +177,7 @@ def student_food_attendance(request):
     student = Student.objects.get(user=request.user)
 
     now = timezone.localtime()
-    student_deadline = time(22, 0)  # 10 PM
+    student_deadline = time(20, 0)  # 8 PM
     warden_deadline = time(22, 0)   # 10 PM
 
     student_locked = now.time() > student_deadline

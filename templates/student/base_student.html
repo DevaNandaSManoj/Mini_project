@@ -107,6 +107,15 @@
             padding:10px 0 14px;
             border-bottom:1px solid var(--border);
             margin-bottom:14px;
+            text-decoration:none;
+            cursor:pointer;
+            border-radius:10px;
+            transition:0.2s ease;
+        }
+
+        .profile:hover{
+            background:var(--surface2);
+            padding-left:6px;
         }
 
         .avatar{
@@ -360,19 +369,19 @@
         </div>
 
         <!-- PROFILE -->
-        <div class="profile">
+        <a href="{% url 'student_profile' %}" class="profile">
             <div class="avatar">
                 {{ student.user.first_name|default:student.user.username|first|upper }}
             </div>
             <div class="profile-info">
-                <div class="name">
+                <div class="name" style="color:var(--text)">
                     {{ student.user.get_full_name|default:student.user.username }}
                 </div>
                 <div class="role">
                     {{ student.user.role|upper }}
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- MENU -->
         <div class="menu">
@@ -383,11 +392,6 @@
                 <span>Dashboard</span>
             </a>
 
-            <a href="{% url 'student_profile' %}"
-               class="{% if request.resolver_match.url_name == 'student_profile' %}active{% endif %}">
-                <i class="fa-solid fa-user"></i>
-                <span>My Profile</span>
-            </a>
 
             <a href="{% url 'student_food_attendance' %}"
                class="{% if request.resolver_match.url_name == 'student_food_attendance' %}active{% endif %}">

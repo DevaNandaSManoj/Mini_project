@@ -10,6 +10,18 @@ from leave.models import LeaveRequest
  
 
 def login_view(request):
+    # Already logged in? Send them back to their portal.
+    if request.user.is_authenticated:
+        role = getattr(request.user, 'role', '')
+        role_redirect = {
+            'student': 'student_dashboard',
+            'warden':  'warden_dashboard',
+            'mess':    'mess_dashboard',
+            'admin':   'admin_dashboard',
+        }
+        if role in role_redirect:
+            return redirect(role_redirect[role])
+
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')

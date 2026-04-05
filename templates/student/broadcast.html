@@ -6,29 +6,28 @@
 
 <style>
 /* ─── Page header ─────────────────────────────────────────────── */
-.bc-header {
-    margin-bottom: 28px;
-}
 .bc-header h2 {
     font-size: 1.6rem;
     font-weight: 700;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
     color: var(--text);
 }
 
-/* ─── Search ─────────────────────────────────────────────────── */
-.bc-search-row {
+/* ─── Top bar: search + filter tabs on one row ────────────────── */
+.bc-topbar {
     display: flex;
     align-items: center;
     gap: 12px;
-    flex-wrap: wrap;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
+
+/* Search */
 .bc-search-wrap {
     position: relative;
     flex: 1;
     min-width: 180px;
-    max-width: 460px;
+    max-width: 420px;
 }
 .bc-search-wrap i {
     position: absolute;
@@ -51,14 +50,14 @@
 .bc-search-input::placeholder { color: var(--text2); }
 .bc-search-input:focus { border-color: var(--primary); }
 
-/* ─── Filter tabs ─────────────────────────────────────────────── */
+/* Filter tabs */
 .bc-tabs {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
 }
 .bc-tab {
-    padding: 8px 18px;
+    padding: 9px 18px;
     border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
@@ -68,62 +67,63 @@
     background: var(--surface);
     color: var(--text2);
     transition: all 0.2s;
+    white-space: nowrap;
 }
 .bc-tab:hover { border-color: var(--primary); color: var(--primary); }
-.bc-tab.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-}
-/* Per-category active colours */
-.bc-tab[data-cat="urgent"].active        { background:#ef4444; border-color:#ef4444; }
-.bc-tab[data-cat="announcement"].active  { background:#3b82f6; border-color:#3b82f6; }
-.bc-tab[data-cat="meeting"].active       { background:#f59e0b; border-color:#f59e0b; }
-.bc-tab[data-cat="general"].active       { background:#6b7280; border-color:#6b7280; }
+.bc-tab.active                              { background: var(--primary); color:#fff; border-color:var(--primary); }
+.bc-tab[data-cat="urgent"].active           { background:#ef4444; border-color:#ef4444; }
+.bc-tab[data-cat="announcement"].active     { background:#3b82f6; border-color:#3b82f6; }
+.bc-tab[data-cat="meeting"].active          { background:#f59e0b; border-color:#f59e0b; }
+.bc-tab[data-cat="general"].active          { background:#6b7280; border-color:#6b7280; }
 
-/* ─── Content row ─────────────────────────────────────────────── */
-.bc-content-row {
+/* ─── Broadcast card list ─────────────────────────────────────── */
+#bcList {
     display: flex;
-    align-items: flex-start;
-    gap: 0;
-    margin-bottom: 14px;
+    flex-direction: column;
+    gap: 10px;
 }
 
-/* Left card ──────────────────────────────────────────────────── */
-.bc-left {
-    flex: 1;
-    min-width: 0;
+.bc-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px 18px;
-    transition: box-shadow 0.2s;
+    padding: 14px 20px;
+    transition: box-shadow 0.2s, border-color 0.2s;
 }
-.bc-left:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+.bc-card:hover {
+    box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+    border-color: rgba(var(--primary-rgb, 99,102,241), 0.35);
+}
 
-.bc-msg-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
+/* Left: title + date */
+.bc-body {
+    flex: 1;
+    min-width: 0;
+}
+.bc-title-row {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    margin-bottom: 4px;
 }
-.bc-date-top {
-    font-size: 11.5px;
-    color: var(--text2);
-    font-weight: 400;
-    margin-left: auto;
+.bc-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .bc-date-sub {
     font-size: 12px;
     color: var(--text2);
-    margin-top: 2px;
 }
 
-/* Category badge inside card */
+/* Category badge */
 .cat-badge {
     display: inline-block;
     font-size: 10.5px;
@@ -132,57 +132,37 @@
     border-radius: 20px;
     letter-spacing: 0.4px;
     text-transform: uppercase;
-}
-.cat-urgent        { background: rgba(239,68,68,0.15);  color: #ef4444; }
-.cat-announcement  { background: rgba(59,130,246,0.15); color: #60a5fa; }
-.cat-meeting       { background: rgba(245,158,11,0.15); color: #f59e0b; }
-.cat-general       { background: rgba(107,114,128,0.15);color: #9ca3af; }
-
-/* Timeline ───────────────────────────────────────────────────── */
-.bc-timeline {
-    width: 36px;
+    white-space: nowrap;
     flex-shrink: 0;
+}
+.cat-urgent        { background:rgba(239,68,68,0.15);   color:#ef4444; }
+.cat-announcement  { background:rgba(59,130,246,0.15);  color:#60a5fa; }
+.cat-meeting       { background:rgba(245,158,11,0.15);  color:#f59e0b; }
+.cat-general       { background:rgba(107,114,128,0.15); color:#9ca3af; }
+
+/* Right: sent date + sender badge */
+.bc-right {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    position: relative;
-}
-.bc-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--primary);
-    border: 2px solid var(--surface);
-    z-index: 1;
-    margin-top: 20px;
-}
-.bc-line {
-    width: 2px;
-    flex: 1;
-    background: var(--border);
-    min-height: 30px;
-}
-/* hide line on the last item */
-.bc-content-row:last-child .bc-line { display: none; }
-
-/* Right badge ────────────────────────────────────────────────── */
-.bc-right {
-    width: 72px;
+    align-items: flex-end;
+    gap: 6px;
     flex-shrink: 0;
-    display: flex;
-    align-items: flex-start;
-    padding-top: 16px;
-    justify-content: flex-end;
+}
+.bc-sent-label {
+    font-size: 12px;
+    color: var(--text2);
+    white-space: nowrap;
 }
 .sender-badge {
     font-size: 11px;
     font-weight: 700;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 20px;
+    white-space: nowrap;
 }
-.sender-admin  { background: rgba(168,85,247,0.15); color: #c084fc; }
-.sender-warden { background: rgba(190,123,30,0.15); color: #f67b2f; }
-.sender-mess   { background: rgba(34,197,94,0.15);  color: #22c55e; }
+.sender-admin  { background:rgba(168,85,247,0.15);  color:#c084fc; }
+.sender-warden { background:rgba(246,123,47,0.15);  color:#f67b2f; }
+.sender-mess   { background:rgba(34,197,94,0.15);   color:#22c55e; }
 
 /* ─── Empty state ─────────────────────────────────────────────── */
 .bc-empty {
@@ -196,8 +176,8 @@
 <div class="bc-header">
     <h2>All Broadcast Messages</h2>
 
-    <!-- Search + Tabs row -->
-    <div class="bc-search-row">
+    <!-- Search + Category filter on one row -->
+    <div class="bc-topbar">
         <div class="bc-search-wrap">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input
@@ -224,18 +204,18 @@
     </div>
 </div>
 
-<!-- Timeline list -->
+<!-- Card list -->
 <div id="bcList">
 
 {% if broadcasts %}
     {% for broadcast in broadcasts %}
 
-    <div class="bc-content-row" data-msg="{{ broadcast.message|lower }}">
+    <div class="bc-card" data-msg="{{ broadcast.message|lower }}">
 
-        <!-- Left: message card -->
-        <div class="bc-left">
-            <div class="bc-msg-title">
-                <span>{{ broadcast.message|truncatewords:12 }}</span>
+        <!-- Left: title + category badge + date -->
+        <div class="bc-body">
+            <div class="bc-title-row">
+                <span class="bc-title">{{ broadcast.message|truncatewords:12 }}</span>
 
                 {% if broadcast.category == 'urgent' %}
                     <span class="cat-badge cat-urgent">Urgent</span>
@@ -246,20 +226,13 @@
                 {% else %}
                     <span class="cat-badge cat-general">General</span>
                 {% endif %}
-
-                <span class="bc-date-top">Sent on {{ broadcast.created_at|date:"F j, Y, g:i a" }}</span>
             </div>
             <div class="bc-date-sub">{{ broadcast.created_at|date:"F j, Y, g:i a" }}</div>
         </div>
 
-        <!-- Centre: timeline -->
-        <div class="bc-timeline">
-            <div class="bc-dot"></div>
-            <div class="bc-line"></div>
-        </div>
-
-        <!-- Right: sender badge -->
+        <!-- Right: sent label + sender badge -->
         <div class="bc-right">
+            <span class="bc-sent-label">Sent on {{ broadcast.created_at|date:"F j, Y, g:i a" }}</span>
             {% if broadcast.sender.role == 'admin' %}
                 <span class="sender-badge sender-admin">Admin</span>
             {% elif broadcast.sender.role == 'warden' %}
@@ -288,7 +261,7 @@
 <script>
 function filterBroadcasts() {
     const q = document.getElementById('bcSearch').value.toLowerCase();
-    document.querySelectorAll('#bcList .bc-content-row').forEach(row => {
+    document.querySelectorAll('#bcList .bc-card').forEach(row => {
         const msg = row.dataset.msg || '';
         row.style.display = msg.includes(q) ? '' : 'none';
     });

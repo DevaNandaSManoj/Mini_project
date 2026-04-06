@@ -334,6 +334,10 @@ def attendance_report(request):
 
     records = StudentDailyRecord.objects.select_related(
         'student__user'
+    ).filter(
+        date__lt=date.today()   # only up to yesterday
+    ).exclude(
+        marked_by='auto'        # hide system-auto-marked records (leave approvals, daily close)
     ).order_by(order_by_clause)
 
     display_date = None

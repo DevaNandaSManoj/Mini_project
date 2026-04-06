@@ -74,39 +74,49 @@
     <!-- STUDENT LIST -->
     <div class="card">
         <div class="card-title">👥 Student List ({{ students|length }})</div>
-        <div class="mt-16">
-            {% for student in students %}
-            <div class="user-list-item">
-                <div class="user-list-left">
-                    <div class="mini-avatar student">{{ student.user.first_name|first|upper }}</div>
-                    <div>
-                        <div class="user-list-name">{{ student.user.first_name }}</div>
-                        <div class="user-list-detail">{{ student.user.username }} &middot; Room {{ student.room_no }}
-                            &middot; Block {{ student.hostel_block }} &middot; {{ student.department }}
-                            &middot; <i class="fa-solid fa-user-shield" style="color:#818cf8;"></i>
-                            {% for wkey, wval in block_warden_map.items %}{% if wkey == student.hostel_block %}<span style="color:#818cf8; font-weight:600;">{{ wval.user.get_full_name|default:wval.user.username }}</span>{% endif %}{% endfor %}
+        <div class="mt-16" style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
+            {% regroup students by hostel_block as block_groups %}
+            {% for group in block_groups %}
+                <!-- Block separator header -->
+                <div style="display:flex; align-items:center; gap:10px; margin: 14px 0 8px; position:sticky; top:0; background:var(--surface); z-index:1; padding: 6px 0;">
+                    <div style="flex:1; height:1px; background:var(--border);"></div>
+                    <span style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.2); border-radius:20px; padding:3px 12px; white-space:nowrap;">
+                        <i class="fa-solid fa-building" style="margin-right:4px;"></i> Block {{ group.grouper }}
+                        &nbsp;·&nbsp; {{ group.list|length }} student{{ group.list|length|pluralize }}
+                    </span>
+                    <div style="flex:1; height:1px; background:var(--border);"></div>
+                </div>
+                {% for student in group.list %}
+                <div class="user-list-item">
+                    <div class="user-list-left">
+                        <div class="mini-avatar student">{{ student.user.first_name|default:student.name|first|upper }}</div>
+                        <div>
+                            <div class="user-list-name">{{ student.name|default:student.user.first_name }}</div>
+                            <div class="user-list-detail">{{ student.user.username }} &middot; Room {{ student.room_no }}
+                                &middot; {{ student.department }}
+                                &middot; <i class="fa-solid fa-user-shield" style="color:#818cf8;"></i>
+                                {% for wkey, wval in block_warden_map.items %}{% if wkey == student.hostel_block %}<span style="color:#818cf8; font-weight:600;">{{ wval.user.get_full_name|default:wval.user.username }}</span>{% endif %}{% endfor %}
+                            </div>
                         </div>
                     </div>
+                    <div style="display:flex; gap:8px;">
+                        <!-- Edit Button -->
+                        <button type="button" class="delete-btn"
+                            style="color:var(--accent); background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.2)"
+                            onclick="openUpdateModal('{{ student.id }}', '{{ student.user.username|escapejs }}', '{{ student.name|default:student.user.first_name|escapejs }}', '{{ student.room_no|escapejs }}', '{{ student.hostel_block|escapejs }}', '{{ student.phone_number|escapejs }}', '{{ student.department|escapejs }}', '{{ student.parent_email|escapejs }}', '{{ student.father_name|escapejs }}', '{{ student.mother_name|escapejs }}', '{{ student.parent_phone_number|escapejs }}', '{{ student.address|escapejs }}', '{{ student.place|escapejs }}')">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <!-- Delete Button -->
+                        <form method="POST" style="margin:0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                            <button type="submit" class="delete-btn"
+                                onclick="return confirm('Are you sure you want to delete this student?')"><i class="fa fa-trash"></i></button>
+                        </form>
+                    </div>
                 </div>
-                <div style="display:flex; gap:8px;">
-                    <!-- Edit Button -->
-                    <button type="button" class="delete-btn"
-                        style="color:var(--accent); background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.2)"
-                        onclick="openUpdateModal('{{ student.id }}', '{{ student.user.username|escapejs }}', '{{ student.user.first_name|escapejs }}', '{{ student.room_no|escapejs }}', '{{ student.hostel_block|escapejs }}', '{{ student.phone_number|escapejs }}', '{{ student.department|escapejs }}', '{{ student.parent_email|escapejs }}', '{{ student.father_name|escapejs }}', '{{ student.mother_name|escapejs }}', '{{ student.parent_phone_number|escapejs }}', '{{ student.address|escapejs }}', '{{ student.place|escapejs }}')">
-                        <i class="fa fa-pen"></i>
-                    </button>
-
-                    <!-- Delete Button -->
-                    <form method="POST" style="margin:0;">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="student_id" value="{{ student.id }}">
-                        <button type="submit" class="delete-btn"
-                            onclick="return confirm('Are you sure you want to delete this student?')"><i
-                                class="fa fa-trash"></i></button>
-                    </form>
-                </div>
-            </div>
+                {% endfor %}
             {% empty %}
             <div class="empty-state">
                 <div class="empty-icon">👥</div>

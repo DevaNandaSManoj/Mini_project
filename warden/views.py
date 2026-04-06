@@ -620,17 +620,18 @@ def warden_student_portal(request):
     if current_time - search_time_float > 86400:
         search_query = ''
 
-    # Only students in this warden's block for the dropdown
-    all_students = Student.objects.filter(hostel_block=warden.hostel_block).select_related('user')
-    students = None
+    # All students in this warden's block
+    all_students = Student.objects.filter(hostel_block=warden.hostel_block).select_related('user').order_by('name', 'user__username')
 
+    # Filter by search query if provided, otherwise show all
     if search_query:
-        students = Student.objects.filter(hostel_block=warden.hostel_block).select_related('user')
-        students = students.filter(
+        students = all_students.filter(
             Q(user__username__icontains=search_query) | 
             Q(user__first_name__icontains=search_query) | 
             Q(name__icontains=search_query)
         )
+    else:
+        students = all_students
 
     return render(request, 'warden/student_portal_search.html', {
         'students': students,

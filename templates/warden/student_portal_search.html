@@ -264,54 +264,175 @@ body.light .student-card {
     <p style="color:var(--text2); font-size:14px; margin-top:4px;">You are viewing students in <strong style="color:var(--accent);">Block {{ warden.hostel_block }}</strong> only.</p>
 </div>
 
+<!-- Student data for autocomplete -->
+<script>
+const STUDENT_DATA = [
+    {% for student in all_students %}
+    {
+        id: {{ student.id }},
+        username: "{{ student.user.username }}",
+        name: "{{ student.name|default:student.user.first_name|default:student.user.username }}",
+        room: "{{ student.room_no|default:'' }}",
+        dept: "{{ student.department|default:'' }}",
+        profileUrl: "{% url 'warden_view_student_profile' student.id %}",
+        avatar: "{{ student.name|default:student.user.first_name|default:student.user.username|first|upper }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+</script>
+
 <div class="search-container animate-up hover-card" style="animation-delay: 0.1s;">
     <div class="search-header">
         <h2><i class="fa-solid fa-users-viewfinder"></i> Find Students in Block {{ warden.hostel_block }}</h2>
-        <p style="color: var(--text2); font-size: 14px; margin: 0;">Search by Student ID or Name. Only Block {{ warden.hostel_block }} students are shown.</p>
+        <p style="color: var(--text2); font-size: 14px; margin: 0;">Click the field to browse all students, or type to filter by name or ID.</p>
     </div>
-    
-    <div class="search-form">
-        <form method="GET" class="search-input-group">
-            <input type="hidden" name="t" value="{{ current_time }}">
-            
-            <div class="search-input-wrapper">
-                <label>Student ID or Name</label>
+
+    <!-- Custom Autocomplete -->
+    <div class="ac-wrapper" style="position:relative; max-width:600px;">
+        <label style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:6px; display:block;">Student ID or Name</label>
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <div style="position:relative; flex:1; min-width:220px;">
                 <input
+                    id="ac-input"
                     type="text"
-                    name="search_query"
                     class="search-select"
-                    list="student-datalist"
-                    placeholder="Type a name or ID, or click ▾ to browse…"
-                    value="{{ search_query }}"
+                    placeholder="Click or type to search students…"
                     autocomplete="off"
-                    style="min-width:300px;"
+                    style="width:100%; padding-right:40px;"
+                    value="{{ search_query }}"
                 >
-                <datalist id="student-datalist">
-                    {% for student in all_students %}
-                        <option value="{{ student.user.username }}">{{ student.user.username }} — {% if student.name %}{{ student.name }}{% elif student.user.first_name %}{{ student.user.first_name }}{% else %}Unknown{% endif %} (Block {{ student.hostel_block }})</option>
-                    {% endfor %}
-                </datalist>
+                <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--text2); pointer-events:none; font-size:13px;">▾</span>
+                <!-- Dropdown -->
+                <div id="ac-dropdown" style="
+                    display:none;
+                    position:absolute;
+                    top:calc(100% + 6px);
+                    left:0; right:0;
+                    background:var(--surface);
+                    border:1px solid var(--border);
+                    border-radius:14px;
+                    box-shadow:0 12px 32px rgba(0,0,0,0.22);
+                    z-index:9999;
+                    max-height:320px;
+                    overflow-y:auto;
+                    padding:6px;
+                "></div>
             </div>
-            
-            <div class="search-input-wrapper" style="flex: 0; min-width: auto;">
-                <label style="color: transparent; user-select: none;">Action</label>
-                <div style="display:flex; gap:12px;">
-                    <button type="submit" class="search-btn"><i class="fa fa-search"></i> Search</button>
-                    <a href="{% url 'warden_student_portal' %}" class="search-btn" style="background:var(--surface2); color:var(--text); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; height: 48px; padding: 0 24px; text-decoration: none;">
-                        <i class="fa fa-eraser" style="margin-right:8px; color:var(--text2);"></i> Clear
-                    </a>
-                </div>
-            </div>
-        </form>
+            <a href="{% url 'warden_student_portal' %}" class="search-btn" id="ac-clear-btn"
+               style="background:var(--surface2); color:var(--text); border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; height:48px; padding:0 24px; text-decoration:none; border-radius:12px; font-weight:600; white-space:nowrap;">
+                <i class="fa fa-eraser" style="margin-right:8px; color:var(--text2);"></i> Clear
+            </a>
+        </div>
     </div>
 </div>
 
-{% if search_query %}
-    {% if students %}
+<style>
+.ac-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+    color: var(--text);
+}
+.ac-item:hover, .ac-item.ac-active {
+    background: rgba(56,189,248,0.10);
+}
+.ac-avatar-sm {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    display: flex; align-items:center; justify-content:center;
+    color: white; font-size: 15px; font-weight:700;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.ac-avatar-sm img { width:100%; height:100%; object-fit:cover; }
+.ac-info-name { font-size:14px; font-weight:600; color:var(--text); }
+.ac-info-meta { font-size:11px; color:var(--text2); margin-top:2px; }
+.ac-empty { padding:18px; text-align:center; color:var(--text2); font-size:14px; }
+#ac-dropdown::-webkit-scrollbar { width:6px; }
+#ac-dropdown::-webkit-scrollbar-track { background:transparent; }
+#ac-dropdown::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+</style>
+
+<script>
+(function(){
+    const input = document.getElementById('ac-input');
+    const dropdown = document.getElementById('ac-dropdown');
+    let activeIdx = -1;
+    let visibleItems = [];
+
+    function renderDropdown(query) {
+        const q = (query || '').toLowerCase().trim();
+        visibleItems = q
+            ? STUDENT_DATA.filter(s =>
+                s.username.toLowerCase().includes(q) ||
+                s.name.toLowerCase().includes(q) ||
+                s.room.toLowerCase().includes(q)
+              )
+            : [...STUDENT_DATA];
+        activeIdx = -1;
+
+        if (visibleItems.length === 0) {
+            dropdown.innerHTML = '<div class="ac-empty"><i class="fa fa-search" style="opacity:0.4;"></i>&nbsp; No students match "' + query + '"</div>';
+        } else {
+            dropdown.innerHTML = visibleItems.map((s, i) => `
+                <a class="ac-item" data-idx="${i}" href="${s.profileUrl}">
+                    <div class="ac-avatar-sm">${s.avatar}</div>
+                    <div>
+                        <div class="ac-info-name">${s.name}</div>
+                        <div class="ac-info-meta">${s.username}${s.room ? ' &nbsp;·&nbsp; Room ' + s.room : ''}${s.dept ? ' &nbsp;·&nbsp; ' + s.dept : ''}</div>
+                    </div>
+                </a>
+            `).join('');
+        }
+        dropdown.style.display = 'block';
+    }
+
+    input.addEventListener('focus', () => renderDropdown(input.value));
+    input.addEventListener('input', () => renderDropdown(input.value));
+
+    input.addEventListener('keydown', (e) => {
+        const items = dropdown.querySelectorAll('.ac-item');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = Math.min(activeIdx + 1, items.length - 1);
+            items.forEach((el, i) => el.classList.toggle('ac-active', i === activeIdx));
+            if (items[activeIdx]) items[activeIdx].scrollIntoView({block:'nearest'});
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = Math.max(activeIdx - 1, 0);
+            items.forEach((el, i) => el.classList.toggle('ac-active', i === activeIdx));
+            if (items[activeIdx]) items[activeIdx].scrollIntoView({block:'nearest'});
+        } else if (e.key === 'Enter' && activeIdx >= 0 && items[activeIdx]) {
+            e.preventDefault();
+            window.location.href = items[activeIdx].href;
+        } else if (e.key === 'Escape') {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+})();
+</script>
+
+{% if students %}
     <div class="animate-up" style="animation-delay: 0.2s;">
         <div style="font-size:15px; font-weight:600; color:var(--text2); margin-bottom:16px;">
             <i class="fa-solid fa-filter" style="color:var(--accent);"></i>
-            {{ students|length }} result{{ students|length|pluralize }} for "{{ search_query }}"
+            {% if search_query %}
+                {{ students|length }} result{{ students|length|pluralize }} for "{{ search_query }}"
+            {% else %}
+                All {{ students|length }} student{{ students|length|pluralize }} in Block {{ warden.hostel_block }}
+            {% endif %}
         </div>
         <div class="student-grid">
             {% for student in students %}
@@ -353,20 +474,11 @@ body.light .student-card {
             {% endfor %}
         </div>
     </div>
-    {% else %}
+{% else %}
     <div class="empty-state animate-up" style="animation-delay: 0.2s;">
         <div class="empty-icon" style="font-size:48px; margin-bottom:16px; opacity:0.5;">🔍</div>
         <div style="font-size:18px; font-weight:600; color:var(--text);">No students found</div>
-        <div style="color:var(--text2); margin-top:8px;">Try adjusting your search query.</div>
-    </div>
-    {% endif %}
-{% else %}
-    <div class="empty-state animate-up" style="animation-delay: 0.2s; background: transparent; border: 1px dashed var(--border); border-radius: 18px;">
-        <div class="empty-icon" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5; color: #3b82f6;">
-            <i class="fa-solid fa-magnifying-glass-arrow-right"></i>
-        </div>
-        <div style="font-size: 18px; font-weight: 600; color: var(--text);">Search Student Portal</div>
-        <div style="color: var(--text2); margin-top: 8px;">Find students by ID or Name to view details or toggle profile edit permissions.</div>
+        <div style="color:var(--text2); margin-top:8px;">{% if search_query %}Try adjusting your search query.{% else %}No students are assigned to Block {{ warden.hostel_block }} yet.{% endif %}</div>
     </div>
 {% endif %}
 

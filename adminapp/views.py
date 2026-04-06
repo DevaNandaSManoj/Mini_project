@@ -70,11 +70,17 @@ def manage_students(request):
             })
 
         if User.objects.filter(username=username).exists():
+            existing_user = User.objects.get(username=username)
+            existing_student = Student.objects.filter(user=existing_user).first()
+            wardens = Warden.objects.select_related('user').all()
             return render(request, "admin/admin_students.html", {
                 "students": students,
-                "wardens": Warden.objects.select_related('user').all(),
-                "block_warden_map": {w.hostel_block: w for w in Warden.objects.select_related('user').all()},
-                "error": "Student ID already exists"
+                "wardens": wardens,
+                "block_warden_map": {w.hostel_block: w for w in wardens},
+                "error": "duplicate_id",
+                "duplicate_username": username,
+                "existing_student": existing_student,
+                "existing_user": existing_user,
             })
 
         # Validate parent email if provided

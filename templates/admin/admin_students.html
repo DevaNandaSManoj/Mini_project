@@ -8,11 +8,44 @@
     <p>Add, view or remove students from the system.</p>
 </div>
 
-{% if error %}
+{% if error == "duplicate_id" %}
+<div style="background:rgba(251,191,36,0.08); border:1.5px solid rgba(251,191,36,0.35); border-radius:12px; padding:16px 20px; margin-bottom:16px; display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <i class="fa fa-triangle-exclamation" style="color:#f59e0b; font-size:18px;"></i>
+        <strong style="color:#f59e0b; font-size:15px;">Student ID "{{ duplicate_username }}" already exists!</strong>
+    </div>
+    {% if existing_student %}
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:16px;">
+        <div style="width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#38bdf8,#818cf8); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:700; flex-shrink:0;">
+            {{ existing_student.name|default:existing_user.first_name|first|upper }}
+        </div>
+        <div style="flex:1; font-size:13px; color:var(--text2); line-height:1.9;">
+            <div style="font-size:15px; font-weight:700; color:var(--text); margin-bottom:2px;">
+                {{ existing_student.name|default:existing_user.get_full_name|default:existing_user.username }}
+            </div>
+            <span><i class="fa fa-id-badge" style="color:#38bdf8; margin-right:4px;"></i>{{ existing_user.username }}</span>
+            &nbsp;·&nbsp;
+            <span><i class="fa fa-building" style="color:#818cf8; margin-right:4px;"></i>Block {{ existing_student.hostel_block }}</span>
+            &nbsp;·&nbsp;
+            <span><i class="fa fa-door-open" style="color:#10b981; margin-right:4px;"></i>Room {{ existing_student.room_no }}</span>
+            &nbsp;·&nbsp;
+            <span><i class="fa fa-graduation-cap" style="color:#f59e0b; margin-right:4px;"></i>{{ existing_student.department }}</span>
+        </div>
+        <a href="{% url 'admin_student_portal' %}?search_query={{ existing_user.username }}&t=9999999999"
+           style="font-size:12px; font-weight:600; color:#38bdf8; text-decoration:none; border:1px solid rgba(56,189,248,0.3); padding:6px 12px; border-radius:8px; white-space:nowrap;">
+            <i class="fa fa-eye" style="margin-right:4px;"></i>View Profile
+        </a>
+    </div>
+    {% else %}
+    <div style="font-size:13px; color:var(--text2);">This ID belongs to a non-student account (e.g. warden or admin).</div>
+    {% endif %}
+</div>
+{% elif error %}
 <div class="login-error" style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
     <i class="fa fa-exclamation-circle"></i> {{ error }}
 </div>
 {% endif %}
+
 
 <div class="grid-2">
     <!-- ADD STUDENT FORM -->

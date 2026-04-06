@@ -54,7 +54,17 @@
             </div>
 
             <div class="form-row">
-                <input type="email" name="parent_email" class="inp" placeholder="Parent Email">
+                <input
+                    type="email"
+                    name="parent_email"
+                    id="parent_email_input"
+                    class="inp"
+                    placeholder="Parent Email (e.g. name@gmail.com)"
+                    pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9\-]{2,}(\.[a-zA-Z0-9\-]{2,})*\.[a-zA-Z]{2,}"
+                    title="Enter a valid email. Domain must be at least 2 characters (e.g. name@gmail.com — not name@g.com)"
+                    oninvalid="this.setCustomValidity('Please enter a valid email. Example: name@gmail.com')"
+                    oninput="this.setCustomValidity('')"
+                >
                 <input type="text" name="address" class="inp" placeholder="Full Address">
             </div>
 

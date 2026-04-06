@@ -72,8 +72,26 @@ def manage_students(request):
         if User.objects.filter(username=username).exists():
             return render(request, "admin/admin_students.html", {
                 "students": students,
+                "wardens": Warden.objects.select_related('user').all(),
+                "block_warden_map": {w.hostel_block: w for w in Warden.objects.select_related('user').all()},
                 "error": "Student ID already exists"
             })
+
+        # Validate parent email if provided
+        if parent_email:
+            import re
+            # domain must be >= 2 chars, TLD >= 2 chars  (rejects @g.com, accepts @gmail.com)
+            email_pattern = re.compile(
+                r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9\-]{2,}(\.[a-zA-Z0-9\-]{2,})*\.[a-zA-Z]{2,}$'
+            )
+            if not email_pattern.match(parent_email):
+                return render(request, "admin/admin_students.html", {
+                    "students": students,
+                    "wardens": Warden.objects.select_related('user').all(),
+                    "block_warden_map": {w.hostel_block: w for w in Warden.objects.select_related('user').all()},
+                    "error": f"'{parent_email}' is not a valid email address. "
+                             f"Please use a proper domain (e.g. name@gmail.com)."
+                })
 
         try:
             user = User.objects.create_user(

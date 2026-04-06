@@ -590,3 +590,94 @@ def meal_analysis(request):
     }
 
     return render(request, 'admin/meal_analysis.html', context)
+
+
+import time
+
+# ================= ADMIN STUDENT PORTAL =================
+def admin_student_portal(request):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    search_query = request.GET.get('search_query', '').strip()
+    search_time = request.GET.get('t', '0')
+
+    try:
+        search_time_float = float(search_time)
+    except ValueError:
+        search_time_float = 0
+
+    current_time = time.time()
+    if current_time - search_time_float > 86400:
+        search_query = ''
+
+    # All students for dropdown — grouped by block in template
+    all_students = Student.objects.select_related('user').order_by('hostel_block', 'user__username')
+    students = None
+
+    if search_query:
+        from django.db.models import Q
+        students = Student.objects.select_related('user').filter(
+            Q(user__username__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(name__icontains=search_query)
+        ).order_by('hostel_block', 'user__username')
+
+    from accounts.models import Warden
+    wardens = Warden.objects.select_related('user').all()
+    block_warden_map = {w.hostel_block: w for w in wardens}
+
+    return render(request, 'admin/admin_student_portal.html', {
+        'students': students,
+        'all_students': all_students,
+        'search_query': search_query,
+        'current_time': int(current_time),
+        'block_warden_map': block_warden_map,
+    })
+
+
+def admin_view_student_profile(request, student_id):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    student = get_object_or_404(Student, id=student_id)
+
+    if request.method == 'POST':
+        student.father_name = request.POST.get('father_name')
+        student.mother_name = request.POST.get('mother_name')
+        student.parent_phone_number = request.POST.get('parent_phone')
+        student.address = request.POST.get('address')
+        student.place = request.POST.get('place')
+
+        if 'profile_picture' in request.FILES:
+            f = request.FILES['profile_picture']
+            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+            if f.content_type in allowed_types and f.size <= 5 * 1024 * 1024:
+                student.profile_picture = f
+
+        student.save()
+        messages.success(request, f"Profile for {student.user.username} updated successfully!")
+        return redirect('admin_view_student_profile', student_id=student.id)
+
+    from accounts.models import Warden
+    assigned_warden = Warden.objects.filter(hostel_block=student.hostel_block).first()
+
+    return render(request, 'admin/admin_student_portal_edit.html', {
+        'student': student,
+        'assigned_warden': assigned_warden,
+    })
+
+
+def admin_toggle_student_edit(request, student_id):
+    if request.user.role != 'admin':
+        return redirect('login')
+
+    student = get_object_or_404(Student, id=student_id)
+
+    if request.method == 'POST':
+        student.can_edit_profile = not student.can_edit_profile
+        student.save()
+        status_text = 'enabled' if student.can_edit_profile else 'disabled'
+        messages.success(request, f"Profile editing {status_text} for {student.user.username}.")
+
+    return redirect('admin_student_portal')

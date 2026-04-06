@@ -13,6 +13,8 @@ urlpatterns = [
     path('attendance/', views.attendance_report, name='attendance_report'),
     path('food-report/', views.food_report, name='food_report'),
     path('meal-analysis/', views.meal_analysis, name='meal_analysis'),
-    
 
+    path('student-portal/', views.admin_student_portal, name='admin_student_portal'),
+    path('student-portal/<int:student_id>/', views.admin_view_student_profile, name='admin_view_student_profile'),
+    path('student-portal/toggle-edit/<int:student_id>/', views.admin_toggle_student_edit, name='admin_toggle_student_edit'),
 ]

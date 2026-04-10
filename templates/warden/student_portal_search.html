@@ -19,6 +19,14 @@
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
+/* Page header */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 26px; font-weight: 800; margin: 4px 0 0; color: var(--text); }
+.breadcrumb { font-size: 12px; display: flex; gap: 6px; margin-bottom: 4px; }
+.crumb-parent { color: var(--accent); }
+.crumb-sep { color: var(--text2); }
+.crumb-active { font-weight: 500; color: var(--text2); }
+
 .search-container {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -27,9 +35,7 @@
     margin-bottom: 24px;
 }
 
-.search-header {
-    margin-bottom: 20px;
-}
+.search-header { margin-bottom: 20px; }
 
 .search-header h2 {
     font-family: 'Inter', sans-serif;
@@ -42,15 +48,9 @@
     gap: 10px;
 }
 
-.search-header h2 i {
-    color: #38bdf8;
-}
+.search-header h2 i { color: #38bdf8; }
 
-.search-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+.search-form { display: flex; flex-direction: column; gap: 16px; }
 
 .search-input-group {
     display: flex;
@@ -59,10 +59,7 @@
     flex-wrap: wrap;
 }
 
-.search-input-wrapper {
-    flex: 1;
-    min-width: 250px;
-}
+.search-input-wrapper { flex: 1; min-width: 250px; }
 
 .search-input-wrapper label {
     font-size: 13px;
@@ -72,7 +69,8 @@
     display: block;
 }
 
-.search-input-wrapper input {
+/* Portal text input (NOT .search-select so Select2 won't touch it) */
+.warden-portal-search {
     width: 100%;
     padding: 12px 16px;
     border-radius: 12px;
@@ -81,49 +79,55 @@
     color: var(--text);
     font-size: 15px;
     transition: all 0.2s;
+    box-sizing: border-box;
 }
 
-.search-input-wrapper input:focus {
+.warden-portal-search:focus {
     border-color: #38bdf8;
     box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
     outline: none;
+    background: var(--surface);
+    transform: none; /* override base_warden input:focus translateY */
 }
 
-/* Shared style for both input and select-like elements */
-.search-select {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-size: 15px;
-    transition: all 0.2s;
-}
-
-.search-select:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
-    outline: none;
-}
-
+/* Override base_warden gradient for the Search/Clear buttons here */
 .search-btn {
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.2s;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 120px !important;
+    height: 46px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
     white-space: nowrap;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    height: 48px;
+    background: #3b82f6 !important;
+    color: white !important;
+    border: none !important;
     cursor: pointer;
+    box-shadow: none !important;
+    transition: all 0.2s !important;
+    text-decoration: none !important;
 }
 
 .search-btn:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3) !important;
+}
+
+/* Clear button gets a different background */
+a.search-btn.clear-btn {
+    background: var(--surface2) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+}
+
+a.search-btn.clear-btn:hover {
+    background: var(--surface) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
 }
 
 .student-grid {
@@ -177,22 +181,10 @@
     flex-shrink: 0;
 }
 
-.student-avatar img {
-    width: 100%; height: 100%; object-fit: cover;
-}
+.student-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-.student-name {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-}
-
-.student-id {
-    font-size: 12px;
-    color: var(--text2);
-    margin-bottom: 10px;
-}
+.student-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.student-id { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
 
 .student-tags {
     display: flex;
@@ -216,91 +208,88 @@
 .tag-dept    { background: rgba(59,130,246,0.12);  color:#3b82f6; border:1px solid rgba(59,130,246,0.25); }
 .tag-warden  { background: linear-gradient(135deg,var(--accent),var(--accent2)); color:white; }
 
-.student-actions {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    margin-top: auto;
-}
+.student-actions { display: flex; gap: 8px; width: 100%; margin-top: auto; }
 
+/* Override base_warden global button gradient for student card action buttons */
 .btn-action {
     flex: 1;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 8px 12px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s !important;
     text-decoration: none;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border) !important;
+    box-shadow: none !important;
+    background: unset !important;
 }
 
-.btn-action.locked {
-    background: rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.25);
-}
-.btn-action.unlocked {
-    background: rgba(16,185,129,0.1); color:#10b981; border-color:rgba(16,185,129,0.25);
-}
-.btn-action.view {
-    background: rgba(56,189,248,0.1); color:#38bdf8; border-color:rgba(56,189,248,0.25);
-}
-.btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+.btn-action.locked   { background: rgba(239,68,68,0.1)  !important; color:#ef4444 !important; border-color:rgba(239,68,68,0.25) !important; }
+.btn-action.unlocked { background: rgba(16,185,129,0.1) !important; color:#10b981 !important; border-color:rgba(16,185,129,0.25) !important; }
+.btn-action.view     { background: rgba(56,189,248,0.1) !important; color:#38bdf8 !important; border-color:rgba(56,189,248,0.25) !important; }
+.btn-action:hover    { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
 
-body.light .student-card {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+body.light .student-card { box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+
+/* Block section title */
+.block-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 6px 14px;
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.15);
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    margin-top: 8px;
 }
 </style>
 
 <div class="page-header animate-up" style="animation-delay: 0s;">
     <div class="breadcrumb"><span class="crumb-parent">Warden</span> <span class="crumb-sep">›</span> <span class="crumb-active">Student Portal</span></div>
     <h1>Block {{ warden.hostel_block }} — Student Portal</h1>
-    <p style="color:var(--text2); font-size:14px; margin-top:4px;">You are viewing students in <strong style="color:var(--accent);">Block {{ warden.hostel_block }}</strong> only.</p>
 </div>
 
 <div class="search-container animate-up hover-card" style="animation-delay: 0.1s;">
     <div class="search-header">
         <h2><i class="fa-solid fa-users-viewfinder"></i> Find Students in Block {{ warden.hostel_block }}</h2>
-        <p style="color: var(--text2); font-size: 14px; margin: 0;">Search by Student ID or Name. Only Block {{ warden.hostel_block }} students are shown.</p>
+        <p style="color: var(--text2); font-size: 14px; margin: 0;">Search by Student ID or Name across Block {{ warden.hostel_block }}.</p>
     </div>
     
     <div class="search-form">
-        <form method="GET" class="search-input-group">
+        <form method="GET" id="portal-search-form">
             <input type="hidden" name="t" value="{{ current_time }}">
-            
-            <div class="search-input-wrapper">
-                <label>Student ID or Name</label>
+            <label style="font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px; display:block;">Student ID or Name</label>
+            <div style="display:flex; gap:12px; align-items:center;">
                 <input
                     type="text"
                     name="search_query"
-                    class="search-select"
+                    class="warden-portal-search"
                     list="student-datalist"
                     placeholder="Type a name or ID, or click ▾ to browse…"
                     value="{{ search_query }}"
                     autocomplete="off"
-                    style="min-width:300px;"
+                    style="flex:1;"
                 >
                 <datalist id="student-datalist">
                     {% for student in all_students %}
-                        <option value="{{ student.user.username }}">{{ student.user.username }} — {% if student.name %}{{ student.name }}{% elif student.user.first_name %}{{ student.user.first_name }}{% else %}Unknown{% endif %} (Block {{ student.hostel_block }})</option>
+                        <option value="{{ student.user.username }}">{% if student.name %}{{ student.name }}{% elif student.user.first_name %}{{ student.user.first_name }}{% else %}Unknown{% endif %} — Block {{ student.hostel_block }}</option>
                     {% endfor %}
                 </datalist>
-            </div>
-            
-            <div class="search-input-wrapper" style="flex: 0; min-width: auto;">
-                <label style="color: transparent; user-select: none;">Action</label>
-                <div style="display:flex; gap:12px;">
-                    <button type="submit" class="search-btn"><i class="fa fa-search"></i> Search</button>
-                    <a href="{% url 'warden_student_portal' %}" class="search-btn" style="background:var(--surface2); color:var(--text); border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; height: 48px; padding: 0 24px; text-decoration: none;">
-                        <i class="fa fa-eraser" style="margin-right:8px; color:var(--text2);"></i> Clear
-                    </a>
-                </div>
+                <button type="submit" class="search-btn"><i class="fa fa-search"></i> Search</button>
+                <a href="{% url 'warden_student_portal' %}" class="search-btn" style="background:var(--surface2) !important; color:var(--text) !important; border: 1px solid var(--border) !important; display: inline-flex; align-items: center; justify-content: center; gap:8px; text-decoration: none;">
+                    <i class="fa fa-eraser" style="color:var(--text2);"></i> Clear
+                </a>
             </div>
         </form>
     </div>
@@ -313,45 +302,55 @@ body.light .student-card {
             <i class="fa-solid fa-filter" style="color:var(--accent);"></i>
             {{ students|length }} result{{ students|length|pluralize }} for "{{ search_query }}"
         </div>
-        <div class="student-grid">
-            {% for student in students %}
-            <div class="student-card">
-                <div class="student-avatar">
-                    {% if student.profile_picture %}
-                        <img src="{{ student.profile_picture.url }}">
-                    {% else %}
-                        {{ student.user.first_name|default:student.user.username|first|upper }}
-                    {% endif %}
-                </div>
-                <div class="student-name">{{ student.name|default:student.user.get_full_name|default:student.user.username }}</div>
-                <div class="student-id">{{ student.user.username }}</div>
-                <div class="student-tags">
-                    {% if student.room_no %}
-                    <span class="student-tag tag-room"><i class="fa-solid fa-door-open"></i> Room {{ student.room_no }}</span>
-                    {% endif %}
-                    {% if student.department %}
-                    <span class="student-tag tag-dept"><i class="fa-solid fa-graduation-cap"></i> {{ student.department }}</span>
-                    {% endif %}
-                    <span class="student-tag tag-warden"><i class="fa-solid fa-user-shield"></i> Block {{ student.hostel_block }}</span>
-                </div>
-                <div class="student-actions">
-                    <form method="POST" action="{% url 'toggle_student_edit_profile' student.id %}" style="margin:0; flex:1;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-action {% if student.can_edit_profile %}locked{% else %}unlocked{% endif %}" style="width:100%;">
-                            {% if student.can_edit_profile %}
-                                <i class="fa fa-lock"></i> Lock
-                            {% else %}
-                                <i class="fa fa-unlock"></i> Unlock
-                            {% endif %}
-                        </button>
-                    </form>
-                    <a href="{% url 'warden_view_student_profile' student.id %}" class="btn-action view">
-                        <i class="fa fa-eye"></i> View
-                    </a>
-                </div>
+
+        {% regroup students by hostel_block as result_groups %}
+        {% for group in result_groups %}
+            <div class="block-section-title">
+                <i class="fa-solid fa-building"></i> Block {{ group.grouper }}
+                <span style="background:rgba(56,189,248,0.15); border-radius:50px; padding:1px 8px; font-size:11px; color:#38bdf8;">
+                    {{ group.list|length }} student{{ group.list|length|pluralize }}
+                </span>
             </div>
-            {% endfor %}
-        </div>
+            <div class="student-grid" style="margin-bottom: 28px;">
+                {% for student in group.list %}
+                <div class="student-card">
+                    <div class="student-avatar">
+                        {% if student.profile_picture %}
+                            <img src="{{ student.profile_picture.url }}">
+                        {% else %}
+                            {{ student.user.first_name|default:student.user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="student-name">{{ student.name|default:student.user.get_full_name|default:student.user.username }}</div>
+                    <div class="student-id">{{ student.user.username }}</div>
+                    <div class="student-tags">
+                        {% if student.room_no %}
+                        <span class="student-tag tag-room"><i class="fa-solid fa-door-open"></i> Room {{ student.room_no }}</span>
+                        {% endif %}
+                        {% if student.department %}
+                        <span class="student-tag tag-dept"><i class="fa-solid fa-graduation-cap"></i> {{ student.department }}</span>
+                        {% endif %}
+                        <span class="student-tag tag-warden"><i class="fa-solid fa-user-shield"></i> Block {{ student.hostel_block }}</span>
+                    </div>
+                    <div class="student-actions">
+                        <form method="POST" action="{% url 'toggle_student_edit_profile' student.id %}" style="margin:0; flex:1;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-action {% if student.can_edit_profile %}locked{% else %}unlocked{% endif %}" style="width:100%;">
+                                {% if student.can_edit_profile %}
+                                    <i class="fa fa-lock"></i> Lock
+                                {% else %}
+                                    <i class="fa fa-unlock"></i> Unlock
+                                {% endif %}
+                            </button>
+                        </form>
+                        <a href="{% url 'warden_view_student_profile' student.id %}" class="btn-action view">
+                            <i class="fa fa-eye"></i> View
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
     </div>
     {% else %}
     <div class="empty-state animate-up" style="animation-delay: 0.2s;">
@@ -361,7 +360,7 @@ body.light .student-card {
     </div>
     {% endif %}
 {% else %}
-    <div class="empty-state animate-up" style="animation-delay: 0.2s; background: transparent; border: 1px dashed var(--border); border-radius: 18px;">
+    <div class="empty-state animate-up" style="animation-delay: 0.2s; background: transparent; border: 1px dashed var(--border); border-radius: 18px; padding: 48px; text-align: center;">
         <div class="empty-icon" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5; color: #3b82f6;">
             <i class="fa-solid fa-magnifying-glass-arrow-right"></i>
         </div>

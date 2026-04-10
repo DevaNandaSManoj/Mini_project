@@ -47,6 +47,7 @@
           <a href="{% url 'meal_analysis' %}" class="nav-item" style="text-decoration:none;"><i class="fa fa-chart-line"></i>Meal Analysis</a>
       </div>
       <div class="sidebar-footer">
+          <a href="{% url 'admin_change_password' %}" class="nav-item" style="text-decoration:none; margin-bottom:8px; display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:10px; font-size:13px; color:var(--text2);"><i class="fa fa-key"></i>Change Password</a>
           <form action="{% url 'logout' %}" method="POST" style="margin:0;">
               {% csrf_token %}
               <button type="submit" class="logout-btn" style="background:transparent; border:none; width:100%; text-align:left; font-family:inherit;">

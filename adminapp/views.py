@@ -703,3 +703,25 @@ def admin_toggle_student_edit(request, student_id):
         messages.success(request, f"Profile editing {status_text} for {student.user.username}.")
 
     return redirect('admin_student_portal')
+
+
+# ================= ADMIN CHANGE PASSWORD =================
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
+def admin_change_password(request):
+    if not request.user.is_authenticated or request.user.role != 'admin':
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # keep admin logged in
+            messages.success(request, 'Your password was changed successfully!')
+            return redirect('admin_change_password')
+        # form errors will be shown in template
+    else:
+        form = PasswordChangeForm(user=request.user)
+
+    return render(request, 'admin/admin_change_password.html', {'form': form})
